@@ -10,6 +10,7 @@
 body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 -apple-system,Segoe UI,Roboto,sans-serif}
 .logo{font-size:22px;font-weight:700;letter-spacing:-.02em}.logo span{color:var(--accent)}
 h2{font-size:13px;margin:0 0 12px;color:var(--mute);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+h2 .hint{text-transform:none;letter-spacing:0;font-weight:400;color:var(--mute);opacity:.7}
 .wrap{max-width:1080px;margin:0 auto;padding:16px 16px 70px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -17,6 +18,7 @@ button,select,input{font:inherit;color:var(--text)}
 button{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
 button:hover{border-color:var(--accent)}button.primary{background:var(--accent);color:#06240f;border-color:var(--accent);font-weight:600}
 button.danger{border-color:var(--bad);color:var(--bad)}
+button.mini{padding:3px 8px;font-size:13px}
 input,select{background:#0e1014;border:1px solid var(--line);border-radius:6px;padding:6px 8px;max-width:100%}
 .tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:16px}
 .tab{background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:10px 14px;color:var(--mute);white-space:nowrap}
@@ -27,6 +29,12 @@ input,select{background:#0e1014;border:1px solid var(--line);border-radius:6px;p
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
 .grid .card{margin:0}.two .card{margin:0}.two{margin-bottom:16px}
 .big{font-size:26px;font-weight:700}.mute{color:var(--mute);font-size:13px}.pos{color:var(--accent)}.neg{color:var(--bad)}
+.tap{cursor:pointer;position:relative}
+.tap:hover{border-color:var(--accent)}
+.tap::after{content:"View ›";position:absolute;right:12px;top:12px;font-size:11px;color:var(--mute);opacity:0}
+.tap:hover::after{opacity:1}
+tr.tap:hover{background:#1d2230}tr.tap::after,td.tap::after{content:none}
+td.tap{color:var(--blue)}td.tap:hover{text-decoration:underline}
 .bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--accent)}
 .bar.over>i{background:var(--bad)}.bar.warn>i{background:var(--warn)}
 table{width:100%;border-collapse:collapse}td,th{padding:8px 6px;border-top:1px solid var(--line);text-align:left;font-size:14px;vertical-align:middle}
@@ -34,23 +42,37 @@ th{color:var(--mute);font-weight:500;border-top:0}td.num,th.num{text-align:right
 .scroll{overflow-x:auto}
 .chartbox{position:relative;height:260px}
 .pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:#222733;color:var(--mute)}
+.pill.ok{background:#16301f;color:var(--accent)}.pill.warn{background:#33280f;color:var(--warn)}
 .group{margin-bottom:6px}.group h3{margin:14px 0 4px;font-size:15px;display:flex;justify-content:space-between}
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.goal{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr 32px;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
-.goal input{width:100%}
 #login{max-width:340px;margin:12vh auto;text-align:center}#login input{width:100%;margin-bottom:10px;padding:10px}
 #login button{width:100%;padding:10px}#err{color:var(--bad);margin-top:10px;min-height:20px;font-size:14px}
 .hidden{display:none!important}
-#msg{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--line);padding:10px 16px;border-radius:8px;display:none;z-index:9}
+#msg{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--line);padding:10px 16px;border-radius:8px;display:none;z-index:99}
 .strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px}
 .mcard{min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;flex:0 0 auto}
 .mcard.on{border-color:var(--accent)}.mcard .mn{font-weight:600;margin-bottom:6px}
 .mcard .ln{display:flex;justify-content:space-between;font-size:13px}
 .mcard .net{margin-top:6px;font-weight:700}
-.mini{display:flex;gap:3px;align-items:flex-end;height:34px;margin-top:8px}.mini i{display:block;width:100%;border-radius:2px}
+.mini-bars{display:flex;gap:3px;align-items:flex-end;height:34px;margin-top:8px}.mini-bars i{display:block;width:100%;border-radius:2px}
 .nav{padding:7px 10px}
 .group table{table-layout:fixed}.group td:nth-child(2){width:26%}.group td:nth-child(3){width:20%}
 .note{background:#1d2230;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:14px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:80;overflow:auto;padding:28px 14px}
+.modal .box{background:var(--card);border:1px solid var(--line);border-radius:14px;max-width:780px;margin:0 auto;padding:18px}
+.mhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.mt{font-size:18px;font-weight:700}
+#mClose{padding:2px 10px;font-size:20px;line-height:1.2}
+.lbl{display:block;font-size:12px;color:var(--mute);margin-bottom:3px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.fields input,.fields select{width:100%}
+.goalcard{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;background:#12151b}
+.goalhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.gsum{margin-top:10px;font-size:13px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0;padding:5px 10px;font-size:13px;color:var(--mute);background:transparent}
+.seg button.on{background:#222733;color:var(--text)}
+.rowline{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -68,7 +90,7 @@ th{color:var(--mute);font-weight:500;border-top:0}td.num,th.num{text-align:right
   <div class="top">
     <div class="logo"><span>Head</span>room</div>
     <div class="btns">
-      <button class="nav" id="mPrev" title="Previous month">‹</button><select id="month"></select><button class="nav" id="mNext" title="Next month">›</button>
+      <button class="nav" id="mPrev" title="Previous month">&lsaquo;</button><select id="month"></select><button class="nav" id="mNext" title="Next month">&rsaquo;</button>
       <button id="syncBtn">Sync now</button>
       <button id="outBtn">Sign out</button>
     </div>
@@ -80,6 +102,7 @@ th{color:var(--mute);font-weight:500;border-top:0}td.num,th.num{text-align:right
     <button class="tab" data-t="recurring">Recurring</button>
     <button class="tab" data-t="txns">Transactions</button>
     <button class="tab" data-t="accts">Accounts</button>
+    <button class="tab" data-t="invest">Investments</button>
     <button class="tab" data-t="goals">Goals</button>
     <button class="tab" data-t="settings">Settings</button>
   </div>
@@ -89,21 +112,24 @@ th{color:var(--mute);font-weight:500;border-top:0}td.num,th.num{text-align:right
     <div id="coverage"></div>
     <div class="strip" id="strip"></div>
     <div class="grid">
-      <div class="card"><div class="mute">Income</div><div class="big pos" id="kInc">–</div></div>
-      <div class="card"><div class="mute">Spent</div><div class="big" id="kSpent">–</div></div>
-      <div class="card"><div class="mute">Cash flow</div><div class="big" id="kFlow">–</div><div class="mute" id="kRate"></div></div>
-      <div class="card"><div class="mute">Net worth</div><div class="big" id="kNet">–</div></div>
+      <div class="card tap" id="cardInc"><div class="mute">Income</div><div class="big pos" id="kInc">&ndash;</div></div>
+      <div class="card tap" id="cardSpent"><div class="mute">Spent</div><div class="big" id="kSpent">&ndash;</div></div>
+      <div class="card tap" id="cardFlow"><div class="mute">Cash flow</div><div class="big" id="kFlow">&ndash;</div><div class="mute" id="kRate"></div></div>
+      <div class="card tap" id="cardNet"><div class="mute">Net worth</div><div class="big" id="kNet">&ndash;</div><div class="mute" id="kNetSub"></div></div>
     </div>
     <div class="two">
-      <div class="card"><h2>Spending by category</h2><div class="chartbox"><canvas id="cDonut"></canvas></div></div>
-      <div class="card"><h2>Income vs. spending</h2><div class="chartbox"><canvas id="cTrend"></canvas></div></div>
+      <div class="card"><h2>Spending by category <span class="hint">&mdash; click a slice</span></h2><div class="chartbox"><canvas id="cDonut"></canvas></div></div>
+      <div class="card"><h2>Income vs. spending <span class="hint">&mdash; click a bar</span></h2><div class="chartbox"><canvas id="cTrend"></canvas></div></div>
     </div>
     <div class="two">
       <div class="card"><h2>Spend pace this month</h2><div class="chartbox"><canvas id="cPace"></canvas></div></div>
-      <div class="card"><h2>Net worth over time</h2><div class="chartbox"><canvas id="cNet"></canvas></div><div class="mute" id="netNote"></div></div>
+      <div class="card">
+        <h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Net worth over time
+          <span class="seg"><button data-nw="total" class="on">Total</button><button data-nw="cash">Cash &amp; debt</button></span></h2>
+        <div class="chartbox"><canvas id="cNet"></canvas></div><div class="mute" id="netNote"></div></div>
     </div>
     <div class="two">
-      <div class="card"><h2>Top merchants</h2><div id="merchants"></div></div>
+      <div class="card"><h2>Top merchants <span class="hint">&mdash; click to see charges</span></h2><div id="merchants"></div></div>
       <div class="card"><h2>Recurring charges</h2><div id="recurring"></div></div>
     </div>
   </div>
@@ -111,24 +137,33 @@ th{color:var(--mute);font-weight:500;border-top:0}td.num,th.num{text-align:right
   <!-- TRENDS -->
   <div class="pane" id="p-trends">
     <div class="card"><h2>Spending by category, month over month</h2><div class="chartbox" style="height:340px"><canvas id="cStack"></canvas></div></div>
-    <div class="card"><h2>Month by month</h2><div class="scroll"><table id="monthTbl"></table></div></div>
-    <div class="card"><h2>Category by month</h2><div class="scroll"><table id="catMonthTbl"></table></div></div>
+    <div class="card"><h2>Month by month <span class="hint">&mdash; click a row to open that month</span></h2><div class="scroll"><table id="monthTbl"></table></div></div>
+    <div class="card"><h2>Category by month <span class="hint">&mdash; click any amount</span></h2><div class="scroll"><table id="catMonthTbl"></table></div></div>
   </div>
 
   <!-- RECURRING -->
   <div class="pane" id="p-recurring">
-    <div class="grid"><div class="card"><div class="mute">Recurring per month</div><div class="big" id="rTotal">–</div></div>
-      <div class="card"><div class="mute">Due in next 30 days</div><div class="big" id="rSoon">–</div></div>
-      <div class="card"><div class="mute">Charges detected</div><div class="big" id="rCount">–</div></div></div>
-    <div class="card"><h2>Subscriptions &amp; bills</h2><div class="scroll"><table id="recTbl"></table></div>
-      <div class="mute" style="margin-top:8px">Detected from charges that repeat at a steady amount across 2+ months.</div></div>
+    <div class="grid"><div class="card"><div class="mute">Recurring per month</div><div class="big" id="rTotal">&ndash;</div><div class="mute" id="rTotalSub"></div></div>
+      <div class="card"><div class="mute">Due in next 30 days</div><div class="big" id="rSoon">&ndash;</div></div>
+      <div class="card"><div class="mute">Tracked charges</div><div class="big" id="rCount">&ndash;</div></div></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+        <h2 style="margin:0">Subscriptions &amp; bills</h2><button id="addRecBtn">+ Add one manually</button>
+      </div>
+      <div class="mute" style="margin:8px 0 12px">Charges that repeat on a steady schedule. Click a row to see its history, or edit and remove anything that is wrong.</div>
+      <div class="scroll"><table id="recTbl"></table></div>
+    </div>
+    <div class="card"><h2>Might be recurring <span class="hint">&mdash; not counted above</span></h2>
+      <div class="mute" style="margin-bottom:10px">These repeat on a schedule but the amount moves around, so they could just be habits. Keep any that really is a bill.</div>
+      <div class="scroll"><table id="recSuggest"></table></div></div>
+    <div class="card"><h2>Removed</h2><div id="recHidden"></div></div>
   </div>
 
   <!-- BUDGET -->
   <div class="pane" id="p-budget">
     <div class="card">
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
-        <h2 style="margin:0">Budget</h2><button id="applyAll" class="primary">Apply all suggested</button>
+        <h2 style="margin:0">Budget <span class="hint">&mdash; click a category to see what is in it</span></h2><button id="applyAll" class="primary">Apply all suggested</button>
       </div>
       <div class="mute" id="budNote" style="margin:8px 0 12px"></div>
       <div class="scroll"><table id="budTbl"></table></div>
@@ -139,45 +174,72 @@ th{color:var(--mute);font-weight:500;border-top:0}td.num,th.num{text-align:right
   <div class="pane" id="p-txns">
     <div class="card">
       <div class="filters">
-        <input id="fSearch" placeholder="Search merchant…">
+        <input id="fSearch" placeholder="Search merchant&hellip;">
         <select id="fMonth"></select>
         <select id="fCat"></select>
         <select id="fAcct"></select>
         <label class="mute" style="align-self:center"><input type="checkbox" id="fHide" checked> hide transfers &amp; card payments</label>
       </div>
       <div class="scroll"><table id="txTbl"></table></div>
-      <div class="btns" style="margin-top:10px;justify-content:space-between"><button id="pgPrev">← Newer</button><span class="mute" id="pgInfo"></span><button id="pgNext">Older →</button></div>
+      <div class="btns" style="margin-top:10px;justify-content:space-between"><button id="pgPrev">&larr; Newer</button><span class="mute" id="pgInfo"></span><button id="pgNext">Older &rarr;</button></div>
     </div>
   </div>
 
   <!-- ACCOUNTS -->
   <div class="pane" id="p-accts">
-    <div class="grid"><div class="card"><div class="mute">Assets</div><div class="big pos" id="aAssets">–</div></div>
-      <div class="card"><div class="mute">Liabilities</div><div class="big neg" id="aLiab">–</div></div>
-      <div class="card"><div class="mute">Net worth</div><div class="big" id="aNet">–</div></div></div>
+    <div class="grid"><div class="card"><div class="mute">Assets</div><div class="big pos" id="aAssets">&ndash;</div></div>
+      <div class="card"><div class="mute">Liabilities</div><div class="big neg" id="aLiab">&ndash;</div></div>
+      <div class="card"><div class="mute">Net worth</div><div class="big" id="aNet">&ndash;</div></div></div>
     <div class="card" id="acctGroups"></div>
+  </div>
+
+  <!-- INVESTMENTS -->
+  <div class="pane" id="p-invest">
+    <div class="grid">
+      <div class="card"><div class="mute">Invested value</div><div class="big" id="iValue">&ndash;</div></div>
+      <div class="card"><div class="mute">Cost basis</div><div class="big" id="iCost">&ndash;</div><div class="mute">what you put in</div></div>
+      <div class="card"><div class="mute">Gain / loss</div><div class="big" id="iGain">&ndash;</div><div class="mute" id="iGainPct"></div></div>
+    </div>
+    <div id="invEmpty"></div>
+    <div class="btns" style="margin-bottom:16px"><button id="refreshInv">Refresh holdings &amp; activity</button></div>
+    <div class="card" id="invAcctCard"><h2>Accounts <span class="hint">&mdash; click to see positions</span></h2><div id="iAccts"></div></div>
+    <div class="card"><h2>Value over time</h2><div class="chartbox"><canvas id="cInv"></canvas></div><div class="mute" id="invNote"></div></div>
+    <div class="card"><h2>Positions</h2><div class="scroll"><table id="invHoldings"></table></div></div>
+    <div class="card"><h2>Recent activity</h2><div class="scroll"><table id="invTx"></table></div></div>
   </div>
 
   <!-- GOALS -->
   <div class="pane" id="p-goals">
-    <div class="card"><h2>Goals</h2><div id="goals"></div><button id="addGoal" style="margin-top:10px">+ Add goal</button>
-      <div class="mute" style="margin-top:8px">Fields: name · saved so far · target · target date</div></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+        <h2 style="margin:0">Savings goals</h2><button id="addGoal" class="primary">+ Add a goal</button>
+      </div>
+      <div class="mute" style="margin:8px 0 14px">Set what you are saving for and how much you need. Link an account and the amount saved updates itself on every sync.</div>
+      <div id="goals"></div>
+    </div>
   </div>
 
   <!-- SETTINGS -->
   <div class="pane" id="p-settings">
     <div class="card"><h2>Banks</h2><div id="setInfo" class="mute" style="margin-bottom:12px"></div>
-      <div class="btns"><button id="linkBtn" class="primary">+ Link a bank</button><button id="syncBtn2">Sync now</button></div></div>
+      <div id="itemList" style="margin-bottom:12px"></div>
+      <div class="btns"><button id="linkBtn" class="primary">+ Link a bank</button><button id="linkInvBtn">+ Link a brokerage (with holdings)</button><button id="syncBtn2">Sync now</button></div>
+      <div class="mute" style="margin-top:10px">Use the brokerage button for Fidelity and Robinhood so Headroom can read your positions. Linking the same place twice creates a second connection &mdash; remove the old one above.</div></div>
     <div class="card"><h2>Import older history (CSV)</h2>
       <div class="mute" style="margin-bottom:10px">Capital One only shares ~90 days through Plaid. Download older transactions as CSV from your bank's website, then import them here. Only rows older than the earliest synced transaction for that account are added, so nothing is double-counted.</div>
       <div class="filters"><select id="impAcct"></select><input type="file" id="impFile" accept=".csv">
         <label class="mute" style="align-self:center"><input type="checkbox" id="impPos"> single "Amount" column: positive = money spent</label></div>
       <div class="btns"><button id="impBtn" class="primary">Import CSV</button><span class="mute" id="impOut"></span></div></div>
     <div class="card"><h2>Reset connections</h2>
-      <div class="mute" style="margin-bottom:12px">Only needed if a bank connection breaks or you want a clean start. This disconnects your banks and clears pulled and imported transactions (budgets and goals are kept), then you link each bank again. Capital One still only returns ~90 days, so use the CSV import above for older history.</div>
+      <div class="mute" style="margin-bottom:12px">Only needed if a bank connection breaks or you want a clean start. This disconnects your banks and clears pulled and imported transactions (budgets and goals are kept), then you link each bank again.</div>
       <button id="resetBtn" class="danger">Reset &amp; re-link all banks</button></div>
   </div>
 </div>
+
+<div id="modal" class="modal hidden"><div class="box">
+  <div class="mhead"><div><div class="mt" id="mTitle"></div><div class="mute" id="mSub"></div></div><button id="mClose" title="Close">&times;</button></div>
+  <div id="mBody"></div>
+</div></div>
 <div id="msg"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -193,6 +255,7 @@ const money = n => (n < 0 ? "-" : "") + "$" + Math.abs(Math.round(n)).toLocaleSt
 const money2 = n => (n < 0 ? "-" : "") + "$" + Math.abs(n).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const pretty = c => (c || "Uncategorized").toLowerCase().split("_").map(w => w[0].toUpperCase() + w.slice(1)).join(" ").replace(" And ", " & ");
 const monthLabel = m => new Date(m + "-15").toLocaleString("en-US", { month: "short", year: "2-digit" });
+const monthLong = m => new Date(m + "-15").toLocaleString("en-US", { month: "long", year: "numeric" });
 const COLORS = ["#4ade80","#60a5fa","#f59e0b","#f472b6","#a78bfa","#34d399","#fb7185","#38bdf8","#fbbf24","#c084fc","#94a3b8","#2dd4bf"];
 const CATS = ["FOOD_AND_DRINK","GENERAL_MERCHANDISE","GENERAL_SERVICES","TRANSPORTATION","TRAVEL","RENT_AND_UTILITIES","HOME_IMPROVEMENT","MEDICAL","PERSONAL_CARE","ENTERTAINMENT","LOAN_PAYMENTS","BANK_FEES","GOVERNMENT_AND_NON_PROFIT","INCOME","TRANSFER_IN","TRANSFER_OUT","OTHER"];
 const EXCL = new Set(["TRANSFER_IN", "TRANSFER_OUT", "INCOME"]);
@@ -200,9 +263,38 @@ const eff = t => t.user_category || t.category || "OTHER";
 const isOut = t => (EXCL.has(t.category) && !t.user_category) || (t.category_detailed || "").includes("CREDIT_CARD_PAYMENT");
 const isSpend = t => t.amount > 0 && !isOut(t) && !EXCL.has(eff(t));
 const isIncome = t => t.amount < 0 && eff(t) === "INCOME";
+const DAY = 864e5;
+const dnum = s => Math.floor(Date.parse(s + "T12:00:00Z") / DAY);
+const median = a => { const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const todayISO = () => new Date().toISOString().slice(0, 10);
 
-let S = { tx: [], accts: [], budgets: [], goals: [], snaps: [], month: null, page: 0, charts: {} };
-function toast(t) { const m = $("msg"); m.textContent = t; m.style.display = "block"; setTimeout(() => m.style.display = "none", 4000); }
+let S = { tx: [], accts: [], budgets: [], goals: [], snaps: [], rules: [], holdings: [], invtx: [], month: null, page: 0, charts: {}, nwMode: "total" };
+function toast(t) { const m = $("msg"); m.textContent = t; m.style.display = "block"; clearTimeout(S.toastT); S.toastT = setTimeout(() => m.style.display = "none", 4000); }
+const acctName = id => { const a = S.accts.find(x => x.account_id === id); return a ? (a.nickname || a.name) : ""; };
+
+// ---------- modal ----------
+function openModal(title, sub, html) {
+  $("mTitle").textContent = title; $("mSub").textContent = sub || "";
+  $("mBody").innerHTML = html; $("modal").classList.remove("hidden");
+}
+function closeModal() { $("modal").classList.add("hidden"); }
+$("mClose").onclick = closeModal;
+$("modal").onclick = e => { if (e.target === $("modal")) closeModal(); };
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+/** Drill-down: show a list of transactions with a total. */
+function drillTx(title, sub, rows) {
+  const list = [...rows].sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
+  const total = list.reduce((s, t) => s + t.amount, 0);
+  const body = list.length ? `<div class="scroll"><table>
+    <tr><th>Date</th><th>Merchant</th><th>Account</th><th>Category</th><th class="num">Amount</th></tr>
+    ${list.map(t => `<tr><td class="mute">${esc(t.date)}</td><td>${esc(t.merchant_name || t.name)}</td>
+      <td class="mute">${esc(acctName(t.account_id))}</td><td class="mute">${esc(pretty(eff(t)))}</td>
+      <td class="num ${t.amount < 0 ? "pos" : ""}">${money2(Math.abs(t.amount))}</td></tr>`).join("")}
+    <tr><td colspan="4"><b>Total &mdash; ${list.length} transaction${list.length === 1 ? "" : "s"}</b></td><td class="num"><b>${money2(Math.abs(total))}</b></td></tr>
+  </table></div>` : `<div class="mute">Nothing here.</div>`;
+  openModal(title, sub, body);
+}
 
 // ---------- auth ----------
 async function boot() {
@@ -226,6 +318,9 @@ document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
   document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === b));
   document.querySelectorAll(".pane").forEach(p => p.classList.toggle("on", p.id === "p-" + b.dataset.t));
   if (b.dataset.t === "overview") drawCharts();
+  if (b.dataset.t === "invest") drawInvChart();
+  if (b.dataset.t === "trends") drawStack();
+  if (b.dataset.t === "settings") loadItems();
   location.hash = b.dataset.t;
 });
 
@@ -240,18 +335,22 @@ async function fetchAll(table, order) {
   return all;
 }
 async function load() {
-  const [tx, ac, bu, go, sn] = await Promise.all([
+  const [tx, ac, bu, go, sn, ru, ho, it] = await Promise.all([
     fetchAll("transactions", "date"),
     db.from("accounts").select("*").order("name"),
     db.from("budgets").select("*"),
     db.from("goals").select("*").eq("active", true).order("created_at"),
     db.from("balance_snapshots").select("*").order("snap_date"),
+    db.from("recurring_rules").select("*"),
+    db.from("holdings").select("*"),
+    db.from("investment_transactions").select("*").order("date", { ascending: false }).limit(500),
   ]);
   S.tx = tx; S.accts = ac.data || []; S.budgets = bu.data || []; S.goals = go.data || []; S.snaps = sn.data || [];
-  const months = [...new Set([...S.tx.map(t => t.date.slice(0, 7)), new Date().toISOString().slice(0, 7)])].sort().reverse();
+  S.rules = ru.data || []; S.holdings = ho.data || []; S.invtx = it.data || [];
+  const months = [...new Set([...S.tx.map(t => t.date.slice(0, 7)), todayISO().slice(0, 7)])].sort().reverse();
   S.months = months;
   S.month = S.month && months.includes(S.month) ? S.month : months[0];
-  $("month").innerHTML = months.map(m => `<option value="${m}">${new Date(m + "-15").toLocaleString("en-US", { month: "long", year: "numeric" })}</option>`).join("");
+  $("month").innerHTML = months.map(m => `<option value="${m}">${monthLong(m)}</option>`).join("");
   $("month").value = S.month;
   const h = location.hash.slice(1); if (h) { const b = document.querySelector(`.tab[data-t="${h}"]`); if (b) b.click(); }
   renderAll();
@@ -260,16 +359,20 @@ $("month").onchange = e => { S.month = e.target.value; renderAll(); };
 
 function coverage() {
   const min = S.tx.length ? S.tx[S.tx.length - 1].date : null;
-  const fullMonths = S.months.filter(m => m < new Date().toISOString().slice(0, 7) && min && m + "-01" >= min);
+  const fullMonths = S.months.filter(m => m < todayISO().slice(0, 7) && min && m + "-01" >= min);
   return { min, fullMonths };
 }
 const sumBy = (arr, key, f) => arr.reduce((o, t) => { const k = key(t); o[k] = (o[k] || 0) + f(t); return o; }, {});
 
-function renderAll() { renderOverview(); renderStrip(); renderTrends(); renderRecurring(); renderBudget(); renderTxns(); renderAccts(); renderGoals(); renderSettings(); }
+function renderAll() {
+  renderOverview(); renderStrip(); renderTrends(); renderRecurring(); renderBudget();
+  renderTxns(); renderAccts(); renderInvest(); renderGoals(); renderSettings();
+}
 
 // ---------- month helpers ----------
+function monthTx(m) { return S.tx.filter(x => x.date.startsWith(m)); }
 function monthStats(m) {
-  const t = S.tx.filter(x => x.date.startsWith(m));
+  const t = monthTx(m);
   const inc = t.filter(isIncome).reduce((s, x) => s - x.amount, 0), sp = t.filter(isSpend).reduce((s, x) => s + x.amount, 0);
   return { m, inc, sp, net: inc - sp };
 }
@@ -280,59 +383,270 @@ $("mNext").onclick = () => { const i = S.months.indexOf(S.month); if (i > 0) set
 function renderStrip() {
   const stats = [...S.months].reverse().map(monthStats), max = Math.max(1, ...stats.map(s => Math.max(s.inc, s.sp)));
   $("strip").innerHTML = stats.map(s => `<div class="mcard ${s.m === S.month ? "on" : ""}" data-m="${s.m}">
-    <div class="mn">${new Date(s.m + "-15").toLocaleString("en-US", { month: "long", year: "numeric" })}</div>
+    <div class="mn">${monthLong(s.m)}</div>
     <div class="ln"><span class="mute">Earned</span><span class="pos">${money(s.inc)}</span></div>
     <div class="ln"><span class="mute">Spent</span><span>${money(s.sp)}</span></div>
-    <div class="mini"><i style="height:${Math.max(3, s.inc / max * 100)}%;background:var(--accent)"></i><i style="height:${Math.max(3, s.sp / max * 100)}%;background:var(--bad)"></i></div>
+    <div class="mini-bars"><i style="height:${Math.max(3, s.inc / max * 100)}%;background:var(--accent)"></i><i style="height:${Math.max(3, s.sp / max * 100)}%;background:var(--bad)"></i></div>
     <div class="net ${s.net < 0 ? "neg" : "pos"}">${s.net < 0 ? "−" : "+"}${money(Math.abs(s.net))}</div></div>`).join("");
   document.querySelectorAll(".mcard").forEach(c => c.onclick = () => setMonth(c.dataset.m));
   const on = document.querySelector(".mcard.on"); if (on) on.scrollIntoView({ inline: "center", block: "nearest" });
 }
 
 // ---------- trends ----------
-function renderTrends() {
+function trendData() {
   const ms = [...S.months].reverse();
   const spendTx = S.tx.filter(isSpend);
   const catTotals = sumBy(spendTx, eff, t => t.amount);
   const cats = Object.keys(catTotals).sort((a, b) => catTotals[b] - catTotals[a]);
   const by = {}; spendTx.forEach(t => { const k = eff(t) + "|" + t.date.slice(0, 7); by[k] = (by[k] || 0) + t.amount; });
-  if ($("p-trends").classList.contains("on") || !S.charts.cStack) chart("cStack", { type: "bar",
+  return { ms, cats, by };
+}
+function drawStack() {
+  const { ms, cats, by } = trendData();
+  chart("cStack", { type: "bar",
     data: { labels: ms.map(monthLabel), datasets: cats.map((c, i) => ({ label: pretty(c), data: ms.map(m => Math.round(by[c + "|" + m] || 0)), backgroundColor: COLORS[i % COLORS.length] })) },
-    options: { scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { position: "bottom", labels: { boxWidth: 10 } } } } });
+    options: { scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { position: "bottom", labels: { boxWidth: 10 } } },
+      onClick: (e, els) => { if (!els.length) return; const m = ms[els[0].index], c = cats[els[0].datasetIndex];
+        drillTx(pretty(c), monthLong(m), monthTx(m).filter(t => isSpend(t) && eff(t) === c)); } } });
+}
+function renderTrends() {
+  const { ms, cats, by } = trendData();
+  if ($("p-trends").classList.contains("on") || !S.charts.cStack) drawStack();
   const cov = coverage();
   const rows = [...ms].reverse().map(monthStats);
   $("monthTbl").innerHTML = `<tr><th>Month</th><th class="num">Earned</th><th class="num">Spent</th><th class="num">Net</th><th class="num">Savings rate</th></tr>` +
-    rows.map(r => `<tr><td>${monthLabel(r.m)}${cov.fullMonths.includes(r.m) ? "" : ' <span class="pill">partial</span>'}</td><td class="num pos">${money(r.inc)}</td><td class="num">${money(r.sp)}</td>
+    rows.map(r => `<tr class="tap" data-m="${r.m}"><td>${monthLabel(r.m)}${cov.fullMonths.includes(r.m) ? "" : ' <span class="pill">partial</span>'}</td><td class="num pos">${money(r.inc)}</td><td class="num">${money(r.sp)}</td>
       <td class="num ${r.net < 0 ? "neg" : "pos"}">${money(r.net)}</td><td class="num">${r.inc ? Math.round(r.net / r.inc * 100) + "%" : "–"}</td></tr>`).join("");
-  $("catMonthTbl").innerHTML = `<tr><th>Category</th>${[...ms].reverse().map(m => `<th class="num">${monthLabel(m)}</th>`).join("")}</tr>` +
-    cats.map(c => `<tr><td>${esc(pretty(c))}</td>${[...ms].reverse().map(m => `<td class="num">${by[c + "|" + m] ? money(by[c + "|" + m]) : '<span class="mute">–</span>'}</td>`).join("")}</tr>`).join("");
+  $("monthTbl").querySelectorAll("tr[data-m]").forEach(tr => tr.onclick = () => {
+    setMonth(tr.dataset.m); document.querySelector('.tab[data-t="overview"]').click();
+  });
+  const rev = [...ms].reverse();
+  $("catMonthTbl").innerHTML = `<tr><th>Category</th>${rev.map(m => `<th class="num">${monthLabel(m)}</th>`).join("")}</tr>` +
+    cats.map(c => `<tr><td>${esc(pretty(c))}</td>${rev.map(m => by[c + "|" + m]
+      ? `<td class="num tap" data-c="${esc(c)}" data-m="${m}">${money(by[c + "|" + m])}</td>`
+      : `<td class="num"><span class="mute">–</span></td>`).join("")}</tr>`).join("");
+  $("catMonthTbl").querySelectorAll("td[data-c]").forEach(td => td.onclick = () =>
+    drillTx(pretty(td.dataset.c), monthLong(td.dataset.m), monthTx(td.dataset.m).filter(t => isSpend(t) && eff(t) === td.dataset.c)));
 }
 
 // ---------- recurring ----------
+const CADENCES = [
+  { d: 7,   lo: 6,   hi: 8,   label: "Weekly" },
+  { d: 14,  lo: 12,  hi: 16,  label: "Every 2 weeks" },
+  { d: 30,  lo: 25,  hi: 36,  label: "Monthly" },
+  { d: 61,  lo: 55,  hi: 68,  label: "Every 2 months" },
+  { d: 91,  lo: 80,  hi: 100, label: "Quarterly" },
+  { d: 182, lo: 165, hi: 200, label: "Twice a year" },
+  { d: 365, lo: 330, hi: 400, label: "Yearly" },
+];
+const cadOf = d => CADENCES.find(c => c.d === Number(d)) || CADENCES[2];
+// Categories where a repeat charge is usually a real bill rather than a habit.
+const SUB_CATS = new Set(["RENT_AND_UTILITIES", "ENTERTAINMENT", "GENERAL_SERVICES", "LOAN_PAYMENTS", "BANK_FEES", "GOVERNMENT_AND_NON_PROFIT"]);
+const mKey = n => "m:" + n.trim().toLowerCase();
+const cKey = (n, a) => "c:" + n.trim().toLowerCase() + "#" + Math.round(a);
+
+function nextAfter(last, cadDays) {
+  const [y, m, d] = last.split("-").map(Number);
+  if (Number(cadDays) === 30) {
+    const ny = m === 12 ? y + 1 : y, nm = m === 12 ? 1 : m + 1;
+    const dim = new Date(Date.UTC(ny, nm, 0)).getUTCDate();
+    return `${ny}-${String(nm).padStart(2, "0")}-${String(Math.min(d, dim)).padStart(2, "0")}`;
+  }
+  return new Date(Date.UTC(y, m - 1, d) + Number(cadDays) * DAY).toISOString().slice(0, 10);
+}
+
+/** Score one run of charges: does it repeat on a steady schedule at a steady price? */
+function scoreSeries(name, items, merchDates) {
+  const perDate = {};
+  items.forEach(t => perDate[t.date] = (perDate[t.date] || 0) + t.amount);
+  const dates = Object.keys(perDate).sort();
+  if (dates.length < 2) return null;
+  const amts = dates.map(d => perDate[d]);
+  const gaps = dates.slice(1).map((d, i) => dnum(d) - dnum(dates[i]));
+  const cad = CADENCES.find(x => median(gaps) >= x.lo && median(gaps) <= x.hi);
+  if (!cad) return null;
+  const inBand = gaps.filter(g => g >= cad.lo && g <= cad.hi).length / gaps.length;
+  const mean = amts.reduce((a, b) => a + b, 0) / amts.length;
+  const cv = mean ? Math.sqrt(amts.reduce((s, a) => s + (a - mean) ** 2, 0) / amts.length) / mean : 1;
+  const days = dates.map(d => Number(d.slice(8, 10)));
+  let spread = 0;
+  for (let i = 0; i < days.length; i++) for (let j = i + 1; j < days.length; j++) {
+    const x = Math.abs(days[i] - days[j]); spread = Math.max(spread, Math.min(x, 31 - x));
+  }
+  const dayStable = cad.d === 30 && spread <= 4;
+  const cat = eff(items[items.length - 1]);
+  const billish = SUB_CATS.has(cat);
+  const n = dates.length;
+  let ok = false;
+  if (inBand >= 0.7) {
+    // Same price every time, and not a shop visited far more often than this run.
+    if (n >= 3 && cv <= 0.08 && (billish || merchDates <= n * 2)) ok = true;
+    // Utilities and insurance move around in price but land on the same day.
+    else if (n >= 3 && billish && (cv <= 0.35 || dayStable)) ok = true;
+    // Two sightings is only enough for an identical charge from a bill-like merchant.
+    else if (n === 2 && cv <= 0.02 && billish) ok = true;
+  }
+  const last = dates[dates.length - 1], amount = median(amts);
+  // Roll forward so a charge last seen months ago still shows a date in the future.
+  let next = nextAfter(last, cad.d), guard = 0;
+  while (next < todayISO() && guard++ < 36) next = nextAfter(next, cad.d);
+  return { ok, name, amount, n, last, cat, cadence: cad.d, cadLabel: cad.label,
+    next, key: cKey(name, amount), mkey: mKey(name), auto: true };
+}
+
+/** Try the merchant as one series; only split by price if that fails, which
+ *  separates things like two YouTube subscriptions without breaking a utility
+ *  bill whose amount changes every month. */
 function detectRecurring() {
-  const groups = {};
-  S.tx.filter(isSpend).forEach(t => { const k = (t.merchant_name || t.name || "").trim(); if (k) (groups[k] = groups[k] || []).push(t); });
-  const out = [];
-  Object.entries(groups).forEach(([k, arr]) => {
-    const months = new Set(arr.map(t => t.date.slice(0, 7)));
-    if (months.size < 2 || arr.length > months.size * 1.6) return; // roughly one charge per month
-    const amts = arr.map(t => t.amount), avg = amts.reduce((a, b) => a + b, 0) / amts.length;
-    if (!amts.every(a => Math.abs(a - avg) <= Math.max(2, avg * .15))) return;
-    const last = arr.reduce((a, b) => a.date > b.date ? a : b), day = Number(last.date.slice(8, 10));
-    const d = new Date(last.date + "T12:00:00"); d.setMonth(d.getMonth() + 1);
-    let next = new Date(d.getFullYear(), d.getMonth(), Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()), 12);
-    out.push({ name: k, avg, n: months.size, last: last.date, next: next.toISOString().slice(0, 10), cat: eff(last) });
-  });
-  return out.sort((a, b) => b.avg - a.avg);
+  const byMerch = {};
+  S.tx.filter(isSpend).forEach(t => { const k = (t.merchant_name || t.name || "").trim(); if (k) (byMerch[k] = byMerch[k] || []).push(t); });
+  const strong = [], weak = [];
+  for (const [name, all] of Object.entries(byMerch)) {
+    const merchDates = new Set(all.map(t => t.date)).size;
+    const whole = scoreSeries(name, all, merchDates);
+    if (whole && whole.ok) { strong.push(whole); continue; }
+    const clusters = [];
+    [...all].sort((a, b) => a.amount - b.amount).forEach(t => {
+      const c = clusters[clusters.length - 1];
+      if (c && t.amount <= c.ref * 1.18 + 0.5) { c.items.push(t); c.ref = Math.max(c.ref, t.amount); }
+      else clusters.push({ ref: t.amount, items: [t] });
+    });
+    const split = clusters.length > 1
+      ? clusters.map(c => scoreSeries(name, c.items, merchDates)).filter(Boolean) : [];
+    const good = split.filter(x => x.ok);
+    if (good.length) { good.forEach(x => strong.push(x)); continue; }
+    // Two sightings is a coincidence, not worth suggesting.
+    if (whole && whole.n >= 3) weak.push(whole);
+    else if (!whole) split.filter(x => x.n >= 3).slice(0, 2).forEach(x => weak.push(x));
+  }
+  const bySize = (a, b) => perMonth(b) - perMonth(a);
+  return { strong: strong.sort(bySize), weak: weak.sort(bySize) };
 }
+const perMonth = r => r.amount * (30.44 / (r.cadence || 30));
+
+/** Detection plus the user's own edits, removals and manual additions. */
+function recurringList() {
+  const { strong, weak } = detectRecurring();
+  const ignored = new Set(S.rules.filter(r => r.status === "ignored").map(r => r.match_key));
+  const edits = {}; S.rules.filter(r => r.status === "confirmed").forEach(r => edits[r.match_key] = r);
+  const hidden = [], live = [], maybe = [];
+  const place = (r, fromWeak) => {
+    if (ignored.has(r.mkey) || ignored.has(r.key)) { hidden.push(r); return; }
+    const e = edits[r.key] || edits[r.mkey];
+    if (e) {
+      live.push({ ...r, name: e.display_name || r.name, amount: e.amount != null ? Number(e.amount) : r.amount,
+        cadence: e.cadence_days || r.cadence, cadLabel: cadOf(e.cadence_days || r.cadence).label,
+        next: e.next_date || r.next, cat: e.category || r.cat, ruleKey: e.match_key, edited: true });
+    } else if (fromWeak) maybe.push(r);
+    else live.push(r);
+  };
+  strong.forEach(r => place(r, false));
+  weak.forEach(r => place(r, true));
+  S.rules.filter(r => r.status === "manual").forEach(r => live.push({
+    name: r.display_name || "Untitled", amount: Number(r.amount || 0), n: 0, last: null, cat: r.category || "OTHER",
+    cadence: r.cadence_days || 30, cadLabel: cadOf(r.cadence_days || 30).label, next: r.next_date || null,
+    key: r.match_key, mkey: r.match_key, ruleKey: r.match_key, manual: true,
+  }));
+  // Removed rules that no longer match anything detected still need a row so they can be restored.
+  const shown = new Set(hidden.map(r => r.mkey).concat(hidden.map(r => r.key)));
+  S.rules.filter(r => r.status === "ignored" && !shown.has(r.match_key)).forEach(r =>
+    hidden.push({ name: r.display_name || r.match_key.replace(/^[mcx]:/, ""), amount: Number(r.amount || 0), mkey: r.match_key, key: r.match_key, orphan: true }));
+  const seenH = new Set(), uniqHidden = [];
+  hidden.forEach(r => { const k = r.mkey + "|" + r.name; if (!seenH.has(k)) { seenH.add(k); uniqHidden.push(r); } });
+  return { live: live.sort((a, b) => perMonth(b) - perMonth(a)), maybe, hidden: uniqHidden };
+}
+
+async function saveRule(row) {
+  const { error } = await db.from("recurring_rules").upsert({ ...row, updated_at: new Date().toISOString() }, { onConflict: "match_key" });
+  if (error) return toast(error.message);
+  const i = S.rules.findIndex(r => r.match_key === row.match_key);
+  if (i >= 0) S.rules[i] = { ...S.rules[i], ...row }; else S.rules.push(row);
+  renderRecurring(); renderOverview();
+}
+async function dropRule(key) {
+  const { error } = await db.from("recurring_rules").delete().eq("match_key", key);
+  if (error) return toast(error.message);
+  S.rules = S.rules.filter(r => r.match_key !== key);
+  renderRecurring(); renderOverview();
+}
+
+function recEditor(r) {
+  const isNew = !r;
+  const v = r || { name: "", amount: "", cadence: 30, next: todayISO(), cat: "GENERAL_SERVICES" };
+  openModal(isNew ? "Add a recurring charge" : "Edit " + v.name, isNew ? "" : "Changes only affect how Headroom shows this; your transactions are untouched.", `
+    <div class="fields">
+      <div><label class="lbl" for="eName">Name</label><input id="eName" value="${esc(v.name)}"></div>
+      <div><label class="lbl" for="eAmt">Amount each time</label><input id="eAmt" type="number" step="0.01" min="0" value="${v.amount}"></div>
+      <div><label class="lbl" for="eCad">How often</label><select id="eCad">${CADENCES.map(c => `<option value="${c.d}" ${c.d === Number(v.cadence) ? "selected" : ""}>${c.label}</option>`).join("")}</select></div>
+      <div><label class="lbl" for="eNext">Next charge due</label><input id="eNext" type="date" value="${v.next || ""}"></div>
+      <div><label class="lbl" for="eCat">Category</label><select id="eCat">${CATS.map(c => `<option value="${c}" ${c === v.cat ? "selected" : ""}>${esc(pretty(c))}</option>`).join("")}</select></div>
+    </div>
+    <div class="btns" style="margin-top:16px"><button class="primary" id="eSave">Save</button>
+      ${isNew || !r.ruleKey ? "" : `<button id="eReset">Undo my edits</button>`}
+      <button id="eCancel">Cancel</button></div>`);
+  $("eSave").onclick = async () => {
+    const name = $("eName").value.trim() || "Untitled";
+    const row = { display_name: name, amount: Number($("eAmt").value) || 0, cadence_days: Number($("eCad").value),
+      next_date: $("eNext").value || null, category: $("eCat").value };
+    if (isNew) { row.match_key = "x:" + Date.now().toString(36); row.status = "manual"; }
+    else if (r.manual) { row.match_key = r.key; row.status = "manual"; }
+    else { row.match_key = r.key; row.status = "confirmed"; }
+    closeModal(); await saveRule(row); toast("Saved");
+  };
+  if ($("eReset")) $("eReset").onclick = async () => { closeModal(); await dropRule(r.ruleKey); toast("Reset to detected values"); };
+  $("eCancel").onclick = closeModal;
+}
+
+function merchantHistory(r) {
+  const rows = S.tx.filter(t => isSpend(t) && (t.merchant_name || t.name || "").trim().toLowerCase() === r.name.trim().toLowerCase());
+  drillTx(r.name, `${r.cadLabel} · about ${money2(r.amount)} each time`, rows);
+}
+
 function renderRecurring() {
-  const rec = detectRecurring(), today = new Date().toISOString().slice(0, 10), in30 = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10);
-  $("rTotal").textContent = money(rec.reduce((s, r) => s + r.avg, 0)); $("rCount").textContent = rec.length;
-  $("rSoon").textContent = money(rec.filter(r => r.next >= today && r.next <= in30).reduce((s, r) => s + r.avg, 0));
-  $("recTbl").innerHTML = rec.length ? `<tr><th>Name</th><th>Category</th><th>Seen</th><th>Next expected</th><th class="num">Amount</th></tr>` +
-    rec.map(r => `<tr><td>${esc(r.name)}</td><td class="mute">${esc(pretty(r.cat))}</td><td class="mute">${r.n} mo</td><td>${r.next}</td><td class="num">${money2(r.avg)}</td></tr>`).join("")
-    : `<tr><td class="mute">Nothing detected yet.</td></tr>`;
+  const { live, maybe, hidden } = recurringList();
+  const today = todayISO(), in30 = new Date(Date.now() + 30 * DAY).toISOString().slice(0, 10);
+  const monthly = live.reduce((s, r) => s + perMonth(r), 0);
+  $("rTotal").textContent = money(monthly);
+  $("rTotalSub").textContent = live.some(r => r.cadence !== 30) ? "weekly and yearly items converted to a monthly figure" : "";
+  $("rCount").textContent = live.length;
+  $("rSoon").textContent = money(live.filter(r => r.next && r.next >= today && r.next <= in30).reduce((s, r) => s + r.amount, 0));
+
+  $("recTbl").innerHTML = live.length ? `<tr><th>Name</th><th>Category</th><th>How often</th><th>Next due</th><th class="num">Amount</th><th></th></tr>` +
+    live.map((r, i) => `<tr data-i="${i}"><td class="tap lnk">${esc(r.name)} ${r.manual ? '<span class="pill">added</span>' : r.edited ? '<span class="pill ok">edited</span>' : ""}</td>
+      <td class="mute">${esc(pretty(r.cat))}</td><td class="mute">${esc(r.cadLabel)}${r.n ? ` · seen ${r.n}×` : ""}</td>
+      <td>${r.next ? esc(r.next) : '<span class="mute">–</span>'}</td><td class="num">${money2(r.amount)}</td>
+      <td class="num"><button class="mini edit" data-i="${i}">Edit</button> <button class="mini del" data-i="${i}" title="Not a recurring charge">&times;</button></td></tr>`).join("")
+    : `<tr><td class="mute">Nothing tracked yet. Add one manually, or confirm a suggestion below.</td></tr>`;
+  $("recTbl").querySelectorAll(".lnk").forEach(td => td.onclick = () => merchantHistory(live[td.parentElement.dataset.i]));
+  $("recTbl").querySelectorAll(".edit").forEach(b => b.onclick = () => recEditor(live[b.dataset.i]));
+  $("recTbl").querySelectorAll(".del").forEach(b => b.onclick = () => {
+    const r = live[b.dataset.i];
+    if (r.manual) return dropRule(r.key);
+    saveRule({ match_key: r.mkey, status: "ignored", display_name: r.name, amount: r.amount, category: r.cat });
+  });
+
+  $("recSuggest").innerHTML = maybe.length ? `<tr><th>Name</th><th>Category</th><th>Pattern</th><th class="num">Typical</th><th></th></tr>` +
+    maybe.slice(0, 12).map((r, i) => `<tr data-i="${i}"><td class="tap lnk2">${esc(r.name)}</td><td class="mute">${esc(pretty(r.cat))}</td>
+      <td class="mute">${esc(r.cadLabel)} · seen ${r.n}×</td><td class="num">${money2(r.amount)}</td>
+      <td class="num"><button class="mini keep" data-i="${i}">Keep</button> <button class="mini no" data-i="${i}" title="Never suggest this">&times;</button></td></tr>`).join("")
+    : `<tr><td class="mute">Nothing on the fence right now.</td></tr>`;
+  $("recSuggest").querySelectorAll(".lnk2").forEach(td => td.onclick = () => merchantHistory(maybe[td.parentElement.dataset.i]));
+  $("recSuggest").querySelectorAll(".keep").forEach(b => { const r = maybe[b.dataset.i];
+    b.onclick = () => saveRule({ match_key: r.key, status: "confirmed", display_name: r.name, amount: r.amount, cadence_days: r.cadence, next_date: r.next, category: r.cat }); });
+  $("recSuggest").querySelectorAll(".no").forEach(b => { const r = maybe[b.dataset.i];
+    b.onclick = () => saveRule({ match_key: r.mkey, status: "ignored", display_name: r.name, amount: r.amount, category: r.cat }); });
+
+  $("recHidden").innerHTML = hidden.length
+    ? hidden.map((r, i) => `<div class="rowline"><span>${esc(r.name)} <span class="mute">${r.amount ? money2(r.amount) : ""}</span></span>
+        <button class="mini back" data-k="${esc(ignoredKeyFor(r))}">Put back</button></div>`).join("")
+    : `<div class="mute">Nothing removed. Anything you take off the list above shows up here so you can put it back.</div>`;
+  $("recHidden").querySelectorAll(".back").forEach(b => b.onclick = () => dropRule(b.dataset.k));
 }
+function ignoredKeyFor(r) {
+  const ign = new Set(S.rules.filter(x => x.status === "ignored").map(x => x.match_key));
+  return ign.has(r.mkey) ? r.mkey : r.key;
+}
+$("addRecBtn").onclick = () => recEditor(null);
 
 // ---------- overview ----------
 function netWorth() {
@@ -340,51 +654,89 @@ function netWorth() {
   S.accts.forEach(x => { const v = Number(x.current_balance || 0); if (["credit", "loan"].includes(x.type)) l += v; else a += v; });
   return { a, l, net: a - l };
 }
+const GROUPS = [["Cash", a => a.type === "depository"], ["Credit cards", a => a.type === "credit"], ["Investments & retirement", a => a.type === "investment"], ["Loans", a => a.type === "loan"], ["Other", a => !["depository", "credit", "investment", "loan"].includes(a.type)]];
+const SUB = { checking: "Checking", savings: "Savings", "credit card": "Credit card", "401k": "401(k)", ira: "IRA", roth: "Roth IRA", brokerage: "Brokerage", "crypto exchange": "Crypto", cd: "CD", "money market": "Money market" };
+
+function netWorthBreakdown() {
+  const n = netWorth();
+  const body = GROUPS.map(([title, f]) => {
+    const list = S.accts.filter(f); if (!list.length) return "";
+    const owed = title === "Credit cards" || title === "Loans";
+    const total = list.reduce((s, a) => s + Number(a.current_balance || 0), 0);
+    return `<div class="group"><h3><span>${title}</span><span class="${owed ? "neg" : ""}">${owed ? "−" : ""}${money(total)}</span></h3>
+      <table>${list.map(a => `<tr><td>${esc(a.nickname || a.name)}</td><td class="mute">${esc(SUB[a.subtype] || a.subtype || a.type)} ${a.mask ? "••" + esc(a.mask) : ""}</td>
+        <td class="num ${owed ? "neg" : ""}">${owed ? "−" : ""}${money2(Number(a.current_balance || 0))}</td></tr>`).join("")}</table></div>`;
+  }).join("") + `<table style="margin-top:14px"><tr><td><b>Assets</b></td><td class="num pos">${money2(n.a)}</td></tr>
+    <tr><td><b>Liabilities</b></td><td class="num neg">−${money2(n.l)}</td></tr>
+    <tr><td><b>Net worth</b></td><td class="num"><b>${money2(n.net)}</b></td></tr></table>`;
+  openModal("Net worth", "What every account adds or takes away right now", body);
+}
+
 function renderOverview() {
   const { min, fullMonths } = coverage();
   const msg = [];
   if (min) msg.push(`Data starts ${min} · ${fullMonths.length} full month${fullMonths.length === 1 ? "" : "s"} of history.`);
-  if (fullMonths.length < 4) msg.push("Budget suggestions get more reliable with 4+ full months — use Settings → Pull more history.");
+  if (fullMonths.length < 4) msg.push("Budget suggestions get more reliable with 4+ full months — use Settings → Import older history.");
   $("coverage").innerHTML = S.tx.length ? `<div class="note">${msg.join(" ")}</div>` : `<div class="note">No data yet. Go to Settings → Link a bank.</div>`;
 
-  const mtx = S.tx.filter(t => t.date.startsWith(S.month));
+  const mtx = monthTx(S.month);
   const spent = mtx.filter(isSpend).reduce((s, t) => s + t.amount, 0);
   const inc = mtx.filter(isIncome).reduce((s, t) => s - t.amount, 0);
   $("kInc").textContent = money(inc); $("kSpent").textContent = money(spent);
   const flow = inc - spent; $("kFlow").textContent = money(flow); $("kFlow").className = "big " + (flow < 0 ? "neg" : "pos");
   $("kRate").textContent = inc ? `${Math.round(flow / inc * 100)}% of income` : "";
   $("kNet").textContent = S.accts.length ? money(netWorth().net) : "–";
+  $("kNetSub").textContent = S.accts.length ? `${S.accts.length} accounts` : "";
 
   const merch = sumBy(mtx.filter(isSpend), t => t.merchant_name || t.name, t => t.amount);
-  $("merchants").innerHTML = Object.entries(merch).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) =>
-    `<div style="display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid var(--line)"><span>${esc(k)}</span><span>${money(v)}</span></div>`).join("") || `<div class="mute">Nothing yet.</div>`;
+  const top = Object.entries(merch).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  $("merchants").innerHTML = top.length ? top.map(([k, v]) =>
+    `<div class="rowline tap" data-m="${esc(k)}"><span>${esc(k)}</span><span>${money(v)}</span></div>`).join("") : `<div class="mute">Nothing yet.</div>`;
+  $("merchants").querySelectorAll("[data-m]").forEach(el => el.onclick = () =>
+    drillTx(el.dataset.m, monthLong(S.month), mtx.filter(t => isSpend(t) && (t.merchant_name || t.name) === el.dataset.m)));
 
-  const rec = detectRecurring();
-  $("recurring").innerHTML = rec.length ? rec.slice(0, 8).map(r =>
-    `<div style="display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid var(--line)"><span>${esc(r.name)} <span class="pill">${r.n} mo</span></span><span>${money2(r.avg)}/mo</span></div>`).join("")
-    + `<div class="mute" style="margin-top:6px">≈ ${money(rec.reduce((s, r) => s + r.avg, 0))}/mo total — see the Recurring tab</div>` : `<div class="mute">Shows up once a charge repeats across 2+ months.</div>`;
+  const { live } = recurringList();
+  $("recurring").innerHTML = live.length ? live.slice(0, 8).map(r =>
+    `<div class="rowline"><span>${esc(r.name)} <span class="pill">${esc(r.cadLabel)}</span></span><span>${money2(r.amount)}</span></div>`).join("")
+    + `<div class="mute" style="margin-top:8px">≈ ${money(live.reduce((s, r) => s + perMonth(r), 0))}/mo total — see the Recurring tab</div>`
+    : `<div class="mute">Nothing tracked yet — see the Recurring tab.</div>`;
   if ($("p-overview").classList.contains("on")) drawCharts();
 }
+$("cardInc").onclick = () => drillTx("Income", monthLong(S.month), monthTx(S.month).filter(isIncome));
+$("cardSpent").onclick = () => drillTx("Everything you spent", monthLong(S.month), monthTx(S.month).filter(isSpend));
+$("cardFlow").onclick = () => drillTx("Money in and out", monthLong(S.month), monthTx(S.month).filter(t => isSpend(t) || isIncome(t)));
+$("cardNet").onclick = netWorthBreakdown;
+
 function chart(id, cfg) {
   if (S.charts[id]) S.charts[id].destroy();
   Chart.defaults.color = "#98a0ab"; Chart.defaults.borderColor = "#252932";
   S.charts[id] = new Chart($(id), { ...cfg, options: { responsive: true, maintainAspectRatio: false, ...(cfg.options || {}) } });
 }
+document.querySelectorAll("[data-nw]").forEach(b => b.onclick = () => {
+  S.nwMode = b.dataset.nw;
+  document.querySelectorAll("[data-nw]").forEach(x => x.classList.toggle("on", x === b));
+  drawCharts();
+});
+
 function drawCharts() {
-  const mtx = S.tx.filter(t => t.date.startsWith(S.month) && isSpend(t));
+  const mtx = monthTx(S.month).filter(isSpend);
   const byCat = Object.entries(sumBy(mtx, eff, t => t.amount)).sort((a, b) => b[1] - a[1]);
   chart("cDonut", { type: "doughnut", data: { labels: byCat.map(c => pretty(c[0])), datasets: [{ data: byCat.map(c => Math.round(c[1])), backgroundColor: COLORS, borderWidth: 0 }] },
-    options: { plugins: { legend: { position: "right", labels: { boxWidth: 10 } } }, cutout: "62%" } });
+    options: { plugins: { legend: { position: "right", labels: { boxWidth: 10 } } }, cutout: "62%",
+      onClick: (e, els) => { if (!els.length) return; const c = byCat[els[0].index][0];
+        drillTx(pretty(c), monthLong(S.month), mtx.filter(t => eff(t) === c)); } } });
 
   const ms = [...S.months].reverse().slice(-6);
-  const inc = ms.map(m => Math.round(S.tx.filter(t => t.date.startsWith(m) && isIncome(t)).reduce((s, t) => s - t.amount, 0)));
-  const sp = ms.map(m => Math.round(S.tx.filter(t => t.date.startsWith(m) && isSpend(t)).reduce((s, t) => s + t.amount, 0)));
+  const inc = ms.map(m => Math.round(monthTx(m).filter(isIncome).reduce((s, t) => s - t.amount, 0)));
+  const sp = ms.map(m => Math.round(monthTx(m).filter(isSpend).reduce((s, t) => s + t.amount, 0)));
   chart("cTrend", { type: "bar", data: { labels: ms.map(monthLabel), datasets: [{ label: "Income", data: inc, backgroundColor: "#4ade80" }, { label: "Spending", data: sp, backgroundColor: "#f87171" }] },
-    options: { plugins: { legend: { position: "bottom" } } } });
+    options: { plugins: { legend: { position: "bottom" } },
+      onClick: (e, els) => { if (!els.length) return; const m = ms[els[0].index];
+        drillTx(els[0].datasetIndex === 0 ? "Income" : "Spending", monthLong(m), monthTx(m).filter(els[0].datasetIndex === 0 ? isIncome : isSpend)); } } });
 
   const [y, mo] = S.month.split("-").map(Number), days = new Date(y, mo, 0).getDate();
   const daily = Array(days).fill(0); mtx.forEach(t => daily[Number(t.date.slice(8, 10)) - 1] += t.amount);
-  const nowM = new Date().toISOString().slice(0, 7), today = S.month === nowM ? new Date().getDate() : days;
+  const nowM = todayISO().slice(0, 7), today = S.month === nowM ? new Date().getDate() : days;
   let run = 0; const cum = daily.map((v, i) => i < today ? (run += v) : null);
   const bTotal = S.budgets.reduce((s, b) => s + Number(b.monthly_amount || 0), 0);
   chart("cPace", { type: "line", data: { labels: daily.map((_, i) => i + 1), datasets: [
@@ -392,24 +744,46 @@ function drawCharts() {
     ...(bTotal ? [{ label: "Budget pace", data: daily.map((_, i) => Math.round(bTotal * (i + 1) / days)), borderColor: "#f59e0b", borderDash: [5, 4], pointRadius: 0 }] : []) ] },
     options: { plugins: { legend: { position: "bottom" } } } });
 
-  // Net worth history: start from today's balances and walk backward through cash/credit transactions.
-  // Investment accounts have no transaction feed, so they're held at today's value.
-  const nwNow = netWorth().net, typeOf = Object.fromEntries(S.accts.map(a => [a.account_id, a.type]));
-  const byDay = {}; S.tx.forEach(t => { if (["depository", "credit", "loan"].includes(typeOf[t.account_id])) byDay[t.date] = (byDay[t.date] || 0) + t.amount; });
-  const start = S.tx.length ? S.tx[S.tx.length - 1].date : null, todayS = new Date().toISOString().slice(0, 10), labels = [], vals = [];
-  if (start) { let cur = nwNow; for (let d = new Date(todayS + "T12:00:00"); d.toISOString().slice(0, 10) >= start; d.setDate(d.getDate() - 1)) {
-    const k = d.toISOString().slice(0, 10); labels.push(k); vals.push(Math.round(cur)); cur += (byDay[k] || 0); } labels.reverse(); vals.reverse(); }
-  $("netNote").textContent = start ? "Reconstructed from your transaction history. Retirement/brokerage accounts are held at today's value." : "";
+  drawNetWorth();
+}
+
+/** Walk today's balances backward through cash and card activity. */
+function drawNetWorth() {
+  const cashOnly = S.nwMode === "cash";
+  const typeOf = Object.fromEntries(S.accts.map(a => [a.account_id, a.type]));
+  const walkable = ["depository", "credit", "loan"];
+  let nowVal = 0;
+  S.accts.forEach(a => {
+    const v = Number(a.current_balance || 0);
+    if (cashOnly && a.type === "investment") return;
+    if (["credit", "loan"].includes(a.type)) nowVal -= v; else nowVal += v;
+  });
+  const byDay = {};
+  S.tx.forEach(t => { if (walkable.includes(typeOf[t.account_id])) byDay[t.date] = (byDay[t.date] || 0) + t.amount; });
+  const start = S.tx.length ? S.tx[S.tx.length - 1].date : null, labels = [], vals = [];
+  if (start) {
+    let cur = nowVal;
+    for (let d = dnum(todayISO()); d >= dnum(start); d--) {
+      const k = new Date(d * DAY).toISOString().slice(0, 10);
+      labels.push(k); vals.push(Math.round(cur)); cur += (byDay[k] || 0);
+    }
+    labels.reverse(); vals.reverse();
+  }
+  const invTotal = S.accts.filter(a => a.type === "investment").reduce((s, a) => s + Number(a.current_balance || 0), 0);
+  $("netNote").textContent = !start ? "" : cashOnly
+    ? "Cash minus credit cards and loans, rebuilt from your transactions. This line is exact."
+    : `Rebuilt from your transactions. Brokerage and retirement accounts (${money(invTotal)}) are held flat at today's value because Plaid does not provide their past balances — switch to "Cash & debt" for the exact line, or see Investments.`;
   chart("cNet", { type: "line", data: { labels, datasets: [{ label: "Net worth", data: vals, borderColor: "#60a5fa", fill: true, backgroundColor: "rgba(96,165,250,.12)", pointRadius: 0, tension: .2 }] },
-    options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 8 } } } } });
+    options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 8 } } },
+      onClick: netWorthBreakdown } });
 }
 
 // ---------- budget ----------
 function renderBudget() {
   const { fullMonths } = coverage();
   const avg = {};
-  fullMonths.forEach(m => S.tx.filter(t => t.date.startsWith(m) && isSpend(t)).forEach(t => avg[eff(t)] = (avg[eff(t)] || 0) + t.amount / fullMonths.length));
-  const spent = sumBy(S.tx.filter(t => t.date.startsWith(S.month) && isSpend(t)), eff, t => t.amount);
+  fullMonths.forEach(m => monthTx(m).filter(isSpend).forEach(t => avg[eff(t)] = (avg[eff(t)] || 0) + t.amount / fullMonths.length));
+  const spent = sumBy(monthTx(S.month).filter(isSpend), eff, t => t.amount);
   const bud = Object.fromEntries(S.budgets.map(b => [b.category, Number(b.monthly_amount)]));
   const cats = [...new Set([...Object.keys(avg), ...Object.keys(spent), ...Object.keys(bud)])].sort((a, b) => (avg[b] || spent[b] || 0) - (avg[a] || spent[a] || 0));
   S.suggest = Object.fromEntries(cats.map(c => [c, avg[c] ? Math.ceil(avg[c] / 10) * 10 : 0]));
@@ -420,11 +794,13 @@ function renderBudget() {
   $("budTbl").innerHTML = `<tr><th>Category</th><th class="num">Avg / mo</th><th class="num">Suggested</th><th class="num">This month</th><th>Progress</th><th class="num">Budget</th></tr>` +
     cats.map(c => {
       const s = spent[c] || 0, b = bud[c] || 0, pct = b ? Math.min(100, s / b * 100) : 0, cls = b && s > b ? "over" : b && s > b * .85 ? "warn" : "";
-      return `<tr><td>${esc(pretty(c))}</td><td class="num mute">${avg[c] ? money(avg[c]) : "–"}</td><td class="num">${S.suggest[c] ? money(S.suggest[c]) : "–"}</td>
+      return `<tr><td class="tap bcat" data-c="${esc(c)}">${esc(pretty(c))}</td><td class="num mute">${avg[c] ? money(avg[c]) : "–"}</td><td class="num">${S.suggest[c] ? money(S.suggest[c]) : "–"}</td>
         <td class="num">${money(s)}</td><td style="min-width:110px"><div class="bar ${cls}"><i style="width:${pct}%"></i></div></td>
         <td class="num"><input class="bud" data-cat="${esc(c)}" type="number" min="0" step="10" value="${b || ""}" style="width:90px"></td></tr>`;
     }).join("") + `<tr><td><b>Total</b></td><td class="num">${money(totA)}</td><td class="num">${money(Object.values(S.suggest).reduce((a, b) => a + b, 0))}</td><td class="num"><b>${money(totS)}</b></td><td></td><td class="num"><b>${money(totB)}</b></td></tr>`;
-  document.querySelectorAll(".bud").forEach(i => i.onchange = () => saveBudget(i.dataset.cat, Number(i.value) || 0));
+  $("budTbl").querySelectorAll(".bud").forEach(i => i.onchange = () => saveBudget(i.dataset.cat, Number(i.value) || 0));
+  $("budTbl").querySelectorAll(".bcat").forEach(td => td.onclick = () =>
+    drillTx(pretty(td.dataset.c), monthLong(S.month), monthTx(S.month).filter(t => isSpend(t) && eff(t) === td.dataset.c)));
 }
 async function saveBudget(cat, amt, quiet) {
   const { error } = await db.from("budgets").upsert({ category: cat, monthly_amount: amt, updated_at: new Date().toISOString() }, { onConflict: "category" });
@@ -439,10 +815,14 @@ $("applyAll").onclick = async () => {
 
 // ---------- transactions ----------
 function setupFilters() {
-  if ($("fCat").options.length) return;
+  const sig = S.accts.length + "|" + S.months.length;
+  if (S.filterSig === sig) return;
+  S.filterSig = sig;
+  const keep = { m: $("fMonth").value, c: $("fCat").value, a: $("fAcct").value };
   $("fMonth").innerHTML = `<option value="">All months</option>` + S.months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join("");
   $("fCat").innerHTML = `<option value="">All categories</option>` + CATS.map(c => `<option value="${c}">${esc(pretty(c))}</option>`).join("");
   $("fAcct").innerHTML = `<option value="">All accounts</option>` + S.accts.map(a => `<option value="${esc(a.account_id)}">${esc(a.nickname || a.name)} ${a.mask ? "••" + esc(a.mask) : ""}</option>`).join("");
+  $("fMonth").value = keep.m; $("fCat").value = keep.c; $("fAcct").value = keep.a;
   ["fSearch", "fMonth", "fCat", "fAcct", "fHide"].forEach(id => $(id).oninput = () => { S.page = 0; renderTxns(); });
 }
 const PAGE = 50;
@@ -451,61 +831,212 @@ function renderTxns() {
   const q = $("fSearch").value.toLowerCase(), m = $("fMonth").value, c = $("fCat").value, a = $("fAcct").value, hide = $("fHide").checked;
   const list = S.tx.filter(t => (!m || t.date.startsWith(m)) && (!c || eff(t) === c) && (!a || t.account_id === a) && (!hide || !(isOut(t) || EXCL.has(eff(t))))
     && (!q || (t.merchant_name || t.name || "").toLowerCase().includes(q)));
-  const acctName = Object.fromEntries(S.accts.map(x => [x.account_id, x.nickname || x.name]));
   const pages = Math.max(1, Math.ceil(list.length / PAGE)); S.page = Math.min(S.page, pages - 1);
   $("txTbl").innerHTML = `<tr><th>Date</th><th>Merchant</th><th>Account</th><th>Category</th><th class="num">Amount</th></tr>` +
     list.slice(S.page * PAGE, S.page * PAGE + PAGE).map(t =>
-      `<tr><td class="mute">${esc(t.date)}</td><td>${esc(t.merchant_name || t.name)}${t.pending ? ' <span class="pill">pending</span>' : ""}</td><td class="mute">${esc(acctName[t.account_id] || "")}</td>
+      `<tr><td class="mute">${esc(t.date)}</td><td>${esc(t.merchant_name || t.name)}${t.pending ? ' <span class="pill">pending</span>' : ""}</td><td class="mute">${esc(acctName(t.account_id))}</td>
        <td><select class="cat" data-tx="${esc(t.transaction_id)}">${[...new Set([eff(t), ...CATS])].map(x => `<option value="${x}" ${x === eff(t) ? "selected" : ""}>${esc(pretty(x))}</option>`).join("")}</select></td>
        <td class="num ${t.amount < 0 ? "pos" : ""}">${money2(-t.amount)}</td></tr>`).join("");
   $("pgInfo").textContent = `${list.length} transactions · page ${S.page + 1}/${pages}`;
   $("pgPrev").disabled = S.page === 0; $("pgNext").disabled = S.page >= pages - 1;
-  document.querySelectorAll(".cat").forEach(s => s.onchange = async () => {
+  $("txTbl").querySelectorAll(".cat").forEach(s => s.onchange = async () => {
     const { error } = await db.from("transactions").update({ user_category: s.value }).eq("transaction_id", s.dataset.tx);
     if (error) return toast(error.message);
-    S.tx.find(t => t.transaction_id === s.dataset.tx).user_category = s.value; renderOverview(); renderBudget(); toast("Re-categorized");
+    S.tx.find(t => t.transaction_id === s.dataset.tx).user_category = s.value;
+    renderOverview(); renderBudget(); renderTrends(); toast("Re-categorized");
   });
 }
 $("pgPrev").onclick = () => { S.page--; renderTxns(); };
 $("pgNext").onclick = () => { S.page++; renderTxns(); };
 
 // ---------- accounts ----------
-const GROUPS = [["Cash", a => a.type === "depository"], ["Credit cards", a => a.type === "credit"], ["Investments & retirement", a => a.type === "investment"], ["Loans", a => a.type === "loan"], ["Other", a => !["depository", "credit", "investment", "loan"].includes(a.type)]];
-const SUB = { checking: "Checking", savings: "Savings", "credit card": "Credit card", "401k": "401(k)", ira: "IRA", roth: "Roth IRA", brokerage: "Brokerage", "crypto exchange": "Crypto", "cd": "CD", "money market": "Money market" };
+function acctDetail(id) {
+  const a = S.accts.find(x => x.account_id === id); if (!a) return;
+  const rows = S.tx.filter(t => t.account_id === id).slice(0, 200);
+  const snaps = S.snaps.filter(s => s.account_id === id).sort((x, y) => x.snap_date < y.snap_date ? -1 : 1);
+  const hist = snaps.length > 1 ? `<table style="margin-bottom:14px"><tr><th>Date</th><th class="num">Balance</th></tr>
+    ${snaps.slice(-10).reverse().map(s => `<tr><td class="mute">${esc(s.snap_date)}</td><td class="num">${money2(Number(s.current_balance || 0))}</td></tr>`).join("")}</table>` : "";
+  const body = `<div class="rowline"><span class="mute">Balance now</span><b>${money2(Number(a.current_balance || 0))}</b></div>
+    ${a.available_balance != null ? `<div class="rowline"><span class="mute">Available</span><span>${money2(Number(a.available_balance))}</span></div>` : ""}
+    <div class="rowline" style="margin-bottom:14px"><span class="mute">Type</span><span>${esc(SUB[a.subtype] || a.subtype || a.type)}</span></div>
+    ${hist}
+    <h2>Recent transactions</h2>
+    ${rows.length ? `<div class="scroll"><table><tr><th>Date</th><th>Merchant</th><th class="num">Amount</th></tr>
+      ${rows.slice(0, 40).map(t => `<tr><td class="mute">${esc(t.date)}</td><td>${esc(t.merchant_name || t.name)}</td><td class="num ${t.amount < 0 ? "pos" : ""}">${money2(-t.amount)}</td></tr>`).join("")}</table></div>`
+      : `<div class="mute">No transactions for this account.</div>`}`;
+  openModal(a.nickname || a.name, (a.mask ? "••" + a.mask + " · " : "") + (SUB[a.subtype] || a.subtype || a.type), body);
+}
 function renderAccts() {
   const n = netWorth();
   $("aAssets").textContent = money(n.a); $("aLiab").textContent = money(n.l); $("aNet").textContent = money(n.net);
   $("acctGroups").innerHTML = GROUPS.map(([title, f]) => {
     const list = S.accts.filter(f); if (!list.length) return "";
+    const owed = title === "Credit cards" || title === "Loans";
     const total = list.reduce((s, a) => s + Number(a.current_balance || 0), 0);
-    return `<div class="group"><h3><span>${title}</span><span class="${title === "Credit cards" || title === "Loans" ? "neg" : ""}">${title === "Credit cards" || title === "Loans" ? "owed " : ""}${money(total)}</span></h3>
+    return `<div class="group"><h3><span>${title}</span><span class="${owed ? "neg" : ""}">${owed ? "owed " : ""}${money(total)}</span></h3>
       <table>${list.map(a => `<tr><td><input class="nick" data-id="${esc(a.account_id)}" value="${esc(a.nickname || a.name)}" style="width:100%;max-width:300px"></td>
-        <td class="mute">${esc(SUB[a.subtype] || a.subtype || a.type)} ${a.mask ? "••" + esc(a.mask) : ""}</td><td class="num">${money2(Number(a.current_balance || 0))}</td></tr>`).join("")}</table></div>`;
+        <td class="mute">${esc(SUB[a.subtype] || a.subtype || a.type)} ${a.mask ? "••" + esc(a.mask) : ""}</td>
+        <td class="num">${money2(Number(a.current_balance || 0))}</td>
+        <td class="num"><button class="mini adet" data-id="${esc(a.account_id)}">Details</button></td></tr>`).join("")}</table></div>`;
   }).join("") || `<div class="mute">No accounts linked yet.</div>`;
-  document.querySelectorAll(".nick").forEach(i => i.onchange = async () => {
+  $("acctGroups").querySelectorAll(".nick").forEach(i => i.onchange = async () => {
     const { error } = await db.from("accounts").update({ nickname: i.value.trim() || null }).eq("account_id", i.dataset.id);
     if (error) return toast(error.message);
     S.accts.find(a => a.account_id === i.dataset.id).nickname = i.value.trim() || null; toast("Renamed");
   });
+  $("acctGroups").querySelectorAll(".adet").forEach(b => b.onclick = () => acctDetail(b.dataset.id));
 }
 
+// ---------- investments ----------
+const invAccts = () => S.accts.filter(a => a.type === "investment");
+function renderInvest() {
+  const accts = invAccts();
+  const value = accts.reduce((s, a) => s + Number(a.current_balance || 0), 0);
+  const withCost = S.holdings.filter(h => h.cost_basis != null);
+  const cost = withCost.reduce((s, h) => s + Number(h.cost_basis || 0), 0);
+  const costValue = withCost.reduce((s, h) => s + Number(h.value || 0), 0);
+  const gain = costValue - cost;
+  $("iValue").textContent = accts.length ? money(value) : "–";
+  $("iCost").textContent = cost ? money(cost) : "–";
+  $("iGain").textContent = cost ? money(gain) : "–";
+  $("iGain").className = "big " + (cost ? (gain < 0 ? "neg" : "pos") : "");
+  $("iGainPct").textContent = cost ? `${gain < 0 ? "" : "+"}${(gain / cost * 100).toFixed(1)}% on positions with a known cost` : "";
+
+  $("invEmpty").innerHTML = !accts.length
+    ? `<div class="note">No investment accounts linked yet. Use Settings → Link a brokerage.</div>`
+    : !S.holdings.length
+      ? `<div class="note">Your brokerages are linked for transactions only, so Headroom cannot see what you hold.
+         Go to <b>Settings → Link a brokerage (with holdings)</b> and connect Fidelity and Robinhood again to pull positions and cost basis.
+         Remove the old connection afterwards so accounts are not listed twice.</div>`
+      : "";
+
+  $("iAccts").innerHTML = accts.length ? accts.map(a => {
+    const hs = S.holdings.filter(h => h.account_id === a.account_id);
+    const hv = hs.reduce((s, h) => s + Number(h.value || 0), 0);
+    const hc = hs.filter(h => h.cost_basis != null).reduce((s, h) => s + Number(h.cost_basis || 0), 0);
+    const hcv = hs.filter(h => h.cost_basis != null).reduce((s, h) => s + Number(h.value || 0), 0);
+    const g = hcv - hc;
+    return `<div class="rowline tap" data-id="${esc(a.account_id)}">
+      <span>${esc(a.nickname || a.name)} <span class="mute">${esc(SUB[a.subtype] || a.subtype || "")}</span></span>
+      <span>${money2(Number(a.current_balance || 0))} ${hc ? `<span class="${g < 0 ? "neg" : "pos"}">${g < 0 ? "" : "+"}${money(g)}</span>` : hs.length ? "" : '<span class="mute">no positions</span>'}</span></div>`;
+  }).join("") : `<div class="mute">Nothing linked.</div>`;
+  $("iAccts").querySelectorAll("[data-id]").forEach(el => el.onclick = () => invAcctDetail(el.dataset.id));
+
+  const hs = [...S.holdings].sort((a, b) => Number(b.value || 0) - Number(a.value || 0));
+  $("invHoldings").innerHTML = hs.length ? `<tr><th>Holding</th><th>Account</th><th class="num">Shares</th><th class="num">Price</th><th class="num">Value</th><th class="num">Cost</th><th class="num">Gain</th></tr>` +
+    hs.map(h => { const g = h.cost_basis != null ? Number(h.value || 0) - Number(h.cost_basis) : null;
+      return `<tr><td>${esc(h.ticker || h.security_name || "–")}${h.ticker && h.security_name ? `<div class="mute">${esc(h.security_name)}</div>` : ""}</td>
+        <td class="mute">${esc(acctName(h.account_id))}</td><td class="num">${h.quantity != null ? Number(h.quantity).toLocaleString("en-US", { maximumFractionDigits: 4 }) : "–"}</td>
+        <td class="num">${h.price != null ? money2(Number(h.price)) : "–"}</td><td class="num">${money2(Number(h.value || 0))}</td>
+        <td class="num mute">${h.cost_basis != null ? money2(Number(h.cost_basis)) : "–"}</td>
+        <td class="num ${g == null ? "" : g < 0 ? "neg" : "pos"}">${g == null ? "–" : (g < 0 ? "" : "+") + money2(g)}</td></tr>`; }).join("")
+    : `<tr><td class="mute">No positions pulled yet.</td></tr>`;
+
+  $("invTx").innerHTML = S.invtx.length ? `<tr><th>Date</th><th>Account</th><th>What</th><th class="num">Amount</th></tr>` +
+    S.invtx.slice(0, 60).map(t => `<tr><td class="mute">${esc(t.date)}</td><td class="mute">${esc(acctName(t.account_id))}</td>
+      <td>${esc(t.name || t.security_name || t.type || "")} ${t.subtype ? `<span class="pill">${esc(t.subtype)}</span>` : ""}</td>
+      <td class="num ${Number(t.amount) < 0 ? "pos" : ""}">${money2(Math.abs(Number(t.amount || 0)))}</td></tr>`).join("")
+    : `<tr><td class="mute">No investment activity pulled yet.</td></tr>`;
+
+  if ($("p-invest").classList.contains("on")) drawInvChart();
+}
+function invAcctDetail(id) {
+  const a = S.accts.find(x => x.account_id === id); if (!a) return;
+  const hs = S.holdings.filter(h => h.account_id === id).sort((x, y) => Number(y.value || 0) - Number(x.value || 0));
+  const body = `<div class="rowline"><span class="mute">Value now</span><b>${money2(Number(a.current_balance || 0))}</b></div>
+    <div style="margin-top:14px"></div>
+    ${hs.length ? `<div class="scroll"><table><tr><th>Holding</th><th class="num">Shares</th><th class="num">Value</th><th class="num">Cost</th><th class="num">Gain</th></tr>
+      ${hs.map(h => { const g = h.cost_basis != null ? Number(h.value || 0) - Number(h.cost_basis) : null;
+        return `<tr><td>${esc(h.ticker || h.security_name || "–")}</td><td class="num">${h.quantity != null ? Number(h.quantity).toLocaleString("en-US", { maximumFractionDigits: 4 }) : "–"}</td>
+        <td class="num">${money2(Number(h.value || 0))}</td><td class="num mute">${h.cost_basis != null ? money2(Number(h.cost_basis)) : "–"}</td>
+        <td class="num ${g == null ? "" : g < 0 ? "neg" : "pos"}">${g == null ? "–" : (g < 0 ? "" : "+") + money2(g)}</td></tr>`; }).join("")}</table></div>`
+      : `<div class="mute">No positions for this account yet. Re-link it from Settings with holdings enabled.</div>`}`;
+  openModal(a.nickname || a.name, SUB[a.subtype] || a.subtype || "", body);
+}
+function drawInvChart() {
+  const accts = invAccts();
+  const dates = [...new Set(S.snaps.filter(s => accts.some(a => a.account_id === s.account_id)).map(s => s.snap_date))].sort();
+  const sets = accts.map((a, i) => ({
+    label: a.nickname || a.name,
+    data: dates.map(d => { const s = S.snaps.find(x => x.account_id === a.account_id && x.snap_date === d); return s ? Math.round(Number(s.current_balance || 0)) : null; }),
+    borderColor: COLORS[i % COLORS.length], backgroundColor: COLORS[i % COLORS.length], pointRadius: 3, tension: .2, spanGaps: true,
+  }));
+  $("invNote").textContent = !dates.length ? "No balance history recorded yet."
+    : dates.length < 2 ? `Only ${dates[0]} recorded so far. Headroom saves each account's value on every sync, so this chart fills in from here. Plaid cannot supply past brokerage balances, which is why there is no back-history.`
+    : `Recorded on each sync since ${dates[0]}.`;
+  chart("cInv", { type: "line", data: { labels: dates, datasets: sets },
+    options: { plugins: { legend: { position: "bottom", labels: { boxWidth: 10 } } }, scales: { x: { ticks: { maxTicksLimit: 8 } } } } });
+}
+
+$("refreshInv").onclick = async () => {
+  toast("Pulling positions\u2026");
+  try {
+    const r = await fn({ action: "investments" });
+    await load();
+    const bad = (r.results || []).filter(x => x.note);
+    const got = (r.results || []).reduce((s2, x) => s2 + (x.holdings || 0), 0);
+    toast(got ? `Pulled ${got} positions` : bad.length ? "Nothing pulled \u2014 " + bad[0].note : "Nothing to pull");
+  } catch (e) { toast(e.message); }
+};
+
 // ---------- goals ----------
+function goalSaved(g) {
+  if (g.account_id) { const a = S.accts.find(x => x.account_id === g.account_id); if (a) return Number(a.current_balance || 0); }
+  return Number(g.current_amount || 0);
+}
 function renderGoals() {
-  $("goals").innerHTML = S.goals.length ? S.goals.map(g => {
-    const pct = g.target_amount ? Math.min(100, g.current_amount / g.target_amount * 100) : 0;
-    return `<div class="goal" data-id="${g.id}"><div><input class="g-name" value="${esc(g.name)}"><div class="bar" style="margin-top:6px"><i style="width:${pct}%"></i></div><div class="mute">${Math.round(pct)}%</div></div>
-      <input class="g-cur" type="number" value="${g.current_amount}"><input class="g-tgt" type="number" value="${g.target_amount ?? ""}"><input class="g-date" type="date" value="${g.target_date ?? ""}">
-      <button class="g-del" title="Delete">×</button></div>`;
-  }).join("") : `<div class="mute">No goals yet.</div>`;
-  document.querySelectorAll(".goal").forEach(el => {
+  if (!S.goals.length) { $("goals").innerHTML = `<div class="mute">No goals yet. Add one to start tracking.</div>`; return; }
+  $("goals").innerHTML = S.goals.map(g => {
+    const saved = goalSaved(g), target = Number(g.target_amount || 0);
+    const pct = target ? Math.min(100, saved / target * 100) : 0;
+    const left = Math.max(0, target - saved);
+    let pace = "";
+    if (g.target_date && left > 0) {
+      const months = Math.max(0, (dnum(g.target_date) - dnum(todayISO())) / 30.44);
+      pace = months >= 0.5 ? `Save ${money(left / months)}/month to hit this by ${g.target_date}.`
+        : `Target date ${g.target_date} is here — ${money(left)} still to go.`;
+    } else if (left === 0 && target) pace = "Goal reached.";
+    return `<div class="goalcard" data-id="${g.id}">
+      <div class="goalhead"><input class="g-name" value="${esc(g.name)}" style="font-size:16px;font-weight:600;flex:1;min-width:140px" aria-label="Goal name">
+        <button class="mini g-del" title="Delete this goal">Delete</button></div>
+      <div class="fields">
+        <div><label class="lbl">Amount saved so far</label>
+          <input class="g-cur" type="number" step="1" value="${saved}" ${g.account_id ? "disabled" : ""}></div>
+        <div><label class="lbl">Total you need</label><input class="g-tgt" type="number" step="1" value="${g.target_amount ?? ""}"></div>
+        <div><label class="lbl">Date you want it by</label><input class="g-date" type="date" value="${g.target_date ?? ""}"></div>
+        <div><label class="lbl">Track balance from</label>
+          <select class="g-acct"><option value="">Type the amount myself</option>
+            ${S.accts.filter(a => ["depository", "investment"].includes(a.type)).map(a =>
+              `<option value="${esc(a.account_id)}" ${g.account_id === a.account_id ? "selected" : ""}>${esc(a.nickname || a.name)} ${a.mask ? "••" + esc(a.mask) : ""}</option>`).join("")}</select></div>
+      </div>
+      <div class="bar" style="margin-top:14px"><i style="width:${pct}%"></i></div>
+      <div class="gsum"><span>${money(saved)} of ${target ? money(target) : "—"} · <b>${Math.round(pct)}%</b>${target ? ` · ${money(left)} to go` : ""}</span>
+        <span class="mute">${esc(pace)}</span></div>
+    </div>`;
+  }).join("");
+  $("goals").querySelectorAll(".goalcard").forEach(el => {
     const id = el.dataset.id;
-    el.querySelectorAll("input").forEach(i => i.onchange = async () => {
-      const patch = { name: el.querySelector(".g-name").value, current_amount: Number(el.querySelector(".g-cur").value) || 0,
-        target_amount: el.querySelector(".g-tgt").value === "" ? null : Number(el.querySelector(".g-tgt").value), target_date: el.querySelector(".g-date").value || null };
-      const { error } = await db.from("goals").update(patch).eq("id", id); if (error) return toast(error.message);
-      Object.assign(S.goals.find(g => g.id === id), patch); renderGoals(); toast("Goal saved");
-    });
-    el.querySelector(".g-del").onclick = async () => { await db.from("goals").update({ active: false }).eq("id", id); S.goals = S.goals.filter(g => g.id !== id); renderGoals(); };
+    const save = async () => {
+      const acct = el.querySelector(".g-acct").value || null;
+      const patch = {
+        name: el.querySelector(".g-name").value.trim() || "Untitled goal",
+        current_amount: Number(el.querySelector(".g-cur").value) || 0,
+        target_amount: el.querySelector(".g-tgt").value === "" ? null : Number(el.querySelector(".g-tgt").value),
+        target_date: el.querySelector(".g-date").value || null,
+        account_id: acct,
+      };
+      const { error } = await db.from("goals").update(patch).eq("id", id);
+      if (error) return toast(error.message);
+      Object.assign(S.goals.find(g => g.id === id), patch);
+      renderGoals(); toast("Goal saved");
+    };
+    el.querySelectorAll("input, select").forEach(i => i.onchange = save);
+    el.querySelector(".g-del").onclick = async () => {
+      if (!confirm("Delete this goal?")) return;
+      const { error } = await db.from("goals").update({ active: false }).eq("id", id);
+      if (error) return toast(error.message);
+      S.goals = S.goals.filter(g => g.id !== id); renderGoals(); toast("Goal deleted");
+    };
   });
 }
 $("addGoal").onclick = async () => {
@@ -521,6 +1052,22 @@ function renderSettings() {
   sel.innerHTML = S.accts.filter(a => ["depository", "credit"].includes(a.type)).map(a => `<option value="${esc(a.account_id)}">${esc(a.nickname || a.name)} ••${esc(a.mask || "")}</option>`).join("");
   if (cur) sel.value = cur;
 }
+async function loadItems() {
+  $("itemList").innerHTML = `<div class="mute">Loading connections…</div>`;
+  try {
+    const { items } = await fn({ action: "items" });
+    $("itemList").innerHTML = items.length ? items.map(i => `<div class="rowline">
+      <span>${esc(i.institution || "Bank")} <span class="mute">${i.accounts} account${i.accounts === 1 ? "" : "s"}${i.has_investment ? " · brokerage" : ""}</span></span>
+      <button class="mini danger rm" data-id="${esc(i.item_id)}" data-n="${esc(i.institution || "this bank")}">Remove</button></div>`).join("")
+      : `<div class="mute">No banks linked yet.</div>`;
+    $("itemList").querySelectorAll(".rm").forEach(b => b.onclick = async () => {
+      if (!confirm(`Disconnect ${b.dataset.n}? Its accounts and transactions are removed from Headroom. Budgets and goals are kept.`)) return;
+      toast("Disconnecting…");
+      try { await fn({ action: "remove_item", item_id: b.dataset.id }); await load(); await loadItems(); toast("Disconnected"); }
+      catch (e) { toast(e.message); }
+    });
+  } catch (e) { $("itemList").innerHTML = `<div class="mute">Could not load connections: ${esc(e.message)}</div>`; }
+}
 async function fn(body) {
   const { data: { session } } = await db.auth.getSession();
   const r = await fetch(`${SUPABASE_URL}/functions/v1/plaid`, { method: "POST",
@@ -531,24 +1078,33 @@ const REDIRECT = location.origin + location.pathname;
 function openLink(token, receivedRedirectUri) {
   const cfg = { token,
     onSuccess: async (public_token, meta) => {
-      toast("Linking… pulling your transactions (can take a minute)");
-      try { await fn({ action: "exchange", public_token, institution_name: meta.institution?.name }); await load(); toast("Bank linked"); }
+      toast("Linking… pulling your data (can take a minute)");
+      try { await fn({ action: "exchange", public_token, institution_name: meta.institution?.name }); await load(); await loadItems(); toast("Linked"); }
       catch (e) { toast(e.message); } },
     onExit: err => { if (err) toast(err.display_message || err.error_message || "Link closed"); } };
   if (receivedRedirectUri) cfg.receivedRedirectUri = receivedRedirectUri;
   Plaid.create(cfg).open();
 }
-async function startLink() {
-  try { const { link_token } = await fn({ action: "link_token", redirect_uri: REDIRECT }); localStorage.setItem("plaid_link_token", link_token); openLink(link_token); }
-  catch (e) { toast(e.message); }
+async function startLink(investments) {
+  try {
+    const { link_token } = await fn({ action: "link_token", redirect_uri: REDIRECT, investments: !!investments });
+    localStorage.setItem("plaid_link_token", link_token); openLink(link_token);
+  } catch (e) { toast(e.message); }
 }
 function resumeOAuth() { if (location.search.includes("oauth_state_id")) { const t = localStorage.getItem("plaid_link_token"); if (t) openLink(t, location.href); } }
-$("linkBtn").onclick = startLink;
-async function doSync() { toast("Syncing…"); try { await fn({ action: "sync" }); await load(); toast("Up to date"); } catch (e) { toast(e.message); } }
+$("linkBtn").onclick = () => startLink(false);
+$("linkInvBtn").onclick = () => startLink(true);
+async function doSync() {
+  toast("Syncing…");
+  try { const r = await fn({ action: "sync" }); await load();
+    const notes = (r.synced || []).filter(x => x.error).map(x => x.error);
+    toast(notes.length ? "Synced, with issues: " + notes[0] : "Up to date");
+  } catch (e) { toast(e.message); }
+}
 $("syncBtn").onclick = doSync; $("syncBtn2").onclick = doSync;
 $("resetBtn").onclick = async () => {
   if (!confirm("This disconnects all banks and clears pulled transactions. Budgets and goals are kept. Continue?")) return;
-  try { await fn({ action: "reset", confirm: "RESET" }); await load(); toast("Cleared. Now link each bank again."); startLink(); } catch (e) { toast(e.message); }
+  try { await fn({ action: "reset", confirm: "RESET" }); await load(); toast("Cleared. Now link each bank again."); startLink(false); } catch (e) { toast(e.message); }
 };
 
 // ---------- CSV import ----------
