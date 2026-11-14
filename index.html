@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>flow. dashboard</title>
+<style>
+:root{--bg:#0f1115;--card:#181b22;--line:#262a33;--text:#e8eaed;--mute:#9aa0aa;--accent:#4ade80;--warn:#f59e0b;--bad:#f87171}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 -apple-system,Segoe UI,Roboto,sans-serif}
+h1{font-size:22px;margin:0}h1 span{color:var(--accent)}
+h2{font-size:15px;margin:0 0 12px;color:var(--mute);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.wrap{max-width:1000px;margin:0 auto;padding:20px 16px 60px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button,select,input{font:inherit;color:var(--text)}
+button{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}button.primary{background:var(--accent);color:#06240f;border-color:var(--accent);font-weight:600}
+input,select{background:#0f1115;border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.grid .card{margin:0}.big{font-size:26px;font-weight:700}.mute{color:var(--mute);font-size:13px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:4px}.bar>i{display:block;height:100%;background:var(--accent)}
+.bar.over>i{background:var(--bad)}.bar.warn>i{background:var(--warn)}
+.row{display:grid;grid-template-columns:1.3fr 1fr 110px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+table{width:100%;border-collapse:collapse}td,th{padding:7px 6px;border-top:1px solid var(--line);text-align:left;font-size:14px}th{color:var(--mute);font-weight:500}
+td.num,th.num{text-align:right}.pos{color:var(--accent)}.neg{color:var(--bad)}
+#login{max-width:340px;margin:12vh auto;text-align:center}#login input{width:100%;margin-bottom:10px;padding:10px}
+#login button{width:100%;padding:10px}#err{color:var(--bad);margin-top:10px;min-height:20px;font-size:14px}
+.goal{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 30px;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.goal input{width:100%}
+@media(max-width:640px){.row{grid-template-columns:1fr 100px}.row .bar-cell{grid-column:1/3;order:3}.goal{grid-template-columns:1fr 1fr}}
+.hidden{display:none}
+#msg{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--line);padding:10px 16px;border-radius:8px;display:none}
+</style>
+</head>
+<body>
+
+<div id="login" class="hidden">
+  <h1><span>flow.</span> dashboard</h1>
+  <p class="mute">Sign in to view your finances</p>
+  <input id="email" type="email" placeholder="Email" autocomplete="username">
+  <input id="password" type="password" placeholder="Password" autocomplete="current-password">
+  <button class="primary" id="loginBtn">Sign in</button>
+  <div id="err"></div>
+</div>
+
+<div id="app" class="wrap hidden">
+  <div class="top">
+    <h1><span>flow.</span> dashboard</h1>
+    <div class="btns">
+      <select id="month"></select>
+      <button id="linkBtn">+ Link bank</button>
+      <button id="syncBtn">Sync now</button>
+      <button id="outBtn">Sign out</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="mute">Spent this month</div><div class="big" id="kSpent">–</div></div>
+    <div class="card"><div class="mute">Budgeted</div><div class="big" id="kBudget">–</div></div>
+    <div class="card"><div class="mute">Left to spend</div><div class="big" id="kLeft">–</div></div>
+    <div class="card"><div class="mute">Net balance</div><div class="big" id="kNet">–</div></div>
+  </div>
+
+  <div class="card"><h2>Spending vs. budget</h2><div id="cats"></div>
+    <div class="mute" style="margin-top:10px">Click a budget amount to edit it. Transfers, income and card payments are excluded.</div></div>
+
+  <div class="card"><h2>Goals</h2><div id="goals"></div><button id="addGoal" style="margin-top:10px">+ Add goal</button></div>
+
+  <div class="card"><h2>Accounts</h2><table id="accts"></table></div>
+
+  <div class="card"><h2>Recent transactions</h2><table id="txns"></table>
+    <div class="mute" style="margin-top:8px">Change a category to re-file a transaction.</div></div>
+</div>
+<div id="msg"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<script>
+const SUPABASE_URL = "https://pnpigzwltdoeysgeyxbr.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Tioiz_f6xSjRq3J4U20mmw_r2JIIbK7"; // publishable key: safe in the browser
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money = n => (n < 0 ? "-" : "") + "$" + Math.abs(n).toLocaleString("en-US", {maximumFractionDigits: 0});
+const money2 = n => (n < 0 ? "-" : "") + "$" + Math.abs(n).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const pretty = c => (c || "Uncategorized").toLowerCase().split("_").map(w => w[0].toUpperCase() + w.slice(1)).join(" ");
+const EXCLUDE = new Set(["TRANSFER_IN", "TRANSFER_OUT", "INCOME"]);
+const isExcluded = t => EXCLUDE.has(t.category) && !t.user_category || (t.category_detailed || "").includes("CREDIT_CARD_PAYMENT");
+const CATS = ["FOOD_AND_DRINK","GENERAL_MERCHANDISE","GENERAL_SERVICES","TRANSPORTATION","TRAVEL","RENT_AND_UTILITIES","HOME_IMPROVEMENT","MEDICAL","PERSONAL_CARE","ENTERTAINMENT","LOAN_PAYMENTS","BANK_FEES","GOVERNMENT_AND_NON_PROFIT","INCOME","TRANSFER_IN","TRANSFER_OUT","OTHER"];
+
+let state = { tx: [], accts: [], budgets: [], goals: [], month: null };
+
+function toast(t) { const m = $("msg"); m.textContent = t; m.style.display = "block"; setTimeout(() => m.style.display = "none", 3500); }
+
+// ---------- auth ----------
+async function boot() {
+  const { data: { session } } = await db.auth.getSession();
+  show(!!session);
+  if (session) { await load(); resumeOAuth(); }
+}
+function show(signedIn) { $("login").classList.toggle("hidden", signedIn); $("app").classList.toggle("hidden", !signedIn); }
+$("loginBtn").onclick = async () => {
+  $("err").textContent = "";
+  const { error } = await db.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
+  if (error) { $("err").textContent = error.message; return; }
+  show(true); await load();
+};
+$("password").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
+$("outBtn").onclick = async () => { await db.auth.signOut(); show(false); };
+
+// ---------- data ----------
+async function load() {
+  const [tx, ac, bu, go] = await Promise.all([
+    db.from("transactions").select("*").order("date", { ascending: false }).limit(5000),
+    db.from("accounts").select("*").order("type"),
+    db.from("budgets").select("*").order("category"),
+    db.from("goals").select("*").eq("active", true).order("created_at"),
+  ]);
+  state.tx = tx.data || []; state.accts = ac.data || []; state.budgets = bu.data || []; state.goals = go.data || [];
+  buildMonths(); render();
+}
+function buildMonths() {
+  const set = new Set(state.tx.map(t => t.date.slice(0, 7)));
+  const now = new Date().toISOString().slice(0, 7); set.add(now);
+  const months = [...set].sort().reverse();
+  $("month").innerHTML = months.map(m => `<option value="${m}">${new Date(m + "-15").toLocaleString("en-US", { month: "long", year: "numeric" })}</option>`).join("");
+  state.month = state.month && months.includes(state.month) ? state.month : months[0];
+  $("month").value = state.month;
+}
+$("month").onchange = e => { state.month = e.target.value; render(); };
+
+function render() {
+  const eff = t => t.user_category || t.category || "OTHER";
+  const monthTx = state.tx.filter(t => t.date.startsWith(state.month) && t.amount > 0 && !isExcluded(t));
+  const spentBy = {};
+  monthTx.forEach(t => { const c = eff(t); spentBy[c] = (spentBy[c] || 0) + t.amount; });
+  const budgetBy = Object.fromEntries(state.budgets.map(b => [b.category, Number(b.monthly_amount)]));
+  const cats = [...new Set([...Object.keys(spentBy), ...Object.keys(budgetBy)])]
+    .sort((a, b) => (spentBy[b] || 0) - (spentBy[a] || 0));
+
+  const spent = Object.values(spentBy).reduce((a, b) => a + b, 0);
+  const budget = Object.values(budgetBy).reduce((a, b) => a + b, 0);
+  $("kSpent").textContent = money(spent);
+  $("kBudget").textContent = budget ? money(budget) : "Set below";
+  $("kLeft").textContent = budget ? money(budget - spent) : "–";
+  $("kLeft").className = "big " + (budget && budget - spent < 0 ? "neg" : "");
+  const net = state.accts.reduce((s, a) => s + (["credit", "loan"].includes(a.type) ? -1 : 1) * Number(a.current_balance || 0), 0);
+  $("kNet").textContent = state.accts.length ? money(net) : "–";
+
+  $("cats").innerHTML = cats.length ? cats.map(c => {
+    const s = spentBy[c] || 0, b = budgetBy[c] || 0, pct = b ? Math.min(100, s / b * 100) : 0;
+    const cls = b && s > b ? "over" : b && s > b * .85 ? "warn" : "";
+    return `<div class="row"><div>${esc(pretty(c))}<div class="mute">${money(s)} spent</div></div>
+      <div class="bar-cell"><div class="bar ${cls}"><i style="width:${pct}%"></i></div></div>
+      <div><input data-cat="${esc(c)}" class="bud" type="number" min="0" step="10" value="${b || ""}" placeholder="budget" style="width:100%"></div></div>`;
+  }).join("") : `<div class="mute">No spending yet. Link your bank to get started.</div>`;
+  document.querySelectorAll(".bud").forEach(i => i.onchange = async () => {
+    const amt = Number(i.value) || 0;
+    const { error } = await db.from("budgets").upsert({ category: i.dataset.cat, monthly_amount: amt, updated_at: new Date().toISOString() }, { onConflict: "category" });
+    if (error) return toast(error.message);
+    const b = state.budgets.find(x => x.category === i.dataset.cat);
+    if (b) b.monthly_amount = amt; else state.budgets.push({ category: i.dataset.cat, monthly_amount: amt });
+    render(); toast("Budget saved");
+  });
+
+  $("accts").innerHTML = state.accts.length
+    ? `<tr><th>Account</th><th>Type</th><th class="num">Balance</th></tr>` + state.accts.map(a =>
+      `<tr><td>${esc(a.name)} ${a.mask ? `<span class="mute">•••• ${esc(a.mask)}</span>` : ""}</td><td class="mute">${esc(a.subtype || a.type)}</td><td class="num">${money2(Number(a.current_balance || 0))}</td></tr>`).join("")
+    : `<tr><td class="mute">No accounts linked yet.</td></tr>`;
+
+  $("txns").innerHTML = state.tx.length
+    ? `<tr><th>Date</th><th>Merchant</th><th>Category</th><th class="num">Amount</th></tr>` + state.tx.slice(0, 40).map(t =>
+      `<tr><td class="mute">${esc(t.date)}</td><td>${esc(t.merchant_name || t.name)}${t.pending ? ' <span class="mute">(pending)</span>' : ""}</td>
+       <td><select data-tx="${esc(t.transaction_id)}" class="cat">${[...new Set([eff(t), ...CATS])].map(c => `<option value="${c}" ${c === eff(t) ? "selected" : ""}>${esc(pretty(c))}</option>`).join("")}</select></td>
+       <td class="num ${t.amount < 0 ? "pos" : ""}">${money2(-t.amount)}</td></tr>`).join("")
+    : `<tr><td class="mute">No transactions yet.</td></tr>`;
+  document.querySelectorAll(".cat").forEach(s => s.onchange = async () => {
+    const { error } = await db.from("transactions").update({ user_category: s.value }).eq("transaction_id", s.dataset.tx);
+    if (error) return toast(error.message);
+    state.tx.find(t => t.transaction_id === s.dataset.tx).user_category = s.value; render(); toast("Re-categorized");
+  });
+
+  renderGoals();
+}
+
+// ---------- goals ----------
+function renderGoals() {
+  $("goals").innerHTML = state.goals.length ? state.goals.map(g => {
+    const pct = g.target_amount ? Math.min(100, g.current_amount / g.target_amount * 100) : 0;
+    return `<div class="goal" data-id="${g.id}">
+      <div><input class="g-name" value="${esc(g.name)}"><div class="bar"><i style="width:${pct}%"></i></div></div>
+      <input class="g-cur" type="number" value="${g.current_amount}" title="Saved so far">
+      <input class="g-tgt" type="number" value="${g.target_amount ?? ""}" title="Target">
+      <input class="g-date" type="date" value="${g.target_date ?? ""}">
+      <button class="g-del" title="Delete">×</button></div>`;
+  }).join("") : `<div class="mute">No goals yet. Add one to start tracking.</div>`;
+  document.querySelectorAll(".goal").forEach(el => {
+    const id = el.dataset.id;
+    const save = async () => {
+      const patch = { name: el.querySelector(".g-name").value, current_amount: Number(el.querySelector(".g-cur").value) || 0,
+        target_amount: el.querySelector(".g-tgt").value === "" ? null : Number(el.querySelector(".g-tgt").value),
+        target_date: el.querySelector(".g-date").value || null };
+      const { error } = await db.from("goals").update(patch).eq("id", id);
+      if (error) return toast(error.message);
+      Object.assign(state.goals.find(g => g.id === id), patch); renderGoals(); toast("Goal saved");
+    };
+    el.querySelectorAll("input").forEach(i => i.onchange = save);
+    el.querySelector(".g-del").onclick = async () => {
+      await db.from("goals").update({ active: false }).eq("id", id);
+      state.goals = state.goals.filter(g => g.id !== id); renderGoals();
+    };
+  });
+}
+$("addGoal").onclick = async () => {
+  const { data, error } = await db.from("goals").insert({ name: "New goal", target_amount: 1000 }).select().single();
+  if (error) return toast(error.message);
+  state.goals.push(data); renderGoals();
+};
+
+// ---------- Plaid ----------
+async function fn(body) {
+  const { data: { session } } = await db.auth.getSession();
+  const r = await fetch(`${SUPABASE_URL}/functions/v1/plaid`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token, apikey: SUPABASE_KEY },
+    body: JSON.stringify(body),
+  });
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+const REDIRECT = location.origin + location.pathname;
+function openLink(token, receivedRedirectUri) {
+  const cfg = {
+    token,
+    onSuccess: async (public_token, meta) => {
+      toast("Linking… pulling your transactions");
+      try { await fn({ action: "exchange", public_token, institution_name: meta.institution?.name }); await load(); toast("Bank linked"); }
+      catch (e) { toast(e.message); }
+    },
+    onExit: err => { if (err) toast(err.display_message || err.error_message || "Link closed"); },
+  };
+  if (receivedRedirectUri) cfg.receivedRedirectUri = receivedRedirectUri;
+  Plaid.create(cfg).open();
+}
+$("linkBtn").onclick = async () => {
+  try {
+    const { link_token } = await fn({ action: "link_token", redirect_uri: REDIRECT });
+    localStorage.setItem("plaid_link_token", link_token);
+    openLink(link_token);
+  } catch (e) { toast(e.message); }
+};
+function resumeOAuth() {
+  if (location.search.includes("oauth_state_id")) {
+    const t = localStorage.getItem("plaid_link_token");
+    if (t) openLink(t, location.href);
+  }
+}
+$("syncBtn").onclick = async () => {
+  toast("Syncing…");
+  try { await fn({ action: "sync" }); await load(); toast("Up to date"); } catch (e) { toast(e.message); }
+};
+
+db.auth.onAuthStateChange((ev, s) => { if (ev === "SIGNED_OUT") show(false); });
+boot();
+</script>
+</body>
+</html>
