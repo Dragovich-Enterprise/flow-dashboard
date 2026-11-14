@@ -42,6 +42,14 @@ th{color:var(--mute);font-weight:500;border-top:0}td.num,th.num{text-align:right
 #login button{width:100%;padding:10px}#err{color:var(--bad);margin-top:10px;min-height:20px;font-size:14px}
 .hidden{display:none!important}
 #msg{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--line);padding:10px 16px;border-radius:8px;display:none;z-index:9}
+.strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px}
+.mcard{min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;flex:0 0 auto}
+.mcard.on{border-color:var(--accent)}.mcard .mn{font-weight:600;margin-bottom:6px}
+.mcard .ln{display:flex;justify-content:space-between;font-size:13px}
+.mcard .net{margin-top:6px;font-weight:700}
+.mini{display:flex;gap:3px;align-items:flex-end;height:34px;margin-top:8px}.mini i{display:block;width:100%;border-radius:2px}
+.nav{padding:7px 10px}
+.group table{table-layout:fixed}.group td:nth-child(2){width:26%}.group td:nth-child(3){width:20%}
 .note{background:#1d2230;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:14px}
 </style>
 </head>
@@ -60,14 +68,16 @@ th{color:var(--mute);font-weight:500;border-top:0}td.num,th.num{text-align:right
   <div class="top">
     <div class="logo"><span>Head</span>room</div>
     <div class="btns">
-      <select id="month"></select>
+      <button class="nav" id="mPrev" title="Previous month">‹</button><select id="month"></select><button class="nav" id="mNext" title="Next month">›</button>
       <button id="syncBtn">Sync now</button>
       <button id="outBtn">Sign out</button>
     </div>
   </div>
   <div class="tabs" id="tabs">
     <button class="tab on" data-t="overview">Overview</button>
+    <button class="tab" data-t="trends">Trends</button>
     <button class="tab" data-t="budget">Budget</button>
+    <button class="tab" data-t="recurring">Recurring</button>
     <button class="tab" data-t="txns">Transactions</button>
     <button class="tab" data-t="accts">Accounts</button>
     <button class="tab" data-t="goals">Goals</button>
@@ -77,6 +87,7 @@ th{color:var(--mute);font-weight:500;border-top:0}td.num,th.num{text-align:right
   <!-- OVERVIEW -->
   <div class="pane on" id="p-overview">
     <div id="coverage"></div>
+    <div class="strip" id="strip"></div>
     <div class="grid">
       <div class="card"><div class="mute">Income</div><div class="big pos" id="kInc">–</div></div>
       <div class="card"><div class="mute">Spent</div><div class="big" id="kSpent">–</div></div>
@@ -95,6 +106,22 @@ th{color:var(--mute);font-weight:500;border-top:0}td.num,th.num{text-align:right
       <div class="card"><h2>Top merchants</h2><div id="merchants"></div></div>
       <div class="card"><h2>Recurring charges</h2><div id="recurring"></div></div>
     </div>
+  </div>
+
+  <!-- TRENDS -->
+  <div class="pane" id="p-trends">
+    <div class="card"><h2>Spending by category, month over month</h2><div class="chartbox" style="height:340px"><canvas id="cStack"></canvas></div></div>
+    <div class="card"><h2>Month by month</h2><div class="scroll"><table id="monthTbl"></table></div></div>
+    <div class="card"><h2>Category by month</h2><div class="scroll"><table id="catMonthTbl"></table></div></div>
+  </div>
+
+  <!-- RECURRING -->
+  <div class="pane" id="p-recurring">
+    <div class="grid"><div class="card"><div class="mute">Recurring per month</div><div class="big" id="rTotal">–</div></div>
+      <div class="card"><div class="mute">Due in next 30 days</div><div class="big" id="rSoon">–</div></div>
+      <div class="card"><div class="mute">Charges detected</div><div class="big" id="rCount">–</div></div></div>
+    <div class="card"><h2>Subscriptions &amp; bills</h2><div class="scroll"><table id="recTbl"></table></div>
+      <div class="mute" style="margin-top:8px">Detected from charges that repeat at a steady amount across 2+ months.</div></div>
   </div>
 
   <!-- BUDGET -->
@@ -141,9 +168,14 @@ th{color:var(--mute);font-weight:500;border-top:0}td.num,th.num{text-align:right
   <div class="pane" id="p-settings">
     <div class="card"><h2>Banks</h2><div id="setInfo" class="mute" style="margin-bottom:12px"></div>
       <div class="btns"><button id="linkBtn" class="primary">+ Link a bank</button><button id="syncBtn2">Sync now</button></div></div>
-    <div class="card"><h2>Pull more history</h2>
-      <div class="mute" style="margin-bottom:12px">Banks linked before this update only returned about 90 days. Re-linking requests up to 2 years. This disconnects your current banks and clears pulled transactions (budgets and goals are kept; manual re-categorizations are lost), then you link each bank again.</div>
-      <button id="resetBtn" class="danger">Reset &amp; re-link for 2 years of history</button></div>
+    <div class="card"><h2>Import older history (CSV)</h2>
+      <div class="mute" style="margin-bottom:10px">Capital One only shares ~90 days through Plaid. Download older transactions as CSV from your bank's website, then import them here. Only rows older than the earliest synced transaction for that account are added, so nothing is double-counted.</div>
+      <div class="filters"><select id="impAcct"></select><input type="file" id="impFile" accept=".csv">
+        <label class="mute" style="align-self:center"><input type="checkbox" id="impPos"> single "Amount" column: positive = money spent</label></div>
+      <div class="btns"><button id="impBtn" class="primary">Import CSV</button><span class="mute" id="impOut"></span></div></div>
+    <div class="card"><h2>Reset connections</h2>
+      <div class="mute" style="margin-bottom:12px">Only needed if a bank connection breaks or you want a clean start. This disconnects your banks and clears pulled and imported transactions (budgets and goals are kept), then you link each bank again. Capital One still only returns ~90 days, so use the CSV import above for older history.</div>
+      <button id="resetBtn" class="danger">Reset &amp; re-link all banks</button></div>
   </div>
 </div>
 <div id="msg"></div>
@@ -233,7 +265,74 @@ function coverage() {
 }
 const sumBy = (arr, key, f) => arr.reduce((o, t) => { const k = key(t); o[k] = (o[k] || 0) + f(t); return o; }, {});
 
-function renderAll() { renderOverview(); renderBudget(); renderTxns(); renderAccts(); renderGoals(); renderSettings(); }
+function renderAll() { renderOverview(); renderStrip(); renderTrends(); renderRecurring(); renderBudget(); renderTxns(); renderAccts(); renderGoals(); renderSettings(); }
+
+// ---------- month helpers ----------
+function monthStats(m) {
+  const t = S.tx.filter(x => x.date.startsWith(m));
+  const inc = t.filter(isIncome).reduce((s, x) => s - x.amount, 0), sp = t.filter(isSpend).reduce((s, x) => s + x.amount, 0);
+  return { m, inc, sp, net: inc - sp };
+}
+function setMonth(m) { S.month = m; $("month").value = m; renderAll(); }
+$("mPrev").onclick = () => { const i = S.months.indexOf(S.month); if (i < S.months.length - 1) setMonth(S.months[i + 1]); };
+$("mNext").onclick = () => { const i = S.months.indexOf(S.month); if (i > 0) setMonth(S.months[i - 1]); };
+
+function renderStrip() {
+  const stats = [...S.months].reverse().map(monthStats), max = Math.max(1, ...stats.map(s => Math.max(s.inc, s.sp)));
+  $("strip").innerHTML = stats.map(s => `<div class="mcard ${s.m === S.month ? "on" : ""}" data-m="${s.m}">
+    <div class="mn">${new Date(s.m + "-15").toLocaleString("en-US", { month: "long", year: "numeric" })}</div>
+    <div class="ln"><span class="mute">Earned</span><span class="pos">${money(s.inc)}</span></div>
+    <div class="ln"><span class="mute">Spent</span><span>${money(s.sp)}</span></div>
+    <div class="mini"><i style="height:${Math.max(3, s.inc / max * 100)}%;background:var(--accent)"></i><i style="height:${Math.max(3, s.sp / max * 100)}%;background:var(--bad)"></i></div>
+    <div class="net ${s.net < 0 ? "neg" : "pos"}">${s.net < 0 ? "−" : "+"}${money(Math.abs(s.net))}</div></div>`).join("");
+  document.querySelectorAll(".mcard").forEach(c => c.onclick = () => setMonth(c.dataset.m));
+  const on = document.querySelector(".mcard.on"); if (on) on.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+// ---------- trends ----------
+function renderTrends() {
+  const ms = [...S.months].reverse();
+  const spendTx = S.tx.filter(isSpend);
+  const catTotals = sumBy(spendTx, eff, t => t.amount);
+  const cats = Object.keys(catTotals).sort((a, b) => catTotals[b] - catTotals[a]);
+  const by = {}; spendTx.forEach(t => { const k = eff(t) + "|" + t.date.slice(0, 7); by[k] = (by[k] || 0) + t.amount; });
+  if ($("p-trends").classList.contains("on") || !S.charts.cStack) chart("cStack", { type: "bar",
+    data: { labels: ms.map(monthLabel), datasets: cats.map((c, i) => ({ label: pretty(c), data: ms.map(m => Math.round(by[c + "|" + m] || 0)), backgroundColor: COLORS[i % COLORS.length] })) },
+    options: { scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { position: "bottom", labels: { boxWidth: 10 } } } } });
+  const cov = coverage();
+  const rows = [...ms].reverse().map(monthStats);
+  $("monthTbl").innerHTML = `<tr><th>Month</th><th class="num">Earned</th><th class="num">Spent</th><th class="num">Net</th><th class="num">Savings rate</th></tr>` +
+    rows.map(r => `<tr><td>${monthLabel(r.m)}${cov.fullMonths.includes(r.m) ? "" : ' <span class="pill">partial</span>'}</td><td class="num pos">${money(r.inc)}</td><td class="num">${money(r.sp)}</td>
+      <td class="num ${r.net < 0 ? "neg" : "pos"}">${money(r.net)}</td><td class="num">${r.inc ? Math.round(r.net / r.inc * 100) + "%" : "–"}</td></tr>`).join("");
+  $("catMonthTbl").innerHTML = `<tr><th>Category</th>${[...ms].reverse().map(m => `<th class="num">${monthLabel(m)}</th>`).join("")}</tr>` +
+    cats.map(c => `<tr><td>${esc(pretty(c))}</td>${[...ms].reverse().map(m => `<td class="num">${by[c + "|" + m] ? money(by[c + "|" + m]) : '<span class="mute">–</span>'}</td>`).join("")}</tr>`).join("");
+}
+
+// ---------- recurring ----------
+function detectRecurring() {
+  const groups = {};
+  S.tx.filter(isSpend).forEach(t => { const k = (t.merchant_name || t.name || "").trim(); if (k) (groups[k] = groups[k] || []).push(t); });
+  const out = [];
+  Object.entries(groups).forEach(([k, arr]) => {
+    const months = new Set(arr.map(t => t.date.slice(0, 7)));
+    if (months.size < 2 || arr.length > months.size * 1.6) return; // roughly one charge per month
+    const amts = arr.map(t => t.amount), avg = amts.reduce((a, b) => a + b, 0) / amts.length;
+    if (!amts.every(a => Math.abs(a - avg) <= Math.max(2, avg * .15))) return;
+    const last = arr.reduce((a, b) => a.date > b.date ? a : b), day = Number(last.date.slice(8, 10));
+    const d = new Date(last.date + "T12:00:00"); d.setMonth(d.getMonth() + 1);
+    let next = new Date(d.getFullYear(), d.getMonth(), Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()), 12);
+    out.push({ name: k, avg, n: months.size, last: last.date, next: next.toISOString().slice(0, 10), cat: eff(last) });
+  });
+  return out.sort((a, b) => b.avg - a.avg);
+}
+function renderRecurring() {
+  const rec = detectRecurring(), today = new Date().toISOString().slice(0, 10), in30 = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10);
+  $("rTotal").textContent = money(rec.reduce((s, r) => s + r.avg, 0)); $("rCount").textContent = rec.length;
+  $("rSoon").textContent = money(rec.filter(r => r.next >= today && r.next <= in30).reduce((s, r) => s + r.avg, 0));
+  $("recTbl").innerHTML = rec.length ? `<tr><th>Name</th><th>Category</th><th>Seen</th><th>Next expected</th><th class="num">Amount</th></tr>` +
+    rec.map(r => `<tr><td>${esc(r.name)}</td><td class="mute">${esc(pretty(r.cat))}</td><td class="mute">${r.n} mo</td><td>${r.next}</td><td class="num">${money2(r.avg)}</td></tr>`).join("")
+    : `<tr><td class="mute">Nothing detected yet.</td></tr>`;
+}
 
 // ---------- overview ----------
 function netWorth() {
@@ -260,20 +359,10 @@ function renderOverview() {
   $("merchants").innerHTML = Object.entries(merch).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) =>
     `<div style="display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid var(--line)"><span>${esc(k)}</span><span>${money(v)}</span></div>`).join("") || `<div class="mute">Nothing yet.</div>`;
 
-  // recurring: merchants charging in >=3 distinct months with stable amounts
-  const groups = {};
-  S.tx.filter(isSpend).forEach(t => { const k = (t.merchant_name || t.name || "").trim(); (groups[k] = groups[k] || []).push(t); });
-  const rec = [];
-  Object.entries(groups).forEach(([k, arr]) => {
-    const months = new Set(arr.map(t => t.date.slice(0, 7)));
-    if (months.size < 3) return;
-    const amts = arr.map(t => t.amount), avg = amts.reduce((a, b) => a + b, 0) / amts.length;
-    if (amts.every(a => Math.abs(a - avg) <= Math.max(2, avg * .15))) rec.push([k, avg, months.size]);
-  });
-  rec.sort((a, b) => b[1] - a[1]);
-  $("recurring").innerHTML = rec.length ? rec.slice(0, 10).map(([k, v, n]) =>
-    `<div style="display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid var(--line)"><span>${esc(k)} <span class="pill">${n} mo</span></span><span>${money2(v)}/mo</span></div>`).join("")
-    + `<div class="mute" style="margin-top:6px">≈ ${money(rec.reduce((s, r) => s + r[1], 0))}/mo total</div>` : `<div class="mute">Shows up once a charge repeats across 3+ months.</div>`;
+  const rec = detectRecurring();
+  $("recurring").innerHTML = rec.length ? rec.slice(0, 8).map(r =>
+    `<div style="display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid var(--line)"><span>${esc(r.name)} <span class="pill">${r.n} mo</span></span><span>${money2(r.avg)}/mo</span></div>`).join("")
+    + `<div class="mute" style="margin-top:6px">≈ ${money(rec.reduce((s, r) => s + r.avg, 0))}/mo total — see the Recurring tab</div>` : `<div class="mute">Shows up once a charge repeats across 2+ months.</div>`;
   if ($("p-overview").classList.contains("on")) drawCharts();
 }
 function chart(id, cfg) {
@@ -303,12 +392,16 @@ function drawCharts() {
     ...(bTotal ? [{ label: "Budget pace", data: daily.map((_, i) => Math.round(bTotal * (i + 1) / days)), borderColor: "#f59e0b", borderDash: [5, 4], pointRadius: 0 }] : []) ] },
     options: { plugins: { legend: { position: "bottom" } } } });
 
-  const dates = [...new Set(S.snaps.map(s => s.snap_date))].sort();
-  const typeOf = Object.fromEntries(S.accts.map(a => [a.account_id, a.type]));
-  const nw = dates.map(d => S.snaps.filter(s => s.snap_date === d).reduce((s, x) => s + (["credit", "loan"].includes(typeOf[x.account_id]) ? -1 : 1) * Number(x.current_balance || 0), 0));
-  $("netNote").textContent = dates.length < 2 ? "Net worth history builds up with each sync — check back in a few days." : "";
-  chart("cNet", { type: "line", data: { labels: dates, datasets: [{ label: "Net worth", data: nw.map(Math.round), borderColor: "#60a5fa", fill: true, backgroundColor: "rgba(96,165,250,.12)", tension: .2 }] },
-    options: { plugins: { legend: { display: false } } } });
+  // Net worth history: start from today's balances and walk backward through cash/credit transactions.
+  // Investment accounts have no transaction feed, so they're held at today's value.
+  const nwNow = netWorth().net, typeOf = Object.fromEntries(S.accts.map(a => [a.account_id, a.type]));
+  const byDay = {}; S.tx.forEach(t => { if (["depository", "credit", "loan"].includes(typeOf[t.account_id])) byDay[t.date] = (byDay[t.date] || 0) + t.amount; });
+  const start = S.tx.length ? S.tx[S.tx.length - 1].date : null, todayS = new Date().toISOString().slice(0, 10), labels = [], vals = [];
+  if (start) { let cur = nwNow; for (let d = new Date(todayS + "T12:00:00"); d.toISOString().slice(0, 10) >= start; d.setDate(d.getDate() - 1)) {
+    const k = d.toISOString().slice(0, 10); labels.push(k); vals.push(Math.round(cur)); cur += (byDay[k] || 0); } labels.reverse(); vals.reverse(); }
+  $("netNote").textContent = start ? "Reconstructed from your transaction history. Retirement/brokerage accounts are held at today's value." : "";
+  chart("cNet", { type: "line", data: { labels, datasets: [{ label: "Net worth", data: vals, borderColor: "#60a5fa", fill: true, backgroundColor: "rgba(96,165,250,.12)", pointRadius: 0, tension: .2 }] },
+    options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 8 } } } } });
 }
 
 // ---------- budget ----------
@@ -424,6 +517,9 @@ $("addGoal").onclick = async () => {
 function renderSettings() {
   const { min } = coverage();
   $("setInfo").textContent = `${S.accts.length} accounts linked · ${S.tx.length} transactions` + (min ? ` · history from ${min}` : "");
+  const sel = $("impAcct"), cur = sel.value;
+  sel.innerHTML = S.accts.filter(a => ["depository", "credit"].includes(a.type)).map(a => `<option value="${esc(a.account_id)}">${esc(a.nickname || a.name)} ••${esc(a.mask || "")}</option>`).join("");
+  if (cur) sel.value = cur;
 }
 async function fn(body) {
   const { data: { session } } = await db.auth.getSession();
@@ -453,6 +549,63 @@ $("syncBtn").onclick = doSync; $("syncBtn2").onclick = doSync;
 $("resetBtn").onclick = async () => {
   if (!confirm("This disconnects all banks and clears pulled transactions. Budgets and goals are kept. Continue?")) return;
   try { await fn({ action: "reset", confirm: "RESET" }); await load(); toast("Cleared. Now link each bank again."); startLink(); } catch (e) { toast(e.message); }
+};
+
+// ---------- CSV import ----------
+function parseCSV(text) {
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+    else if (c === '"') q = true;
+    else if (c === ",") { row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r") { if (c === "\r" && text[i + 1] === "\n") i++; row.push(cell); if (row.some(x => x.trim() !== "")) rows.push(row); row = []; cell = ""; }
+    else cell += c;
+  }
+  row.push(cell); if (row.some(x => x.trim() !== "")) rows.push(row);
+  return rows;
+}
+const num = v => { const n = parseFloat(String(v ?? "").replace(/[$,\s]/g, "").replace(/^\((.*)\)$/, "-$1")); return isNaN(n) ? null : n; };
+function toISO(v) {
+  v = String(v || "").trim(); let m;
+  if ((m = v.match(/^(\d{4})-(\d{2})-(\d{2})/))) return `${m[1]}-${m[2]}-${m[3]}`;
+  if ((m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/))) { const y = m[3].length === 2 ? "20" + m[3] : m[3]; return `${y}-${m[1].padStart(2, "0")}-${m[2].padStart(2, "0")}`; }
+  return null;
+}
+const CSV_CAT = [[/dining|restaurant|food|grocer|coffee|bar/i, "FOOD_AND_DRINK"], [/merch|shop|retail|amazon|department/i, "GENERAL_MERCHANDISE"], [/gas|auto|parking|transit|rideshare|taxi/i, "TRANSPORTATION"],
+  [/air|travel|hotel|lodging/i, "TRAVEL"], [/phone|cable|utilit|internet|rent/i, "RENT_AND_UTILITIES"], [/health|medical|pharm|doctor/i, "MEDICAL"], [/entertain|movie|music|stream/i, "ENTERTAINMENT"],
+  [/personal|beauty|salon|fitness/i, "PERSONAL_CARE"], [/home|garden|improve/i, "HOME_IMPROVEMENT"], [/fee|interest/i, "BANK_FEES"], [/insur|service|ship/i, "GENERAL_SERVICES"]];
+const guessCat = s => { for (const [re, c] of CSV_CAT) if (re.test(s || "")) return c; return "OTHER"; };
+function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+
+$("impBtn").onclick = async () => {
+  const f = $("impFile").files[0], acct = $("impAcct").value, out = $("impOut");
+  if (!f || !acct) { out.textContent = "Choose an account and a CSV file."; return; }
+  const rows = parseCSV(await f.text()); if (rows.length < 2) { out.textContent = "That file looks empty."; return; }
+  const head = rows[0].map(h => h.trim().toLowerCase());
+  const col = re => head.findIndex(h => re.test(h));
+  const iDate = (() => { const d = head.findIndex(h => /transaction date/.test(h)); return d >= 0 ? d : col(/date/); })();
+  const iDesc = col(/description|merchant|name|memo/), iDeb = col(/^debit|withdrawal/), iCre = col(/^credit|deposit/), iAmt = col(/^amount|transaction amount/), iType = col(/type/), iCat = col(/^category/);
+  if (iDate < 0 || iDesc < 0 || (iDeb < 0 && iAmt < 0)) { out.textContent = "Couldn't find Date / Description / Amount columns. Headers: " + rows[0].join(", "); return; }
+  const a = S.accts.find(x => x.account_id === acct), isCredit = a.type === "credit";
+  const earliest = S.tx.filter(t => t.account_id === acct).reduce((m, t) => t.date < m ? t.date : m, "9999-12-31");
+  const seen = {}, recs = [];
+  for (const r of rows.slice(1)) {
+    const date = toISO(r[iDate]); if (!date || date >= earliest) continue;
+    let amt = null;
+    if (iDeb >= 0 || iCre >= 0) { const d = num(r[iDeb]), c = num(r[iCre]); amt = d ? Math.abs(d) : c ? -Math.abs(c) : null; }
+    else { const v = num(r[iAmt]); if (v !== null) { const t = iType >= 0 ? (r[iType] || "").toLowerCase() : ""; amt = t ? (/credit|deposit/.test(t) ? -Math.abs(v) : Math.abs(v)) : ($("impPos").checked ? v : -v); } }
+    if (amt === null || amt === 0) continue;
+    const desc = (r[iDesc] || "").trim(), base = `${acct}|${date}|${desc}|${amt}`; seen[base] = (seen[base] || 0) + 1;
+    const rawCat = iCat >= 0 ? r[iCat] : "", pay = isCredit && amt < 0 && /payment|credit/i.test(rawCat + " " + desc);
+    recs.push({ transaction_id: "csv-" + hashStr(base) + "-" + seen[base], account_id: acct, date, name: desc, merchant_name: null, amount: amt,
+      category: pay ? "LOAN_PAYMENTS" : amt < 0 ? (isCredit ? "OTHER" : "INCOME") : guessCat(rawCat + " " + desc),
+      category_detailed: pay ? "LOAN_PAYMENTS_CREDIT_CARD_PAYMENT" : null, pending: false });
+  }
+  if (!recs.length) { out.textContent = `No rows older than ${earliest} in that file.`; return; }
+  for (let i = 0; i < recs.length; i += 500) { const { error } = await db.from("transactions").upsert(recs.slice(i, i + 500), { onConflict: "transaction_id" }); if (error) { out.textContent = error.message; return; } }
+  out.textContent = `Imported ${recs.length} transactions back to ${recs.reduce((m, r) => r.date < m ? r.date : m, "9999")}.`;
+  await load();
 };
 boot();
 </script>
