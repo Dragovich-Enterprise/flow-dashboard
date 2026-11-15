@@ -261,20 +261,20 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
       <div class="card tap kpi" id="cardNet"><div class="mute">Net worth</div><div class="big" id="kNet"><span class="sk">&nbsp;</span></div><div class="sub" id="kNetSub"></div></div>
     </div>
     <div class="two">
-      <div class="card"><h2>Insights <span class="hint">&mdash; what Headroom noticed</span></h2><div id="insights"></div></div>
-      <div class="card"><h2>Coming up <span class="hint" id="payHint"></span></h2><div class="week" id="week"></div><div id="upList" style="margin-top:10px"></div></div>
-    </div>
-    <div class="two">
-      <div class="card"><h2>Spending by category <span class="hint">&mdash; tap a slice</span></h2><div class="chartbox"><canvas id="cDonut"></canvas></div></div>
-      <div class="card"><h2>Income vs. spending <span class="hint">&mdash; tap a bar</span></h2><div class="chartbox"><canvas id="cTrend"></canvas></div></div>
-    </div>
-    <div class="two">
       <div class="card"><h2 id="paceTitle">Spend pace</h2><div class="chartbox"><canvas id="cPace"></canvas></div></div>
       <div class="card">
         <h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Net worth
           <span class="seg"><button data-nw="total" class="on">Total</button><button data-nw="cash">Cash &amp; debt</button></span></h2>
         <div class="seg" id="nwRange" style="margin:-4px 0 10px"><button data-r="1m">1M</button><button data-r="3m">3M</button><button data-r="6m">6M</button><button data-r="ytd">YTD</button><button data-r="1y">1Y</button><button data-r="all">All</button></div>
         <div class="chartbox"><canvas id="cNet"></canvas></div><div class="mute" id="netNote"></div></div>
+    </div>
+    <div class="two">
+      <div class="card"><h2>Insights <span class="hint">&mdash; what Headroom noticed</span></h2><div id="insights"></div></div>
+      <div class="card"><h2>Coming up <span class="hint" id="payHint"></span></h2><div class="week" id="week"></div><div id="upList" style="margin-top:10px"></div></div>
+    </div>
+    <div class="two">
+      <div class="card"><h2>Spending by category <span class="hint">&mdash; tap a slice</span></h2><div class="chartbox"><canvas id="cDonut"></canvas></div></div>
+      <div class="card"><h2>Income vs. spending <span class="hint">&mdash; tap a bar</span></h2><div class="chartbox"><canvas id="cTrend"></canvas></div></div>
     </div>
     <div class="two">
       <div class="card"><h2>Top merchants <span class="hint">&mdash; tap to see charges</span></h2><div id="merchants"></div></div>
@@ -1393,11 +1393,15 @@ function incomeStreams() {
   const out = [];
   for (const arr of Object.values(by)) {
     const ds = [...new Set(arr.map(t => t.date))].sort(); if (ds.length < 2) continue;
-    const g = median(ds.slice(1).map((d, i) => dnum(d) - dnum(ds[i]))); if (g < 5 || g > 40) continue;
+    const gaps = ds.slice(1).map((d, i) => dnum(d) - dnum(ds[i])), g = median(gaps); if (g < 5 || g > 40) continue;
+    if (gaps.filter(x => Math.abs(x - g) <= g * .35).length < gaps.length * .7) continue; // irregular, not a paycheck
     const last = ds[ds.length - 1]; if (dnum(todayISO()) - dnum(last) > g * 2.5) continue; // stopped
     const amt = median(arr.slice(0, 4).map(t => -t.amount)), step = Math.round(g);
+    // twice a month (e.g. the 15th and the last day) vs. every two weeks: no month ever gets a third payment
+    const perMonth = sumBy(ds, d => d.slice(0, 7), () => 1), semi = g >= 12 && g <= 18 && ds.length >= 4 && Math.max(...Object.values(perMonth)) <= 2;
     let next = dstr(dnum(last) + step); while (next < todayISO()) next = dstr(dnum(next) + step);
-    out.push({ name: tname(arr[0]), amount: amt, gap: step, monthly: amt * 30.44 / g, next });
+    const monthly = semi ? amt * 2 : amt * 30.44 / g;
+    if (monthly >= 50) out.push({ name: tname(arr[0]), amount: amt, gap: step, monthly, next, semi });
   }
   out.sort((a, b) => b.monthly - a.monthly);
   S._inc = { v: S._ver, r: out }; return out;
@@ -1414,8 +1418,10 @@ function computeFlags() {
   for (const arr of Object.values(byM)) arr.forEach(t => {
     if (t.date < since || reviewed.has(t.transaction_id) || t.pending) return;
     const prior = arr.filter(x => x.date < t.date);
-    const dup = arr.find(x => x !== t && Math.abs(x.amount - t.amount) < 0.01 && t.amount >= 5 && (x.date < t.date || (x.date === t.date && x.transaction_id < t.transaction_id)) && dnum(t.date) - dnum(x.date) <= 2);
-    if (dup) F[t.transaction_id] = { type: "dup", msg: `Possible double charge — ${money2(t.amount)} at ${tname(t)} ${dup.date === t.date ? "twice the same day" : "two days in a row"}` };
+    // same amount, same day, at a place where that exact amount isn't a habit (your usual coffee isn't a double charge)
+    const habit = arr.filter(x => Math.abs(x.amount - t.amount) < 0.01).length >= 4;
+    const dup = !habit && t.amount >= 5 && arr.find(x => x !== t && x.date === t.date && Math.abs(x.amount - t.amount) < 0.01 && x.transaction_id < t.transaction_id);
+    if (dup) F[t.transaction_id] = { type: "dup", msg: `Possible double charge — ${money2(t.amount)} at ${tname(t)} twice on the same day` };
     else if (prior.length >= 3) { const m = median(prior.map(x => x.amount)); if (t.amount > Math.max(m * 2.5, m + 40)) F[t.transaction_id] = { type: "high", msg: `${money2(t.amount)} at ${tname(t)} — you usually spend about ${money(m)} there` }; }
     else if (!prior.length && t.amount >= 250 && dnum(t.date) - dnum(start) > 21) F[t.transaction_id] = { type: "new", msg: `First charge from ${tname(t)} — ${money2(t.amount)}` };
   });
