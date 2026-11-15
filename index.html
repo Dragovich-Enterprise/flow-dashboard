@@ -40,11 +40,10 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;vertical-
 .tab{background:none;border:0;border-radius:0;padding:10px 14px;color:var(--mute);white-space:nowrap}
 .tab:active{transform:none}.tab.on{color:var(--text)}
 .ink{position:absolute;bottom:0;height:2px;background:var(--accent);border-radius:2px;transition:left .3s var(--ease),width .3s var(--ease)}
-.pane{display:none}.pane.on{display:block;animation:paneIn .32s var(--ease)}
-.pane.on>*{animation:rise .45s var(--ease) both}
-.pane.on>*:nth-child(2){animation-delay:.04s}.pane.on>*:nth-child(3){animation-delay:.08s}.pane.on>*:nth-child(4){animation-delay:.12s}.pane.on>*:nth-child(5){animation-delay:.16s}.pane.on>*:nth-child(n+6){animation-delay:.2s}
+.pane{display:none}.pane.on{display:block}
+.pane.on>*{animation:rise .4s var(--ease)}
 @keyframes paneIn{from{opacity:0}to{opacity:1}}
-@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:.001;transform:translateY(10px)}}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:16px}
 .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;margin-bottom:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:16px;transition:border-color .2s,transform .2s var(--ease)}
@@ -76,7 +75,7 @@ tr.tap:hover td{background:#1b1f28}td.tap{color:var(--blue)}td.tap:hover{text-de
 .mcard{min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;flex:0 0 auto;scroll-snap-align:center;transition:border-color .2s,transform .2s var(--ease)}
 .mcard:hover{transform:translateY(-2px)}.mcard.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 .mcard .mn{font-weight:600;margin-bottom:6px;font-size:14px}.mcard .ln{display:flex;justify-content:space-between;font-size:13px}.mcard .net{margin-top:6px;font-weight:700}
-.mini-bars{display:flex;gap:3px;align-items:flex-end;height:34px;margin-top:8px}.mini-bars i{display:block;width:100%;border-radius:3px;transform-origin:bottom;animation:grow .7s var(--ease) both}
+.mini-bars{display:flex;gap:3px;align-items:flex-end;height:34px;margin-top:8px}.mini-bars i{display:block;width:100%;border-radius:3px;transform-origin:bottom;animation:grow .7s var(--ease)}
 @keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 .note{background:#1a1e27;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:14px}
 .rowline{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
@@ -128,9 +127,9 @@ tr.tap:hover td{background:#1b1f28}td.tap{color:var(--blue)}td.tap:hover{text-de
 .bmeta{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin-top:5px;gap:8px}
 .bin{width:100%;text-align:right}
 /* layers */
-.layer{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-start;justify-content:center;padding:6vh 14px 20px;overflow:auto;background:rgba(5,7,10,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:fade .2s ease both}
+.layer{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-start;justify-content:center;padding:6vh 14px 20px;overflow:auto;background:rgba(5,7,10,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:fade .2s ease}
 #sheet{z-index:90}
-.layer .box{background:var(--card);border:1px solid var(--line);border-radius:18px;width:100%;max-width:760px;padding:18px;animation:pop .28s var(--ease) both;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.layer .box{background:var(--card);border:1px solid var(--line);border-radius:18px;width:100%;max-width:760px;padding:18px;animation:pop .28s var(--ease);box-shadow:0 30px 80px rgba(0,0,0,.5)}
 #sheet .box{max-width:520px}
 .layer.closing{animation:fadeOut .2s ease both}.layer.closing .box{animation:popOut .2s ease both}
 @keyframes fade{from{opacity:0}to{opacity:1}}@keyframes fadeOut{to{opacity:0}}
@@ -182,7 +181,7 @@ tr.tap:hover td{background:#1b1f28}td.tap{color:var(--blue)}td.tap:hover{text-de
   .chartbox{height:230px}
   input,select,textarea{font-size:16px}
   .layer{align-items:flex-end;padding:0}
-  .layer .box,#sheet .box{max-width:none;border-radius:20px 20px 0 0;max-height:90vh;overflow:auto;padding:16px 16px calc(20px + var(--safe-b));animation:up .32s var(--ease) both}
+  .layer .box,#sheet .box{max-width:none;border-radius:20px 20px 0 0;max-height:90vh;overflow:auto;padding:16px 16px calc(20px + var(--safe-b));animation:up .32s var(--ease)}
   .layer.closing .box{animation:down .22s ease both}
   .grab{display:block}
   .brow{grid-template-columns:1fr 92px 30px;gap:8px 10px}
@@ -967,6 +966,7 @@ document.querySelectorAll("[data-nw]").forEach(b => b.onclick = () => {
   document.querySelectorAll("[data-nw]").forEach(x => x.classList.toggle("on", x === b));
   drawNetWorth();
 });
+const SLIM = { categoryPercentage: .5, barPercentage: .8, maxBarThickness: 22 };
 const moneyTick = v => "$" + (Math.abs(v) >= 1000 ? (v / 1000).toFixed(Math.abs(v) >= 10000 ? 0 : 1) + "k" : v);
 
 /** Months to show in month-based charts: the months in the range, or the 6 up to its end. */
@@ -988,8 +988,8 @@ function drawCharts() {
   const ms = chartMonths();
   const st = ms.map(monthStats);
   chart("cTrend", { type: "bar", data: { labels: ms.map(monthLabel), datasets: [
-      { label: "Income", data: st.map(s => Math.round(s.inc)), backgroundColor: "#4ade80", borderRadius: 5 },
-      { label: "Spending", data: st.map(s => Math.round(s.sp)), backgroundColor: "#f87171", borderRadius: 5 }] },
+      { label: "Income", data: st.map(s => Math.round(s.inc)), backgroundColor: "#4ade80", borderRadius: 4, ...SLIM },
+      { label: "Spending", data: st.map(s => Math.round(s.sp)), backgroundColor: "#f87171", borderRadius: 4, ...SLIM }] },
     options: { plugins: { legend: { position: "bottom" } }, scales: { y: { ticks: { callback: moneyTick } } },
       onClick: (e, els) => { if (!els.length) return; const m = ms[els[0].index], inc = els[0].datasetIndex === 0;
         drillTx(inc ? "Income" : "Spending", monthLong(m), () => monthTx(m).filter(inc ? isIncome : isSpendish)); } } });
@@ -1053,7 +1053,7 @@ function drawStack() {
   const { ms, cats, by } = trendData();
   $("trendHint").textContent = `— ${monthLabel(ms[0])} to ${monthLabel(ms[ms.length - 1])}`;
   chart("cStack", { type: "bar",
-    data: { labels: ms.map(monthLabel), datasets: cats.map(c => ({ label: pretty(c), data: ms.map(m => Math.round(Math.max(0, by[c + "|" + m] || 0))), backgroundColor: catColor(c), borderRadius: 2 })) },
+    data: { labels: ms.map(monthLabel), datasets: cats.map(c => ({ label: pretty(c), data: ms.map(m => Math.round(Math.max(0, by[c + "|" + m] || 0))), backgroundColor: catColor(c), borderRadius: 2, categoryPercentage: .55, barPercentage: .9, maxBarThickness: 34 })) },
     options: { scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: moneyTick } } }, plugins: { legend: { position: "bottom", labels: { boxWidth: 10 } } },
       onClick: (e, els) => { if (!els.length) return; const m = ms[els[0].index], c = cats[els[0].datasetIndex];
         drillTx(pretty(c), monthLong(m), () => monthTx(m).filter(t => isSpendish(t) && eff(t) === c), "amt"); } } });
