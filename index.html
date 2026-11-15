@@ -1051,13 +1051,18 @@ $("cardSpent").onclick = () => drillTx("Everything you spent", rangeSub(), () =>
 $("cardFlow").onclick = () => drillTx("Money in and out", rangeSub(), () => rangeTx().filter(t => isSpendish(t) || isIncome(t)));
 $("cardNet").onclick = netWorthBreakdown;
 
+/** Create a chart once, then update it in place. iPhone Safari caps total chart (canvas) memory and draws new
+ *  charts blank once it's used up, so charts are never torn down and rebuilt on tab switches or redraws. */
 function chart(id, cfg) {
-  if (S.charts[id]) S.charts[id].destroy();
+  const options = { responsive: true, maintainAspectRatio: false, devicePixelRatio: Math.min(2, window.devicePixelRatio || 1), ...(cfg.options || {}) };
+  const old = S.charts[id];
+  if (old && old.config.type === cfg.type && old.canvas === $(id)) { old.data = cfg.data; old.options = options; old.update(); return old; }
+  if (old) { old.destroy(); const cv = $(id); cv.width = 0; cv.height = 0; }
   Chart.defaults.color = "#78716C"; Chart.defaults.borderColor = "#EFEDEB";
   Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
   Chart.defaults.animation = RM ? false : { duration: 800, easing: "easeOutQuart" };
   Chart.defaults.plugins.tooltip.backgroundColor = "#1C1917"; Chart.defaults.plugins.tooltip.padding = 10; Chart.defaults.plugins.tooltip.cornerRadius = 8;
-  const c = S.charts[id] = new Chart($(id), { ...cfg, options: { responsive: true, maintainAspectRatio: false, ...(cfg.options || {}) } });
+  const c = S.charts[id] = new Chart($(id), { ...cfg, options });
   setTimeout(() => { if (S.charts[id] === c && c.canvas && c.canvas.offsetParent) { c.resize(); c.update("none"); } }, 1000);
 }
 document.querySelectorAll("[data-nw]").forEach(b => b.onclick = () => {
