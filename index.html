@@ -43,7 +43,7 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;vertical-
 .pane{display:none}.pane.on{display:block}
 .pane.on>*{animation:rise .4s var(--ease)}
 @keyframes paneIn{from{opacity:0}to{opacity:1}}
-@keyframes rise{from{opacity:.001;transform:translateY(10px)}}
+@keyframes rise{from{transform:translateY(8px)}}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:16px}
 .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;margin-bottom:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:16px;transition:border-color .2s,transform .2s var(--ease)}
@@ -467,6 +467,7 @@ function countTo(el, v, fmt = money) {
   if (!el) return; const from = el._v ?? 0; el._v = v;
   cancelAnimationFrame(el._raf);
   if (RM || from === v || document.hidden) { el.textContent = fmt(v); return; }
+  setTimeout(() => { if (el._v === v) { cancelAnimationFrame(el._raf); el.textContent = fmt(v); } }, 900); // never leave a number mid-count
   const t0 = performance.now(), d = 700;
   const step = now => { const p = Math.min(1, (now - t0) / d), e = 1 - Math.pow(1 - p, 3);
     el.textContent = fmt(from + (v - from) * e); if (p < 1) el._raf = requestAnimationFrame(step); };
@@ -605,6 +606,7 @@ function go(t) {
   if (t !== "txns") setSelMode(false);
   if (t === "overview") drawCharts();
   if (t === "invest") drawInvChart();
+  setTimeout(() => Object.values(S.charts).forEach(c => { if (c.canvas && c.canvas.offsetParent) { c.resize(); c.update("none"); } }), 1000);
   if (t === "trends") drawStack();
   if (t === "settings") loadItems();
   if (t === "budget") renderBudget();
@@ -975,7 +977,8 @@ function chart(id, cfg) {
   Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
   Chart.defaults.animation = RM ? false : { duration: 800, easing: "easeOutQuart" };
   Chart.defaults.plugins.tooltip.backgroundColor = "#1f2430"; Chart.defaults.plugins.tooltip.padding = 10; Chart.defaults.plugins.tooltip.cornerRadius = 8;
-  S.charts[id] = new Chart($(id), { ...cfg, options: { responsive: true, maintainAspectRatio: false, ...(cfg.options || {}) } });
+  const c = S.charts[id] = new Chart($(id), { ...cfg, options: { responsive: true, maintainAspectRatio: false, ...(cfg.options || {}) } });
+  setTimeout(() => { if (S.charts[id] === c && c.canvas && c.canvas.offsetParent) { c.resize(); c.update("none"); } }, 1000);
 }
 document.querySelectorAll("[data-nw]").forEach(b => b.onclick = () => {
   S.nwMode = b.dataset.nw;
