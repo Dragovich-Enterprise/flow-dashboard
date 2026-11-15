@@ -1095,7 +1095,7 @@ function renderTrendHero() {
 }
 function renderAcSum() {
   renderTrendHero();
-  const A = S.accts, bal = a => Number(a.current_balance || 0), sum = l => l.reduce((s, a) => s + bal(a), 0);
+  const A = shownAccts(), bal = a => Number(a.current_balance || 0), sum = l => l.reduce((s, a) => s + bal(a), 0);
   const isSave = a => a.type === "depository" && ["savings", "money market", "cd", "hsa"].includes(a.subtype);
   const rows = [
     ["chk", "Checking", "check", A.filter(a => a.type === "depository" && !isSave(a)), 1],
@@ -1142,13 +1142,16 @@ function netWorth() {
   S.accts.forEach(x => { const v = Number(x.current_balance || 0); if (["credit", "loan"].includes(x.type)) l += v; else a += v; });
   return { a, l, net: a - l };
 }
+/** A linked account with nothing in it and no activity (e.g. the unused checking, savings and crypto accounts that came with Robinhood). Hidden from lists until money shows up. */
+const isEmptyAcct = a => !Number(a.current_balance || 0) && !S.tx.some(t => t.account_id === a.account_id);
+const shownAccts = () => S.showEmpty ? S.accts : S.accts.filter(a => !isEmptyAcct(a));
 const GROUPS = [["Cash", a => a.type === "depository"], ["Credit cards", a => a.type === "credit"], ["Investments & retirement", a => a.type === "investment"], ["Loans", a => a.type === "loan"], ["Other", a => !["depository", "credit", "investment", "loan"].includes(a.type)]];
 const SUB = { checking: "Checking", savings: "Savings", "credit card": "Credit card", "401k": "401(k)", ira: "IRA", roth: "Roth IRA", brokerage: "Brokerage", "crypto exchange": "Crypto", cd: "CD", "money market": "Money market" };
 
 function netWorthBreakdown() {
   const n = netWorth();
   const body = GROUPS.map(([title, f]) => {
-    const list = S.accts.filter(f); if (!list.length) return "";
+    const list = shownAccts().filter(f); if (!list.length) return "";
     const owed = title === "Credit cards" || title === "Loans";
     const total = list.reduce((s, a) => s + Number(a.current_balance || 0), 0);
     return `<div class="group"><h3><span>${title}</span><span class="${owed ? "neg" : ""}">${owed ? "−" : ""}${money(total)}</span></h3>
@@ -1909,7 +1912,7 @@ function setupFilters() {
   const keep = { c: $("fCat").value, a: $("fAcct").value };
   $("fCat").innerHTML = `<option value="">All categories</option>` + allCats().map(c => `<option value="${esc(c)}">${esc(pretty(c))}</option>`).join("");
   const extra = [...new Set(S.tx.map(t => t.account_id))].filter(id => !S.accts.some(a => a.account_id === id));
-  $("fAcct").innerHTML = `<option value="">All accounts</option>` + S.accts.map(a => `<option value="${esc(a.account_id)}">${esc(a.nickname || a.name)} ${a.mask ? "••" + esc(a.mask) : ""}</option>`).join("")
+  $("fAcct").innerHTML = `<option value="">All accounts</option>` + S.accts.filter(a => !isEmptyAcct(a)).map(a => `<option value="${esc(a.account_id)}">${esc(a.nickname || a.name)} ${a.mask ? "••" + esc(a.mask) : ""}</option>`).join("")
     + extra.map(id => `<option value="${esc(id)}">${esc(acctName(id) || id)}</option>`).join("");
   $("fCat").value = keep.c; $("fAcct").value = keep.a;
 }
@@ -1993,8 +1996,9 @@ function renderAccts() {
   const n = netWorth();
   countTo($("aAssets"), n.a); countTo($("aLiab"), n.l); countTo($("aNet"), n.net);
   const hidden = S.settings.hidden_accounts || [];
+  const nEmpty = S.accts.filter(isEmptyAcct).length;
   $("acctGroups").innerHTML = GROUPS.map(([title, f]) => {
-    const list = S.accts.filter(f); if (!list.length) return "";
+    const list = shownAccts().filter(f); if (!list.length) return "";
     const owed = title === "Credit cards" || title === "Loans";
     const total = list.reduce((s, a) => s + Number(a.current_balance || 0), 0);
     return `<div class="group"><h3><span>${title}</span><span class="${owed ? "neg" : ""}">${owed ? "owed " : ""}${money(total)}</span></h3>
@@ -2004,7 +2008,9 @@ function renderAccts() {
         <b style="font-variant-numeric:tabular-nums">${money2(Number(a.current_balance || 0))}</b>
         <div class="btns">${a.type !== "investment" ? `<label class="mute" style="display:flex;gap:6px;align-items:center;font-size:12px">Count in budget <span class="sw"><input type="checkbox" class="acnt" data-id="${esc(a.account_id)}" ${hidden.includes(a.account_id) ? "" : "checked"}><span></span></span></label>` : ""}
           <button class="mini adet" data-id="${esc(a.account_id)}">Details</button></div></div>`).join("")}</div>`;
-  }).join("") || `<div class="mute">No accounts linked yet.</div>`;
+  }).join("") + (nEmpty ? `<div class="mute" style="margin-top:12px;font-size:13px">${S.showEmpty ? "Showing" : `${nEmpty} empty account${nEmpty > 1 ? "s" : ""} hidden ($0, no activity) ·`} <a href="#" id="toggleEmpty">${S.showEmpty ? "hide empty accounts" : "show"}</a></div>` : "")
+    || `<div class="mute">No accounts linked yet.</div>`;
+  if ($("toggleEmpty")) $("toggleEmpty").onclick = e => { e.preventDefault(); S.showEmpty = !S.showEmpty; renderAccts(); renderAcSum(); };
   $("acctGroups").querySelectorAll(".nick").forEach(i => i.onchange = async () => {
     const { error } = await db.from("accounts").update({ nickname: i.value.trim() || null }).eq("account_id", i.dataset.id);
     if (error) return toast(error.message, true);
