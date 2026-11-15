@@ -75,7 +75,7 @@ tr.tap:hover td{background:#1b1f28}td.tap{color:var(--blue)}td.tap:hover{text-de
 .mcard{min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;flex:0 0 auto;scroll-snap-align:center;transition:border-color .2s,transform .2s var(--ease)}
 .mcard:hover{transform:translateY(-2px)}.mcard.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 .mcard .mn{font-weight:600;margin-bottom:6px;font-size:14px}.mcard .ln{display:flex;justify-content:space-between;font-size:13px}.mcard .net{margin-top:6px;font-weight:700}
-.mini-bars{display:flex;gap:3px;align-items:flex-end;height:34px;margin-top:8px}.mini-bars i{display:block;width:100%;border-radius:3px;transform-origin:bottom;animation:grow .7s var(--ease)}
+.mini-bars{display:flex;gap:4px;align-items:flex-end;height:34px;margin-top:8px}.mini-bars i{display:block;width:12px;flex:0 0 12px;border-radius:3px;transform-origin:bottom;animation:grow .7s var(--ease)}
 @keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 .note{background:#1a1e27;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:14px}
 .rowline{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
@@ -251,6 +251,7 @@ tr.tap:hover td{background:#1b1f28}td.tap{color:var(--blue)}td.tap:hover{text-de
       <div class="card">
         <h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Net worth
           <span class="seg"><button data-nw="total" class="on">Total</button><button data-nw="cash">Cash &amp; debt</button></span></h2>
+        <div class="seg" id="nwRange" style="margin:-4px 0 10px"><button data-r="1m">1M</button><button data-r="3m">3M</button><button data-r="6m">6M</button><button data-r="ytd">YTD</button><button data-r="1y">1Y</button><button data-r="all">All</button></div>
         <div class="chartbox"><canvas id="cNet"></canvas></div><div class="mute" id="netNote"></div></div>
     </div>
     <div class="two">
@@ -294,7 +295,7 @@ tr.tap:hover td{background:#1b1f28}td.tap{color:var(--blue)}td.tap:hover{text-de
     <div class="card">
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
         <h2 style="margin:0">Budget by category</h2>
-        <div class="btns"><button id="addBud" class="mini">+ Category</button><button id="applyAll" class="mini primary">Apply suggested</button></div>
+        <div class="btns"><button id="addBud" class="mini">+ Add category</button><button id="applyAll" class="mini primary">Apply suggested</button></div>
       </div>
       <div class="mute" id="budNote" style="margin:8px 0 6px"></div>
       <div id="budList"></div>
@@ -465,14 +466,29 @@ const acctName = id => { const a = S.accts.find(x => x.account_id === id); retur
 function countTo(el, v, fmt = money) {
   if (!el) return; const from = el._v ?? 0; el._v = v;
   cancelAnimationFrame(el._raf);
-  if (RM || from === v) { el.textContent = fmt(v); return; }
+  if (RM || from === v || document.hidden) { el.textContent = fmt(v); return; }
   const t0 = performance.now(), d = 700;
   const step = now => { const p = Math.min(1, (now - t0) / d), e = 1 - Math.pow(1 - p, 3);
     el.textContent = fmt(from + (v - from) * e); if (p < 1) el._raf = requestAnimationFrame(step); };
   el._raf = requestAnimationFrame(step);
 }
 /** Progress bars render at 0 and grow to their width on the next frame. */
-function growBars(root) { requestAnimationFrame(() => requestAnimationFrame(() => root.querySelectorAll(".bar>i[data-w]").forEach(i => i.style.width = i.dataset.w + "%"))); }
+function growBars(root) {
+  const go_ = () => root.querySelectorAll(".bar>i[data-w]").forEach(i => i.style.width = i.dataset.w + "%");
+  if (document.hidden || RM) return go_();
+  requestAnimationFrame(() => requestAnimationFrame(go_)); setTimeout(go_, 400); // fallback if frames are paused
+}
+/** Coming back to the app (other tab, phone unlock, back button): redraw everything so nothing is left blank. */
+let hiddenAt = 0;
+function wake() {
+  if (!S.loaded) return;
+  document.querySelectorAll(".kpi .big, #rTotal, #rSoon").forEach(el => { cancelAnimationFrame(el._raf); });
+  const stale = hiddenAt && Date.now() - hiddenAt > 10 * 60e3;
+  hiddenAt = 0;
+  if (stale) load(); else renderAll(); // renderAll redraws the charts on whichever tab is open
+}
+document.addEventListener("visibilitychange", () => { if (document.hidden) hiddenAt = Date.now(); else wake(); });
+addEventListener("pageshow", e => { if (e.persisted) wake(); });
 
 // ---------- layers (modal + edit sheet) ----------
 function openLayer(id, title, sub, html) {
@@ -966,7 +982,7 @@ document.querySelectorAll("[data-nw]").forEach(b => b.onclick = () => {
   document.querySelectorAll("[data-nw]").forEach(x => x.classList.toggle("on", x === b));
   drawNetWorth();
 });
-const SLIM = { categoryPercentage: .5, barPercentage: .8, maxBarThickness: 22 };
+const SLIM = { categoryPercentage: .42, barPercentage: .75, maxBarThickness: 16 };
 const moneyTick = v => "$" + (Math.abs(v) >= 1000 ? (v / 1000).toFixed(Math.abs(v) >= 10000 ? 0 : 1) + "k" : v);
 
 /** Months to show in month-based charts: the months in the range, or the 6 up to its end. */
@@ -1011,6 +1027,15 @@ function drawCharts() {
 }
 
 /** Walk today's balances backward through cash and card activity, then show the selected dates. */
+S.nwRange = store.get("hr_nw_range") || "3m";
+function nwFrom() {
+  const t = todayISO(), n = dnum(t);
+  return { "1m": dstr(n - 30), "3m": dstr(n - 91), "6m": dstr(n - 182), ytd: t.slice(0, 4) + "-01-01", "1y": dstr(n - 365), all: "0000" }[S.nwRange] || dstr(n - 91);
+}
+document.querySelectorAll("#nwRange [data-r]").forEach(b => {
+  b.classList.toggle("on", b.dataset.r === S.nwRange);
+  b.onclick = () => { S.nwRange = b.dataset.r; store.set("hr_nw_range", S.nwRange); document.querySelectorAll("#nwRange [data-r]").forEach(x => x.classList.toggle("on", x === b)); drawNetWorth(); };
+});
 function drawNetWorth() {
   const cashOnly = S.nwMode === "cash";
   const walkable = ["depository", "credit", "loan"];
@@ -1027,7 +1052,8 @@ function drawNetWorth() {
     let cur = nowVal;
     for (let d = dnum(todayISO()); d >= dnum(start); d--) { const k = dstr(d); labels.push(k); vals.push(Math.round(cur)); cur += (byDay[k] || 0); }
     labels.reverse(); vals.reverse();
-    const keep = labels.map((l, i) => l >= S.range.from && l <= S.range.to ? i : -1).filter(i => i >= 0);
+    const r = nwFrom();
+    const keep = labels.map((l, i) => l >= r ? i : -1).filter(i => i >= 0);
     if (keep.length > 1) { labels = keep.map(i => labels[i]); vals = keep.map(i => vals[i]); }
   }
   const invTotal = S.accts.filter(a => a.type === "investment").reduce((s, a) => s + Number(a.current_balance || 0), 0);
@@ -1053,7 +1079,7 @@ function drawStack() {
   const { ms, cats, by } = trendData();
   $("trendHint").textContent = `— ${monthLabel(ms[0])} to ${monthLabel(ms[ms.length - 1])}`;
   chart("cStack", { type: "bar",
-    data: { labels: ms.map(monthLabel), datasets: cats.map(c => ({ label: pretty(c), data: ms.map(m => Math.round(Math.max(0, by[c + "|" + m] || 0))), backgroundColor: catColor(c), borderRadius: 2, categoryPercentage: .55, barPercentage: .9, maxBarThickness: 34 })) },
+    data: { labels: ms.map(monthLabel), datasets: cats.map(c => ({ label: pretty(c), data: ms.map(m => Math.round(Math.max(0, by[c + "|" + m] || 0))), backgroundColor: catColor(c), borderRadius: 2, categoryPercentage: .4, barPercentage: .9, maxBarThickness: 22 })) },
     options: { scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: moneyTick } } }, plugins: { legend: { position: "bottom", labels: { boxWidth: 10 } } },
       onClick: (e, els) => { if (!els.length) return; const m = ms[els[0].index], c = cats[els[0].datasetIndex];
         drillTx(pretty(c), monthLong(m), () => monthTx(m).filter(t => isSpendish(t) && eff(t) === c), "amt"); } } });
@@ -1277,7 +1303,9 @@ function renderBudget() {
   const spent = sumBy(rangeTx().filter(isSpendish), eff, t => t.amount);
   const bud = Object.fromEntries(S.budgets.map(b => [b.category, Number(b.monthly_amount)]));
   const m = rangeMonth(), f = m ? 1 : rangeDays() / 30.44;
-  const cats = [...new Set([...Object.keys(avg).filter(c => avg[c] > 0.5), ...Object.keys(spent).filter(c => Math.abs(spent[c]) > 0.5), ...Object.keys(bud)])]
+  const hiddenB = new Set(S.settings.budget_hidden || []);
+  const cats = [...new Set([...Object.keys(avg).filter(c => avg[c] > 0.5), ...Object.keys(spent).filter(c => Math.abs(spent[c]) > 0.5), ...Object.keys(bud), ...(S.settings.budget_added || [])])]
+    .filter(c => bud[c] || !hiddenB.has(c)).filter(c => !["INCOME", "TRANSFER_IN", "TRANSFER_OUT"].includes(c))
     .sort((a, b) => (bud[b] || avg[b] || spent[b] || 0) - (bud[a] || avg[a] || spent[a] || 0));
   S.suggest = Object.fromEntries(cats.map(c => [c, avg[c] > 0 ? Math.ceil(avg[c] / 10) * 10 : 0]));
   $("budNote").textContent = (m ? `${monthLong(m)}. ` : `${rangeSub()} — budgets scaled to ${f.toFixed(1)} months. `) +
@@ -1300,12 +1328,12 @@ function renderBudget() {
       <div class="bprog"><div class="bar ${cls}"><i data-w="${pct.toFixed(1)}"></i></div>
         <div class="bmeta"><span>${money(s)} spent${b ? ` of ${money(b)}` : ""}</span><span class="${b && left < 0 ? "neg" : ""}">${b ? (left < 0 ? money(-left) + " over" : money(left) + " left") : "no budget"}</span></div></div>
       <input class="bud bin" data-cat="${esc(c)}" type="number" min="0" step="10" inputmode="numeric" value="${bud[c] || ""}" placeholder="Budget" aria-label="Monthly budget for ${esc(pretty(c))}">
-      <button class="mini ghost bdel" data-cat="${esc(c)}" title="Remove budget" ${bud[c] ? "" : "disabled"}>&times;</button>
+      <button class="mini ghost bdel" data-cat="${esc(c)}" title="Remove from budget" aria-label="Remove ${esc(pretty(c))} from budget">&times;</button>
     </div>`;
   }).join("") : `<div class="empty">No spending yet.</div>`;
   growBars($("budList"));
   $("budList").querySelectorAll(".bud").forEach(i => i.onchange = () => saveBudget(i.dataset.cat, Number(i.value) || 0));
-  $("budList").querySelectorAll(".bdel").forEach(b => b.onclick = () => deleteBudget(b.dataset.cat));
+  $("budList").querySelectorAll(".bdel").forEach(b => b.onclick = () => removeBudgetCat(b.dataset.cat));
   $("budList").querySelectorAll(".sug").forEach(a => a.onclick = e => { e.stopPropagation(); saveBudget(a.dataset.c, S.suggest[a.dataset.c]); });
   $("budList").querySelectorAll(".bname").forEach(el => el.onclick = e => { if (e.target.classList.contains("sug")) return;
     drillTx(pretty(el.dataset.c), rangeSub(), () => rangeTx().filter(t => isSpendish(t) && eff(t) === el.dataset.c), "amt"); });
@@ -1323,6 +1351,31 @@ async function deleteBudget(cat, quiet) {
   S.budgets = S.budgets.filter(b => b.category !== cat);
   if (!quiet) { renderBudget(); toast("Budget removed"); }
 }
+/** Take a category off the Budget list (and delete its budget). Custom categories can be deleted outright. */
+function removeBudgetCat(cat) {
+  const custom = customCats().includes(cat), used = S.tx.filter(t => t.user_category === cat).length;
+  openLayer("sheet", "Remove " + pretty(cat), "", `
+    <div class="mute" style="margin-bottom:14px">${S.budgets.some(b => b.category === cat) ? "Its monthly budget is deleted and the" : "The"} category disappears from this list. Spending in it still counts in your totals.</div>
+    <div class="btns"><button class="primary" id="rbList">Remove from budget</button>
+      ${custom ? `<button class="danger" id="rbDel">Delete category${used ? ` (${used} transactions go back to their bank category)` : ""}</button>` : ""}
+      <button id="rbCancel">Cancel</button></div>`);
+  $("rbCancel").onclick = () => closeLayer("sheet");
+  $("rbList").onclick = async () => {
+    closeLayer("sheet");
+    if (S.budgets.some(b => b.category === cat)) await deleteBudget(cat, true);
+    await saveSetting("budget_hidden", [...new Set([...(S.settings.budget_hidden || []), cat])]);
+    await saveSetting("budget_added", (S.settings.budget_added || []).filter(c => c !== cat));
+    renderBudget(); toast(pretty(cat) + " removed from budget");
+  };
+  if ($("rbDel")) $("rbDel").onclick = async () => {
+    closeLayer("sheet");
+    if (used) { const { error } = await db.from("transactions").update({ user_category: null }).eq("user_category", cat); if (error) return toast(error.message, true); S.tx.forEach(t => { if (t.user_category === cat) t.user_category = null; }); }
+    if (S.budgets.some(b => b.category === cat)) await deleteBudget(cat, true);
+    await saveSetting("custom_categories", customCats().filter(c => c !== cat));
+    await saveSetting("budget_added", (S.settings.budget_added || []).filter(c => c !== cat));
+    S.filterSig = null; renderAll(); toast("Category deleted");
+  };
+}
 $("applyAll").onclick = async () => {
   $("applyAll").disabled = true;
   for (const [c, v] of Object.entries(S.suggest || {})) if (v) await saveBudget(c, v, true);
@@ -1330,11 +1383,27 @@ $("applyAll").onclick = async () => {
 };
 $("addBud").onclick = () => {
   const have = new Set(S.budgets.map(b => b.category));
-  openLayer("sheet", "Add a budget", "", `<div class="fields"><div><label class="lbl" for="abCat">Category</label><select id="abCat">${allCats().filter(c => !have.has(c) && !["INCOME", "TRANSFER_IN", "TRANSFER_OUT"].includes(c)).map(c => `<option value="${esc(c)}">${esc(pretty(c))}</option>`).join("")}</select></div>
-    <div><label class="lbl" for="abAmt">Monthly amount</label><input id="abAmt" type="number" min="0" step="10" inputmode="numeric"></div></div>
-    <div class="btns" style="margin-top:16px"><button class="primary" id="abSave">Save</button><button id="abCancel">Cancel</button></div>`);
+  const opts = allCats().filter(c => !have.has(c) && !["INCOME", "TRANSFER_IN", "TRANSFER_OUT"].includes(c));
+  openLayer("sheet", "Add a budget category", "Pick an existing category or create a new one", `<div class="fields">
+      <div><label class="lbl" for="abCat">Category</label><select id="abCat">${opts.map(c => `<option value="${esc(c)}">${esc(pretty(c))}</option>`).join("")}<option value="__new">+ New category…</option></select></div>
+      <div id="abNewW" class="hidden"><label class="lbl" for="abNew">New category name</label><input id="abNew" placeholder="e.g. Golf, Kids, Gifts"></div>
+      <div><label class="lbl" for="abAmt">Monthly amount (optional)</label><input id="abAmt" type="number" min="0" step="10" inputmode="numeric" placeholder="0"></div></div>
+    <div class="btns" style="margin-top:16px"><button class="primary" id="abSave">Add</button><button id="abCancel">Cancel</button></div>`);
+  const sync = () => $("abNewW").classList.toggle("hidden", $("abCat").value !== "__new"); $("abCat").onchange = sync; if (!opts.length) { $("abCat").value = "__new"; sync(); }
   $("abCancel").onclick = () => closeLayer("sheet");
-  $("abSave").onclick = async () => { const a = Number($("abAmt").value); if (!a) return toast("Enter an amount", true); closeLayer("sheet"); await saveBudget($("abCat").value, a); };
+  $("abSave").onclick = async () => {
+    let cat = $("abCat").value; const a = Number($("abAmt").value) || 0;
+    if (cat === "__new") {
+      const n = $("abNew").value.trim(); if (!n) return toast("Type a name for the category", true);
+      const ex = allCats().find(c => pretty(c).toLowerCase() === n.toLowerCase());
+      if (ex) cat = ex; else { if (!(await saveSetting("custom_categories", [...customCats(), n]))) return; cat = n; S.filterSig = null; }
+    }
+    closeLayer("sheet");
+    await saveSetting("budget_hidden", (S.settings.budget_hidden || []).filter(c => c !== cat));
+    if (!(S.settings.budget_added || []).includes(cat)) await saveSetting("budget_added", [...(S.settings.budget_added || []), cat]);
+    if (a) await saveBudget(cat, a, true);
+    renderAll(); toast(pretty(cat) + " added to budget");
+  };
 };
 
 // ---------- transactions ----------
