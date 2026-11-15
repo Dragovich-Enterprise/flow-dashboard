@@ -3,10 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#134E4A">
+<meta name="theme-color" content="#F7F8FA">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Headroom">
 <title>Headroom</title>
 <style>
@@ -19,7 +22,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 Inter,-apple
 .logo{font-size:21px;font-weight:700;letter-spacing:-.02em}.logo span{color:var(--accent)}
 h2{font-size:12px;margin:0 0 12px;color:var(--mute);font-weight:600;text-transform:uppercase;letter-spacing:.07em}
 h2 .hint{text-transform:none;letter-spacing:0;font-weight:400;opacity:.8}
-.wrap{max-width:1100px;margin:0 auto;padding:16px 16px 70px}
+.wrap{max-width:1100px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px 70px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;background:var(--brand);color:#fff;border-radius:16px;padding:12px 14px;box-shadow:0 6px 20px rgba(19,78,74,.18)}
 .top .logo span{color:#5EEAD4}
 .top button{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff}
@@ -142,6 +145,8 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
 .chartbox canvas.reveal{animation:reveal .9s var(--ease)}.chartbox canvas.pop{animation:popin .6s var(--ease)}
 @keyframes reveal{from{clip-path:inset(0 100% 0 0)}}@keyframes popin{from{transform:scale(.92) rotate(-12deg)}}
 .kd{font-size:12px;margin-top:2px}
+.install{display:flex;gap:12px;align-items:center;background:#F0FDFA;border:1px solid #99F6E4;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:14px}
+.install img{width:40px;height:40px;border-radius:10px;flex:0 0 auto}.install .x{margin-left:auto}
 /* insights */
 .ins{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line)}
 .ins:first-child{border-top:0;padding-top:2px}
@@ -186,7 +191,7 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
 @keyframes shim{to{transform:translateX(100%)}}
 .empty{text-align:center;color:var(--mute);padding:28px 10px}
 @media (max-width:760px){
-  .wrap{padding:10px 10px calc(96px + var(--safe-b))}
+  .wrap{padding:calc(10px + env(safe-area-inset-top,0px)) 10px calc(96px + var(--safe-b))}
   .tabs,.desk{display:none!important}
   #bnav{display:flex}
   .fab{bottom:calc(84px + var(--safe-b))}
@@ -265,6 +270,7 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
 
   <!-- OVERVIEW -->
   <div class="pane on" id="p-overview">
+    <div id="installHint"></div>
     <div id="coverage"></div>
     <div class="strip" id="strip"></div>
     <div class="grid">
@@ -430,6 +436,19 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
         <label class="mute"><input type="checkbox" id="impPos"> single "Amount" column: positive = money spent</label></div>
       <div class="btns"><button id="impBtn" class="primary">Import CSV</button><span class="mute" id="impOut"></span></div>
       <div id="impList" style="margin-top:12px"></div></div>
+    <div class="card" id="notifCard"><h2>Notifications</h2>
+      <div class="mute" id="pushStatus" style="margin-bottom:12px"></div>
+      <div class="btns" style="margin-bottom:6px"><button class="primary" id="pushOn">Turn on notifications</button><button id="pushTest" class="hidden">Send a test</button><button id="pushOff" class="hidden ghost">Turn off on this device</button></div>
+      <div id="pushPrefs">
+        <div class="optrow"><div><div class="t">Big charges</div><div class="d">Any new charge of <input id="npAmt" type="number" min="1" step="25" inputmode="numeric" style="width:84px;padding:3px 6px"> or more</div></div><label class="sw"><input type="checkbox" data-np="big"><span></span></label></div>
+        <div class="optrow"><div><div class="t">Possible double charges</div><div class="d">Same amount, same place, same day</div></div><label class="sw"><input type="checkbox" data-np="dup"><span></span></label></div>
+        <div class="optrow"><div><div class="t">Budget alerts</div><div class="d">When a category hits 80% and when it goes over</div></div><label class="sw"><input type="checkbox" data-np="budget"><span></span></label></div>
+        <div class="optrow"><div><div class="t">Bills due tomorrow</div><div class="d">From your recurring charges</div></div><label class="sw"><input type="checkbox" data-np="bills"><span></span></label></div>
+        <div class="optrow"><div><div class="t">Payday</div><div class="d">The morning a paycheck is expected</div></div><label class="sw"><input type="checkbox" data-np="payday"><span></span></label></div>
+        <div class="optrow"><div><div class="t">Weekly summary</div><div class="d">Sunday morning: what you spent and what's left this month</div></div><label class="sw"><input type="checkbox" data-np="weekly"><span></span></label></div>
+      </div>
+      <div class="mute" style="margin-top:10px">Alerts go out around 8 AM and 6 PM, right after your banks sync.</div>
+    </div>
     <div class="card"><h2>Account</h2>
       <div class="btns"><button id="outBtn2">Sign out</button></div></div>
     <div class="card"><h2>Reset connections</h2>
@@ -807,7 +826,7 @@ function renderAll() {
   classify(); S._ver = (S._ver || 0) + 1; S.flags = computeFlags();
   $("rangeLbl").textContent = rangeLabel(); $("rangeBtn").title = rangeSub();
   renderOverview(); renderStrip(); renderTrends(); renderRecurring(); renderBudget();
-  renderTxns(); renderAccts(); renderInvest(); renderGoals(); renderSettings();
+  renderTxns(); renderAccts(); renderInvest(); renderGoals(); renderSettings(); renderPush(); renderInstallHint(); saveSchedule();
   if (S.drill) refreshDrill();
 }
 
@@ -2146,6 +2165,73 @@ $("impBtn").onclick = async () => {
   out.textContent = `Imported ${recs.length} transactions back to ${lo}. You can remove them below.`;
   await load();
 };
+// ---------- installable app + push notifications ----------
+const VAPID = "BAqutLVJ6IyuxDeGMKPPupAgvxAqKPUwyWT7uHKk0_JHZU-WRpHNUoaomVuzCYJI-vB35j9-J1f0uTW75l4f2fM";
+const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const pushSupported = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+  // tapping a notification while the app is open jumps to the right tab
+  navigator.serviceWorker.addEventListener("message", e => { const t = e.data && e.data.go; if (t && document.getElementById("p-" + t)) go(t); });
+}
+addEventListener("hashchange", () => { const t = location.hash.slice(1); if (t && t !== S.tab && document.getElementById("p-" + t)) go(t); });
+async function fnNotify(body) {
+  const { data: { session } } = await db.auth.getSession();
+  const r = await fetch(`${SUPABASE_URL}/functions/v1/notify`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token, apikey: SUPABASE_KEY }, body: JSON.stringify(body) });
+  const j = await r.json(); if (!r.ok) throw new Error(j.error || r.statusText); return j;
+}
+const b64ToBytes = s => { const p = "=".repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from([...b].map(c => c.charCodeAt(0))); };
+async function currentSub() { if (!pushSupported()) return null; const reg = await navigator.serviceWorker.ready; return reg.pushManager.getSubscription(); }
+async function renderPush() {
+  const st = $("pushStatus"); if (!st) return;
+  const prefs = { big: true, bigAmt: 200, dup: true, budget: true, bills: true, payday: true, weekly: true, ...(S.settings.notify || {}) };
+  document.querySelectorAll("[data-np]").forEach(i => i.checked = !!prefs[i.dataset.np]); $("npAmt").value = prefs.bigAmt;
+  let sub = null; try { sub = await currentSub(); } catch {}
+  const on = !!sub && Notification.permission === "granted";
+  $("pushOn").classList.toggle("hidden", on); $("pushTest").classList.toggle("hidden", !on); $("pushOff").classList.toggle("hidden", !on);
+  if (on) st.innerHTML = `<span class="pill ok">On</span> This device will get alerts.`;
+  else if (isIOS && !standalone()) { st.innerHTML = `On iPhone, notifications only work from the Home Screen app: in Safari tap <b>Share</b> → <b>Add to Home Screen</b>, open Headroom from your Home Screen, then come back here.`; $("pushOn").classList.add("hidden"); }
+  else if (!pushSupported()) { st.textContent = "This browser can't receive notifications."; $("pushOn").classList.add("hidden"); }
+  else if ("Notification" in window && Notification.permission === "denied") { st.textContent = "Notifications are blocked for Headroom. Turn them back on in your phone's Settings → Notifications → Headroom."; $("pushOn").classList.add("hidden"); }
+  else st.textContent = "Get alerts on this device for big or double charges, budgets, bills and paydays.";
+}
+$("pushOn").onclick = async () => {
+  try {
+    if (!pushSupported()) return toast("This browser can't receive notifications", true);
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") { renderPush(); return toast("Notifications weren't allowed", true); }
+    const reg = await navigator.serviceWorker.ready;
+    const sub = (await reg.pushManager.getSubscription()) || (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(VAPID) }));
+    const j = sub.toJSON();
+    const { error } = await db.from("push_subscriptions").upsert({ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, user_agent: navigator.userAgent }, { onConflict: "endpoint" });
+    if (error) throw error;
+    await renderPush(); toast("Notifications on — sending a test…");
+    await fnNotify({ action: "test" });
+  } catch (e) { toast("Couldn't turn on notifications: " + (e.message || e), true); }
+};
+$("pushTest").onclick = async () => { try { const r = await fnNotify({ action: "test" }); toast(r.delivered ? "Test sent — check your notifications" : "No device received it: " + (r.errors[0] || "try turning notifications off and on"), !r.delivered); } catch (e) { toast(e.message, true); } };
+$("pushOff").onclick = async () => {
+  const sub = await currentSub(); if (sub) { await db.from("push_subscriptions").delete().eq("endpoint", sub.endpoint); await sub.unsubscribe(); }
+  renderPush(); toast("Notifications off on this device");
+};
+const savePrefs = async () => { const p = { ...(S.settings.notify || {}) }; document.querySelectorAll("[data-np]").forEach(i => p[i.dataset.np] = i.checked); p.bigAmt = Math.max(1, Number($("npAmt").value) || 200);
+  if (await saveSetting("notify", p)) toast("Notification settings saved"); };
+document.querySelectorAll("[data-np]").forEach(i => i.onchange = savePrefs); $("npAmt").onchange = savePrefs;
+
+/** The server sends "bill due tomorrow" and "payday" alerts from this schedule, so keep it current whenever the app opens. */
+function saveSchedule() {
+  if (!S.loaded) return;
+  const events = upcoming(35).map(e => ({ d: e.d, name: e.name, amt: Math.round(e.amt * 100) / 100, kind: e.kind }));
+  const prev = S.settings.upcoming && S.settings.upcoming.events;
+  if (JSON.stringify(prev) !== JSON.stringify(events)) saveSetting("upcoming", { events, at: new Date().toISOString() });
+}
+function renderInstallHint() {
+  const el = $("installHint"); if (!el) return;
+  const show = isIOS && !standalone() && !store.get("hr_install_dismissed");
+  el.innerHTML = show ? `<div class="install"><img src="icons/icon-180.png" alt=""><div><b>Install Headroom</b><div class="mute">Tap <b>Share</b> then <b>Add to Home Screen</b> to use it like an app and get notifications.</div></div><button class="mini ghost x" id="instX" aria-label="Dismiss">&times;</button></div>` : "";
+  if ($("instX")) $("instX").onclick = () => { store.set("hr_install_dismissed", true); renderInstallHint(); };
+}
 boot();
 </script>
 </body>
