@@ -1128,7 +1128,8 @@ const CENTER_TEXT = { id: "centerText", afterDraw(c) {
 /** Create a chart once, then update it in place. iPhone Safari caps total chart (canvas) memory and draws new
  *  charts blank once it's used up, so charts are never torn down and rebuilt on tab switches or redraws. */
 function chart(id, cfg) {
-  const options = { animation: false, responsive: true, maintainAspectRatio: false, devicePixelRatio: Math.min(2, window.devicePixelRatio || 1), ...(cfg.options || {}) };
+  // Pointer events: a finger lifting off (or the mouse leaving) fires pointerleave, which Chart.js treats as "mouse out" and clears the highlight.
+  const options = { animation: false, events: ["pointerdown", "pointermove", "pointerleave", "click"], responsive: true, maintainAspectRatio: false, devicePixelRatio: Math.min(2, window.devicePixelRatio || 1), ...(cfg.options || {}) };
   const old = S.charts[id];
   if (old && old.config.type === cfg.type && old.canvas === $(id)) { old.data = cfg.data; old.options = options; old.update("none"); return old; }
   if (old) { old.destroy(); const cv = $(id); cv.width = 0; cv.height = 0; }
@@ -1140,6 +1141,12 @@ function chart(id, cfg) {
   if (!Chart.registry.plugins.get("crosshair")) Chart.register(CROSSHAIR, CENTER_TEXT);
   Chart.defaults.plugins.tooltip.backgroundColor = "#1C1917"; Chart.defaults.plugins.tooltip.padding = 10; Chart.defaults.plugins.tooltip.cornerRadius = 8;
   const c = S.charts[id] = new Chart($(id), { ...cfg, options });
+  const cv0 = $(id); if (!cv0._peek) { cv0._peek = 1;
+    cv0.addEventListener("pointerdown", e => { S._pd = { t: Date.now(), x: e.clientX, y: e.clientY, moved: false }; });
+    cv0.addEventListener("pointermove", e => { const p = S._pd; if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > 10) p.moved = true; });
+    const reset = () => { const ch = Object.values(S.charts).find(x => x.canvas === cv0); if (!ch) return; ch.setActiveElements([]); ch.tooltip.setActiveElements([], { x: 0, y: 0 }); ch.update("none"); };
+    cv0.addEventListener("pointerup", e => { if (e.pointerType !== "mouse") setTimeout(reset, 0); });
+    cv0.addEventListener("pointercancel", reset); cv0.addEventListener("pointerleave", reset); }
   if (!RM) { const cv = $(id); cv.classList.remove("reveal", "pop"); void cv.offsetWidth; cv.classList.add(cfg.type === "doughnut" ? "pop" : "reveal"); } // CSS entrance, independent of Chart.js
   setTimeout(() => { if (S.charts[id] === c && c.canvas && c.canvas.offsetParent) { c.resize(); c.update("none"); } }, 1000);
 }
@@ -1158,8 +1165,8 @@ function chartMonths() {
   if (inR.length >= 2) return inR.slice(-24);
   return [...S.months].reverse().filter(m => m <= to).slice(-6);
 }
-// Touch: a first tap on a chart shows its numbers; tapping the same spot again opens the transactions behind it. A mouse click opens them directly.
-function tapGuard(key, e) { const p = e && e.native && e.native.pointerType; if (p === "mouse" || p === "pen") return true; if (S._tap === key) { S._tap = null; return true; } S._tap = key; return false; }
+// Touch: press and hold (or slide) to read the numbers, which clear when the finger lifts; a quick tap opens the transactions behind it. A mouse click opens them directly.
+function tapGuard(key, e) { const p = e && e.native && e.native.pointerType; if (p === "mouse" || p === "pen") return true; const d = S._pd; return !d || (Date.now() - d.t < 400 && !d.moved); }
 const pctChg = (a, b) => b ? Math.round((a - b) / Math.abs(b) * 100) : null;
 const deltaHTML = (cur, prev, goodWhenDown) => { if (!prev) return ""; const d = cur - prev, p = pctChg(cur, prev), up = d > 0;
   if (Math.abs(p) < 1) return `<span class="delta" title="${money(prev)} last period">≈ same</span>`;

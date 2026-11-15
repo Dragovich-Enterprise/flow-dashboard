@@ -1,5 +1,5 @@
 // Headroom service worker: opens instantly / offline from cache, and shows push notifications.
-const VERSION = "headroom-v8";
+const VERSION = "headroom-v8.2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/badge-96.png"];
 const CDN = "https://cdn.jsdelivr.net/";
 
