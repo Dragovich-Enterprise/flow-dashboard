@@ -131,6 +131,17 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
 .bin{width:100%;text-align:right}
 .bsum{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--mute);padding:10px 12px;background:var(--card2);border:1px solid var(--line);border-radius:10px;margin:10px 0 4px}
 .bsum b{color:var(--text)}
+.hl{display:flex;gap:6px 22px;flex-wrap:wrap;align-items:flex-end;margin:-4px 0 12px}.hl .l{font-size:12px;color:var(--mute)}.hl .v{font-size:21px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}.hl .mutev{color:#57534E;font-weight:600;font-size:17px}
+.donutwrap{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:center}.chartbox.donut{height:210px}
+.cbrow{display:grid;grid-template-columns:10px 1fr auto auto 52px;gap:8px;align-items:center;padding:7px 4px;border-top:1px solid var(--line);font-size:13px;cursor:pointer;border-radius:8px;transition:background .15s}
+.cbrow:first-child{border-top:0}.cbrow:hover{background:var(--soft)}.cbrow .cbn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{width:10px;height:10px;border-radius:3px;display:block}
+.delta{font-size:11px;font-weight:600;text-align:right;white-space:nowrap}.delta.good{color:var(--accent-d)}.delta.bad{color:var(--bad)}
+.seg button:disabled{opacity:.35;cursor:not-allowed}
+.chartbox canvas{touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.chartbox canvas.reveal{animation:reveal .9s var(--ease)}.chartbox canvas.pop{animation:popin .6s var(--ease)}
+@keyframes reveal{from{clip-path:inset(0 100% 0 0)}}@keyframes popin{from{transform:scale(.92) rotate(-12deg)}}
+.kd{font-size:12px;margin-top:2px}
 /* insights */
 .ins{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line)}
 .ins:first-child{border-top:0;padding-top:2px}
@@ -206,6 +217,8 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
   .filters input[type=search]{min-width:100%}
   .filters select{flex:1;min-width:0}
   .week{gap:4px}.day{padding:6px 2px;min-height:60px}
+  .donutwrap{grid-template-columns:1fr}.chartbox.donut{height:220px}
+  .hl .v{font-size:19px}.hl .mutev{font-size:15px}
 }
 @keyframes up{from{transform:translateY(100%)}to{transform:none}}
 @keyframes down{to{transform:translateY(100%)}}
@@ -261,11 +274,14 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
       <div class="card tap kpi" id="cardNet"><div class="mute">Net worth</div><div class="big" id="kNet"><span class="sk">&nbsp;</span></div><div class="sub" id="kNetSub"></div></div>
     </div>
     <div class="two">
-      <div class="card"><h2 id="paceTitle">Spend pace</h2><div class="chartbox"><canvas id="cPace"></canvas></div></div>
+      <div class="card"><h2 id="paceTitle">Spend pace</h2><div class="hl" id="paceHead"></div><div class="chartbox"><canvas id="cPace"></canvas></div></div>
       <div class="card">
         <h2 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Net worth
           <span class="seg"><button data-nw="total" class="on">Total</button><button data-nw="cash">Cash &amp; debt</button></span></h2>
-        <div class="seg" id="nwRange" style="margin:-4px 0 10px"><button data-r="1m">1M</button><button data-r="3m">3M</button><button data-r="6m">6M</button><button data-r="ytd">YTD</button><button data-r="1y">1Y</button><button data-r="all">All</button></div>
+        <div class="hl" id="nwHead"></div>
+        <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <div class="seg" id="nwRange"><button data-r="1w">1W</button><button data-r="1m">1M</button><button data-r="3m">3M</button><button data-r="6m">6M</button><button data-r="1y">1Y</button><button data-r="all">All</button></div>
+          <div class="seg" id="nwY" title="How tall the line's swings look"><button data-y="fit">Zoom in</button><button data-y="zero">From $0</button></div></div>
         <div class="chartbox"><canvas id="cNet"></canvas></div><div class="mute" id="netNote"></div></div>
     </div>
     <div class="two">
@@ -273,7 +289,8 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
       <div class="card"><h2>Coming up <span class="hint" id="payHint"></span></h2><div class="week" id="week"></div><div id="upList" style="margin-top:10px"></div></div>
     </div>
     <div class="two">
-      <div class="card"><h2>Spending by category <span class="hint">&mdash; tap a slice</span></h2><div class="chartbox"><canvas id="cDonut"></canvas></div></div>
+      <div class="card"><h2>Spending by category <span class="hint">&mdash; vs. the same point last period</span></h2>
+        <div class="donutwrap"><div class="chartbox donut"><canvas id="cDonut"></canvas></div><div id="catBreak"></div></div></div>
       <div class="card"><h2>Income vs. spending <span class="hint">&mdash; tap a bar</span></h2><div class="chartbox"><canvas id="cTrend"></canvas></div></div>
     </div>
     <div class="two">
@@ -1011,7 +1028,8 @@ function renderOverview() {
   const msg = [];
   if (min) msg.push(`Data starts ${shortDate(min)} · ${fullMonths.length} full month${fullMonths.length === 1 ? "" : "s"} of history.`);
   if (fullMonths.length < 4) msg.push(`Budget suggestions get more reliable with 4+ full months — <a class="link" data-go="settings">import older history</a>.`);
-  $("coverage").innerHTML = S.tx.length ? `<div class="note">${msg.join(" ")}</div>` : `<div class="note">No data yet. <a class="link" data-go="settings">Link a bank</a> to get started.</div>`;
+  // only worth a banner while history is thin
+  $("coverage").innerHTML = S.tx.length ? (fullMonths.length < 2 ? `<div class="note">${msg.join(" ")}</div>` : "") : `<div class="note">No data yet. <a class="link" data-go="settings">Link a bank</a> to get started.</div>`;
   $("coverage").querySelectorAll("[data-go]").forEach(a => a.onclick = () => go(a.dataset.go));
 
   const rtx = rangeTx();
@@ -1020,18 +1038,20 @@ function renderOverview() {
   const notCounted = rtx.filter(t => t._k === "transfer" && t.amount < 0 && !isCardPay(t)).reduce((s, t) => s - t.amount, 0);
   countTo($("kInc"), inc); countTo($("kSpent"), spent); countTo($("kFlow"), flow);
   $("kFlow").className = "big " + (flow < 0 ? "neg" : "pos");
-  $("kIncSub").innerHTML = notCounted > 0.5 ? `<a id="kIncOut">${money(notCounted)} in transfers not counted</a>` : "&nbsp;";
-  $("kSpentSub").textContent = refunds > 0.5 ? `after ${money(refunds)} in refunds` : " ";
+  const pr = txIn(prevRange()), pSp = netSpend(pr), pInc = incomeOf(pr), pLbl = rangeMonth() ? "vs. last month by now" : "vs. prior period";
+  $("kIncSub").innerHTML = pInc ? `${deltaHTML(inc, pInc, false)} <span>${pLbl}</span>` : "&nbsp;";
+  $("kSpentSub").innerHTML = pSp ? `${deltaHTML(spent, pSp, true)} <span>${money(Math.abs(spent - pSp))} ${spent > pSp ? "more" : "less"} ${pLbl}</span>` : (refunds > 0.5 ? `after ${money(refunds)} in refunds` : "&nbsp;");
   $("kRate").textContent = inc ? `${Math.round(flow / inc * 100)}% of income saved` : " ";
   if (S.accts.length) countTo($("kNet"), netWorth().net); else $("kNet").textContent = "–";
-  $("kNetSub").textContent = S.accts.length ? `${S.accts.length} accounts` : "";
+  const nw = nwSeries(false), n30 = nw.vals.length > 30 ? nw.vals[nw.vals.length - 31] : nw.vals[0], nwNow = nw.vals[nw.vals.length - 1];
+  $("kNetSub").innerHTML = S.accts.length ? (nw.vals.length > 7 ? `<span class="${nwNow >= n30 ? "pos" : "neg"}">${nwNow >= n30 ? "▲" : "▼"} ${money(Math.abs(nwNow - n30))}</span> in 30 days` : `${S.accts.length} accounts`) : "";
   if ($("kIncOut")) $("kIncOut").onclick = e => { e.stopPropagation(); showLeftOut(); };
 
-  const merch = sumBy(rtx.filter(isSpendish), t => tname(t), t => t.amount);
+  const merch = sumBy(rtx.filter(isSpendish), t => tname(t), t => t.amount), visits = sumBy(rtx.filter(t => t._k === "spend"), t => tname(t), () => 1);
   const top = Object.entries(merch).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 8);
   const topMax = top.length ? top[0][1] : 1;
   $("merchants").innerHTML = top.length ? top.map(([k, v]) =>
-    `<div class="rowline tap" data-m="${esc(k)}" style="display:block"><div style="display:flex;justify-content:space-between;gap:10px"><span>${esc(k)}</span><span>${money(v)}</span></div>
+    `<div class="rowline tap" data-m="${esc(k)}" style="display:block"><div style="display:flex;justify-content:space-between;gap:10px"><span>${esc(k)} <span class="mute">· ${visits[k] || 1} visit${(visits[k] || 1) === 1 ? "" : "s"}${(visits[k] || 1) > 1 ? `, avg ${money(v / visits[k])}` : ""}</span></span><b>${money(v)}</b></div>
       <div class="bar" style="height:4px;margin-top:6px"><i data-w="${(v / topMax * 100).toFixed(1)}" style="background:#5EEAD4"></i></div></div>`).join("") : `<div class="empty">Nothing in these dates.</div>`;
   growBars($("merchants"));
   $("merchants").querySelectorAll("[data-m]").forEach(el => el.onclick = () =>
@@ -1051,18 +1071,37 @@ $("cardSpent").onclick = () => drillTx("Everything you spent", rangeSub(), () =>
 $("cardFlow").onclick = () => drillTx("Money in and out", rangeSub(), () => rangeTx().filter(t => isSpendish(t) || isIncome(t)));
 $("cardNet").onclick = netWorthBreakdown;
 
+/** Vertical guide line under the finger / mouse on line charts. */
+const CROSSHAIR = { id: "crosshair", afterDatasetsDraw(c) {
+  if (c.config.type !== "line") return; const a = c.tooltip && c.tooltip.getActiveElements && c.tooltip.getActiveElements(); if (!a || !a.length) return;
+  const x = a[0].element.x, { top, bottom } = c.chartArea, g = c.ctx; g.save(); g.beginPath(); g.moveTo(x, top); g.lineTo(x, bottom);
+  g.lineWidth = 1; g.strokeStyle = "rgba(28,25,23,.28)"; g.setLineDash([3, 3]); g.stroke(); g.restore(); } };
+/** Doughnut centre: total, or the slice under the finger / mouse. */
+const CENTER_TEXT = { id: "centerText", afterDraw(c) {
+  if (c.config.type !== "doughnut") return; const meta = c.getDatasetMeta(0); if (!meta.data.length) return;
+  const { x, y } = meta.data[0], d = c.data.datasets[0].data, tot = d.reduce((s, v) => s + v, 0), a = c.getActiveElements(), g = c.ctx;
+  let l1 = "Total spent", l2 = money(tot), l3 = `${d.length} categories`;
+  if (a.length) { const i = a[0].index; l1 = c.data.labels[i]; l2 = money(d[i]); l3 = `${Math.round(d[i] / tot * 100)}% of spending`; }
+  const fam = getComputedStyle(document.body).fontFamily; g.save(); g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillStyle = "#78716C"; g.font = `500 12px ${fam}`; g.fillText(l1.length > 22 ? l1.slice(0, 21) + "…" : l1, x, y - 20);
+  g.fillStyle = "#1C1917"; g.font = `700 22px ${fam}`; g.fillText(l2, x, y + 2);
+  g.fillStyle = "#78716C"; g.font = `12px ${fam}`; g.fillText(l3, x, y + 22); g.restore(); } };
 /** Create a chart once, then update it in place. iPhone Safari caps total chart (canvas) memory and draws new
  *  charts blank once it's used up, so charts are never torn down and rebuilt on tab switches or redraws. */
 function chart(id, cfg) {
-  const options = { responsive: true, maintainAspectRatio: false, devicePixelRatio: Math.min(2, window.devicePixelRatio || 1), ...(cfg.options || {}) };
+  const options = { animation: false, responsive: true, maintainAspectRatio: false, devicePixelRatio: Math.min(2, window.devicePixelRatio || 1), ...(cfg.options || {}) };
   const old = S.charts[id];
-  if (old && old.config.type === cfg.type && old.canvas === $(id)) { old.data = cfg.data; old.options = options; old.update(); return old; }
+  if (old && old.config.type === cfg.type && old.canvas === $(id)) { old.data = cfg.data; old.options = options; old.update("none"); return old; }
   if (old) { old.destroy(); const cv = $(id); cv.width = 0; cv.height = 0; }
   Chart.defaults.color = "#78716C"; Chart.defaults.borderColor = "#EFEDEB";
   Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
-  Chart.defaults.animation = RM ? false : { duration: 800, easing: "easeOutQuart" };
+  Chart.defaults.animation = false; Chart.defaults.transitions.active.animation.duration = 0;
+  Chart.defaults.plugins.tooltip.animation = false; Chart.defaults.plugins.tooltip.caretPadding = 8; Chart.defaults.plugins.tooltip.boxPadding = 4;
+  Chart.defaults.plugins.tooltip.titleFont = { weight: "600" }; Chart.defaults.plugins.tooltip.footerFont = { weight: "500" }; Chart.defaults.plugins.tooltip.footerColor = "#99F6E4";
+  if (!Chart.registry.plugins.get("crosshair")) Chart.register(CROSSHAIR, CENTER_TEXT);
   Chart.defaults.plugins.tooltip.backgroundColor = "#1C1917"; Chart.defaults.plugins.tooltip.padding = 10; Chart.defaults.plugins.tooltip.cornerRadius = 8;
   const c = S.charts[id] = new Chart($(id), { ...cfg, options });
+  if (!RM) { const cv = $(id); cv.classList.remove("reveal", "pop"); void cv.offsetWidth; cv.classList.add(cfg.type === "doughnut" ? "pop" : "reveal"); } // CSS entrance, independent of Chart.js
   setTimeout(() => { if (S.charts[id] === c && c.canvas && c.canvas.offsetParent) { c.resize(); c.update("none"); } }, 1000);
 }
 document.querySelectorAll("[data-nw]").forEach(b => b.onclick = () => {
@@ -1080,84 +1119,113 @@ function chartMonths() {
   if (inR.length >= 2) return inR.slice(-24);
   return [...S.months].reverse().filter(m => m <= to).slice(-6);
 }
+// Touch: a first tap on a chart shows its numbers; tapping the same spot again opens the transactions behind it. A mouse click opens them directly.
+function tapGuard(key, e) { const p = e && e.native && e.native.pointerType; if (p === "mouse" || p === "pen") return true; if (S._tap === key) { S._tap = null; return true; } S._tap = key; return false; }
+const pctChg = (a, b) => b ? Math.round((a - b) / Math.abs(b) * 100) : null;
+const deltaHTML = (cur, prev, goodWhenDown) => { if (!prev) return ""; const d = cur - prev, p = pctChg(cur, prev), up = d > 0;
+  if (Math.abs(p) < 1) return `<span class="delta" title="${money(prev)} last period">≈ same</span>`;
+  const txt = Math.abs(p) >= 200 ? `${(cur / prev).toFixed(1)}×` : `${Math.abs(p)}%`;
+  return `<span class="delta ${(up !== !!goodWhenDown) ? "good" : "bad"}" title="${money(prev)} last period">${up ? "▲" : "▼"} ${txt}</span>`; };
+/** The equivalent earlier period: last month for a calendar month, otherwise the same number of days just before. */
+function prevRange() {
+  const m = rangeMonth(); if (m) { const pm = addMonths(m, -1); const cut = m === todayISO().slice(0, 7) ? Number(todayISO().slice(8)) : 31; return { from: pm + "-01", to: dstr(Math.min(dnum(endOfMonth(pm)), dnum(pm + "-01") + cut - 1)) }; }
+  const len = rangeDays(); return { from: dstr(dnum(S.range.from) - len), to: dstr(dnum(S.range.from) - 1) };
+}
+const txIn = r => S.tx.filter(t => t.date >= r.from && t.date <= r.to);
+
 function drawCharts() {
-  const rtx = rangeTx().filter(isSpendish);
+  const rtx = rangeTx().filter(isSpendish), prev = txIn(prevRange()).filter(isSpendish);
   const byCat = Object.entries(sumBy(rtx, eff, t => t.amount)).filter(c => c[1] > 0.5).sort((a, b) => b[1] - a[1]);
-  chart("cDonut", { type: "doughnut", data: { labels: byCat.map(c => pretty(c[0])), datasets: [{ data: byCat.map(c => Math.round(c[1])), backgroundColor: byCat.map(c => catColor(c[0])), borderWidth: 0, hoverOffset: 8 }] },
-    options: { plugins: { legend: { position: isMobile() ? "bottom" : "right", labels: { boxWidth: 10, padding: 10 } },
-      tooltip: { callbacks: { label: c => ` ${c.label}: ${money(c.raw)}` } } }, cutout: "64%",
-      onClick: (e, els) => { if (!els.length) return; const c = byCat[els[0].index][0];
-        drillTx(pretty(c), rangeSub(), () => rangeTx().filter(t => isSpendish(t) && eff(t) === c), "amt"); } } });
+  const prevCat = sumBy(prev, eff, t => t.amount), tot = byCat.reduce((s, c) => s + c[1], 0);
+  const openCat = c => drillTx(pretty(c), rangeSub(), () => rangeTx().filter(t => isSpendish(t) && eff(t) === c), "amt");
+  chart("cDonut", { type: "doughnut", data: { labels: byCat.map(c => pretty(c[0])), datasets: [{ data: byCat.map(c => Math.round(c[1])), backgroundColor: byCat.map(c => catColor(c[0])), borderWidth: 2, borderColor: "#fff", hoverOffset: 10 }] },
+    options: { cutout: "68%", layout: { padding: 8 }, plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      onClick: (e, els) => { if (els.length && tapGuard("d" + els[0].index, e)) openCat(byCat[els[0].index][0]); } } });
+  $("catBreak").innerHTML = byCat.length ? byCat.slice(0, 8).map(([c, v]) => `<div class="cbrow" data-c="${esc(c)}"><i class="dot" style="background:${catColor(c)}"></i>
+      <span class="cbn">${esc(pretty(c))}</span><span class="mute">${Math.round(v / tot * 100)}%</span><b>${money(v)}</b>${deltaHTML(v, prevCat[c], true) || '<span class="delta"></span>'}</div>`).join("")
+    + (byCat.length > 8 ? `<div class="mute" style="padding-top:6px">+ ${byCat.length - 8} more · ${money(byCat.slice(8).reduce((s, c) => s + c[1], 0))}</div>` : "")
+    : `<div class="empty">No spending in these dates.</div>`;
+  $("catBreak").querySelectorAll("[data-c]").forEach(r => r.onclick = () => openCat(r.dataset.c));
+  $("catBreak").querySelectorAll("[data-c]").forEach((r, i) => { r.onmouseenter = () => { const ch = S.charts.cDonut; ch.setActiveElements([{ datasetIndex: 0, index: i }]); ch.update("none"); };
+    r.onmouseleave = () => { const ch = S.charts.cDonut; ch.setActiveElements([]); ch.update("none"); }; });
 
-  const ms = chartMonths();
-  const st = ms.map(monthStats);
+  const ms = chartMonths(), st = ms.map(monthStats);
   chart("cTrend", { type: "bar", data: { labels: ms.map(monthLabel), datasets: [
-      { label: "Income", data: st.map(s => Math.round(s.inc)), backgroundColor: "#0D9488", borderRadius: 4, ...SLIM },
-      { label: "Spending", data: st.map(s => Math.round(s.sp)), backgroundColor: "#D6D3D1", borderRadius: 4, ...SLIM }] },
-    options: { plugins: { legend: { position: "bottom" } }, scales: { y: { ticks: { callback: moneyTick } } },
-      onClick: (e, els) => { if (!els.length) return; const m = ms[els[0].index], inc = els[0].datasetIndex === 0;
-        drillTx(inc ? "Income" : "Spending", monthLong(m), () => monthTx(m).filter(inc ? isIncome : isSpendish)); } } });
+      { label: "Income", data: st.map(s => Math.round(s.inc)), backgroundColor: "#0D9488", hoverBackgroundColor: "#0F766E", borderRadius: 4, ...SLIM },
+      { label: "Spending", data: st.map(s => Math.round(s.sp)), backgroundColor: "#D6D3D1", hoverBackgroundColor: "#A8A29E", borderRadius: 4, ...SLIM }] },
+    options: { interaction: { mode: "index", intersect: false }, plugins: { legend: { position: "bottom" },
+        tooltip: { callbacks: { title: i => monthLong(ms[i[0].dataIndex]), label: c => ` ${c.dataset.label}: ${money(c.raw)}`,
+          footer: i => { const s = st[i[0].dataIndex]; return `${s.net >= 0 ? "Saved" : "Overspent"} ${money(Math.abs(s.net))}${s.inc ? ` (${Math.round(s.net / s.inc * 100)}% of income)` : ""}`; } } } },
+      scales: { y: { ticks: { callback: moneyTick } } },
+      onClick: (e, els) => { if (!els.length) return; const i = els[0].index; if (!tapGuard("t" + i, e)) return; const m = ms[i];
+        drillTx("Income & spending", monthLong(m), () => monthTx(m).filter(t => isIncome(t) || isSpendish(t))); } } });
 
-  // pace: cumulative net spending across the selected days vs. the budget pro-rated per day
+  // pace: cumulative spending across the selected days vs. the budget spread evenly and the same days last month
   const t = todayISO(), end = S.range.to < t ? S.range.to : t, d0 = dnum(S.range.from), total = rangeDays();
   const daily = Array(total).fill(0); rtx.forEach(x => { const i = dnum(x.date) - d0; if (i >= 0 && i < total) daily[i] += x.amount; });
   const upto = dnum(end) - d0; let run = 0;
   const cum = daily.map((v, i) => i <= upto ? Math.round(run += v) : null);
   const bTotal = S.budgets.reduce((s, b) => s + Number(b.monthly_amount || 0), 0);
-  let prevCum = null;
-  if (rangeMonth()) { // same days of last month, for "am I ahead or behind?"
-    const pm = addMonths(rangeMonth(), -1), pd = Array(total).fill(0);
-    monthTx(pm).filter(isSpendish).forEach(x => { const i = Number(x.date.slice(8)) - 1; if (i < total) pd[i] += x.amount; });
-    let r2 = 0; prevCum = pd.map(v => Math.round(r2 += v));
-  }
   const m = rangeMonth(), perDay = m ? bTotal / total : bTotal * 12 / 365;
+  let prevCum = null;
+  if (m) { const pm = addMonths(m, -1), pd = Array(total).fill(0);
+    monthTx(pm).filter(isSpendish).forEach(x => { const i = Number(x.date.slice(8)) - 1; if (i < total) pd[i] += x.amount; });
+    let r2 = 0; prevCum = pd.map(v => Math.round(r2 += v)); }
+  const budPace = daily.map((_, i) => Math.round(perDay * (i + 1)));
+  const nowI = Math.max(0, Math.min(upto, total - 1)), spentNow = cum[nowI] || 0, budNow = bTotal ? budPace[nowI] : 0, lastNow = prevCum ? prevCum[nowI] : null;
   $("paceTitle").textContent = m ? "Spend pace this month" : "Spend pace in these dates";
+  const diff = spentNow - budNow;
+  $("paceHead").innerHTML = `<div><div class="l">Spent so far</div><div class="v">${money(spentNow)}</div></div>`
+    + (bTotal ? `<div><div class="l">Budget pace</div><div class="v mutev">${money(budNow)}</div></div>` : "")
+    + (lastNow != null ? `<div><div class="l">Last month by now</div><div class="v mutev">${money(lastNow)}</div></div>` : "")
+    + (bTotal ? `<span class="pill ${diff > 0 ? "bad" : "ok"}" style="align-self:center">${diff > 0 ? `${money(diff)} over budget pace` : `${money(-diff)} under budget pace`}</span>` : "");
   chart("cPace", { type: "line", data: { labels: daily.map((_, i) => shortDate(dstr(d0 + i))), datasets: [
-    { label: "This period", data: cum, borderColor: "#0D9488", backgroundColor: "rgba(13,148,136,.10)", fill: true, pointRadius: 0, tension: .25, borderWidth: 2 },
-    ...(prevCum ? [{ label: "Last month", data: prevCum, borderColor: "#A8A29E", borderDash: [3, 3], pointRadius: 0, borderWidth: 1.5, tension: .25 }] : []),
-    ...(bTotal ? [{ label: "Budget pace", data: daily.map((_, i) => Math.round(perDay * (i + 1))), borderColor: "#F59E0B", borderDash: [5, 4], pointRadius: 0, borderWidth: 1.5 }] : []) ] },
-    options: { interaction: { mode: "index", intersect: false }, plugins: { legend: { position: "bottom" } },
+    { label: m ? "This month" : "This period", data: cum, borderColor: "#0D9488", backgroundColor: "rgba(13,148,136,.10)", fill: true, pointRadius: 0, pointHoverRadius: 5, pointHoverBackgroundColor: "#0D9488", tension: .25, borderWidth: 2.5 },
+    ...(prevCum ? [{ label: "Last month", data: prevCum, borderColor: "#A8A29E", borderDash: [3, 3], pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: "#A8A29E", borderWidth: 1.5, tension: .25 }] : []),
+    ...(bTotal ? [{ label: "Budget pace", data: budPace, borderColor: "#F59E0B", borderDash: [5, 4], pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: "#F59E0B", borderWidth: 1.5 }] : []) ] },
+    options: { interaction: { mode: "index", intersect: false }, plugins: { legend: { position: "bottom", labels: { usePointStyle: true, pointStyle: "line" } },
+        tooltip: { filter: i => i.raw != null, callbacks: { label: c => ` ${c.dataset.label}: ${money(c.raw)}`,
+          footer: i => { const a = i.find(x => x.datasetIndex === 0), b = i.find(x => x.dataset.label === "Budget pace"); if (!a || !b) return ""; const d = a.raw - b.raw; return d > 0 ? `${money(d)} over budget pace` : `${money(-d)} under budget pace`; } } } },
       scales: { x: { ticks: { maxTicksLimit: 7 } }, y: { ticks: { callback: moneyTick } } } } });
   drawNetWorth();
 }
 
-/** Walk today's balances backward through cash and card activity, then show the selected dates. */
-S.nwRange = store.get("hr_nw_range") || "3m";
-function nwFrom() {
-  const t = todayISO(), n = dnum(t);
-  return { "1m": dstr(n - 30), "3m": dstr(n - 91), "6m": dstr(n - 182), ytd: t.slice(0, 4) + "-01-01", "1y": dstr(n - 365), all: "0000" }[S.nwRange] || dstr(n - 91);
+/** Net worth for every day since data starts: today's balances walked backward through cash and card activity. */
+function nwSeries(cashOnly) {
+  const walkable = ["depository", "credit", "loan"]; let nowVal = 0;
+  S.accts.forEach(a => { const v = Number(a.current_balance || 0); if (cashOnly && a.type === "investment") return; if (["credit", "loan"].includes(a.type)) nowVal -= v; else nowVal += v; });
+  const byDay = {}; S.tx.forEach(t => { if (walkable.includes(typeOf(t.account_id))) byDay[t.date] = (byDay[t.date] || 0) + t.amount; });
+  const start = S.tx.length ? S.tx[S.tx.length - 1].date : null, labels = [], vals = [];
+  if (start) { let cur = nowVal; for (let d = dnum(todayISO()); d >= dnum(start); d--) { const k = dstr(d); labels.push(k); vals.push(Math.round(cur)); cur += (byDay[k] || 0); } labels.reverse(); vals.reverse(); }
+  return { labels, vals, start };
 }
-document.querySelectorAll("#nwRange [data-r]").forEach(b => {
-  b.classList.toggle("on", b.dataset.r === S.nwRange);
-  b.onclick = () => { S.nwRange = b.dataset.r; store.set("hr_nw_range", S.nwRange); document.querySelectorAll("#nwRange [data-r]").forEach(x => x.classList.toggle("on", x === b)); drawNetWorth(); };
-});
+const NW_RANGES = { "1w": 7, "1m": 30, "3m": 91, "6m": 182, "1y": 365, all: 1e5 };
+S.nwRange = store.get("hr_nw_range") || "3m"; S.nwFit = store.get("hr_nw_fit") !== false;
+document.querySelectorAll("#nwRange [data-r]").forEach(b => b.onclick = () => { if (b.disabled) return; S.nwRange = b.dataset.r; store.set("hr_nw_range", S.nwRange); drawNetWorth(); });
+document.querySelectorAll("#nwY [data-y]").forEach(b => b.onclick = () => { S.nwFit = b.dataset.y === "fit"; store.set("hr_nw_fit", S.nwFit); drawNetWorth(); });
 function drawNetWorth() {
-  const cashOnly = S.nwMode === "cash";
-  const walkable = ["depository", "credit", "loan"];
-  let nowVal = 0;
-  S.accts.forEach(a => {
-    const v = Number(a.current_balance || 0);
-    if (cashOnly && a.type === "investment") return;
-    if (["credit", "loan"].includes(a.type)) nowVal -= v; else nowVal += v;
-  });
-  const byDay = {};
-  S.tx.forEach(t => { if (walkable.includes(typeOf(t.account_id))) byDay[t.date] = (byDay[t.date] || 0) + t.amount; });
-  const start = S.tx.length ? S.tx[S.tx.length - 1].date : null; let labels = [], vals = [];
-  if (start) {
-    let cur = nowVal;
-    for (let d = dnum(todayISO()); d >= dnum(start); d--) { const k = dstr(d); labels.push(k); vals.push(Math.round(cur)); cur += (byDay[k] || 0); }
-    labels.reverse(); vals.reverse();
-    const r = nwFrom();
-    const keep = labels.map((l, i) => l >= r ? i : -1).filter(i => i >= 0);
-    if (keep.length > 1) { labels = keep.map(i => labels[i]); vals = keep.map(i => vals[i]); }
-  }
+  const cashOnly = S.nwMode === "cash", all = nwSeries(cashOnly);
+  const hist = all.start ? dnum(todayISO()) - dnum(all.start) : 0;
+  // ranges longer than the history you have would all look identical, so they're switched off until there's data for them
+  document.querySelectorAll("#nwRange [data-r]").forEach(b => { const tooLong = b.dataset.r !== "all" && NW_RANGES[b.dataset.r] > hist + 5; b.disabled = tooLong; b.title = tooLong ? `Only ${Math.round(hist / 30.44)} months of history so far` : ""; });
+  if (S.nwRange !== "all" && NW_RANGES[S.nwRange] > hist + 5) S.nwRange = "all";
+  document.querySelectorAll("#nwRange [data-r]").forEach(b => b.classList.toggle("on", b.dataset.r === S.nwRange));
+  document.querySelectorAll("#nwY [data-y]").forEach(b => b.classList.toggle("on", (b.dataset.y === "fit") === S.nwFit));
+  const from = dstr(dnum(todayISO()) - NW_RANGES[S.nwRange]);
+  const idx = all.labels.map((l, i) => l >= from ? i : -1).filter(i => i >= 0);
+  const labels = idx.map(i => all.labels[i]), vals = idx.map(i => all.vals[i]);
+  const first = vals[0] || 0, last = vals[vals.length - 1] || 0, ch = last - first;
+  const rl = { "1w": "this week", "1m": "in the last month", "3m": "in 3 months", "6m": "in 6 months", "1y": "this year", all: `since ${all.start ? shortDate(all.start) : "the start"}` }[S.nwRange];
+  $("nwHead").innerHTML = vals.length ? `<div><div class="v">${money(last)}</div></div><span class="${ch >= 0 ? "pos" : "neg"}" style="font-weight:600;align-self:center">${ch >= 0 ? "▲" : "▼"} ${money(Math.abs(ch))}${first ? ` (${(ch / Math.abs(first) * 100).toFixed(1)}%)` : ""} <span class="mute" style="font-weight:400">${rl}</span></span>` : "";
   const invTotal = S.accts.filter(a => a.type === "investment").reduce((s, a) => s + Number(a.current_balance || 0), 0);
-  $("netNote").textContent = !start ? "" : cashOnly
-    ? "Cash minus credit cards and loans, rebuilt from your transactions. This line is exact."
-    : `Brokerage and retirement (${money(invTotal)}) are held flat at today's value because Plaid has no past balances for them — "Cash & debt" shows the exact line.`;
-  chart("cNet", { type: "line", data: { labels: labels.map(shortDate), datasets: [{ label: "Net worth", data: vals, borderColor: "#0F766E", fill: true, backgroundColor: "rgba(13,148,136,.10)", pointRadius: 0, tension: .25, borderWidth: 2 }] },
-    options: { interaction: { mode: "index", intersect: false }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => " " + money(c.raw) } } },
-      scales: { x: { ticks: { maxTicksLimit: 7 } }, y: { ticks: { callback: moneyTick } } }, onClick: netWorthBreakdown } });
+  $("netNote").textContent = !all.start ? "" : (hist < 180 ? `History starts ${shortDate(all.start)}; longer ranges unlock as it builds. ` : "") + (cashOnly
+    ? "Cash minus credit cards and loans, rebuilt from your transactions."
+    : `Investments (${money(invTotal)}) are held at today's value because Plaid has no past balances for them.`);
+  chart("cNet", { type: "line", data: { labels: labels.map(shortDate), datasets: [{ label: "Net worth", data: vals, borderColor: "#0F766E", fill: S.nwFit ? "start" : "origin", backgroundColor: "rgba(13,148,136,.10)", pointRadius: 0, pointHoverRadius: 5, pointHoverBackgroundColor: "#0F766E", tension: .25, borderWidth: 2.5 }] },
+    options: { interaction: { mode: "index", intersect: false },
+      plugins: { legend: { display: false }, tooltip: { displayColors: false, callbacks: { label: c => money(c.raw), footer: i => { const d = i[0].raw - first; return i[0].dataIndex ? `${d >= 0 ? "+" : "−"}${money(Math.abs(d))} since ${shortDate(labels[0])}` : ""; } } } },
+      scales: { x: { ticks: { maxTicksLimit: 7 } }, y: { beginAtZero: !S.nwFit, ticks: { callback: moneyTick } } },
+      onClick: (e, els) => { if (tapGuard("nw", e)) netWorthBreakdown(); } } });
 }
 
 // ---------- trends ----------
@@ -1175,8 +1243,10 @@ function drawStack() {
   $("trendHint").textContent = `— ${monthLabel(ms[0])} to ${monthLabel(ms[ms.length - 1])}`;
   chart("cStack", { type: "bar",
     data: { labels: ms.map(monthLabel), datasets: cats.map(c => ({ label: pretty(c), data: ms.map(m => Math.round(Math.max(0, by[c + "|" + m] || 0))), backgroundColor: catColor(c), borderRadius: 2, categoryPercentage: .4, barPercentage: .9, maxBarThickness: 22 })) },
-    options: { scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: moneyTick } } }, plugins: { legend: { position: "bottom", labels: { boxWidth: 10 } } },
-      onClick: (e, els) => { if (!els.length) return; const m = ms[els[0].index], c = cats[els[0].datasetIndex];
+    options: { scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: moneyTick } } }, plugins: { legend: { position: "bottom", labels: { boxWidth: 10 } },
+        tooltip: { filter: i => i.raw > 0, itemSort: (a, b) => b.raw - a.raw, callbacks: { title: i => monthLong(ms[i[0].dataIndex]), label: c => ` ${c.dataset.label}: ${money(c.raw)}`, footer: i => "Total " + money(i.reduce((s, x) => s + x.raw, 0)) } } },
+      interaction: { mode: "index", intersect: false },
+      onClick: (e, els) => { if (!els.length || !tapGuard("s" + els[0].index + ":" + els[0].datasetIndex, e)) return; const m = ms[els[0].index], c = cats[els[0].datasetIndex];
         drillTx(pretty(c), monthLong(m), () => monthTx(m).filter(t => isSpendish(t) && eff(t) === c), "amt"); } } });
 }
 function renderTrends() {
@@ -1361,7 +1431,7 @@ function renderRecurring() {
   $("recTbl").innerHTML = live.length ? `<tr><th>Name</th><th>Category</th><th>How often</th><th>Next due</th><th class="num">Amount</th><th></th></tr>` +
     live.map((r, i) => `<tr data-i="${i}"><td class="tap lnk">${esc(r.name)} ${r.manual ? '<span class="pill">added</span>' : r.edited ? '<span class="pill ok">edited</span>' : ""}</td>
       <td class="mute">${esc(pretty(r.cat))}</td><td class="mute">${esc(r.cadLabel)}${r.n ? ` · seen ${r.n}×` : ""}</td>
-      <td style="white-space:nowrap">${r.next ? esc(shortDate(r.next)) : '<span class="mute">–</span>'}</td><td class="num">${money2(r.amount)}</td>
+      <td style="white-space:nowrap">${r.next ? `${esc(shortDate(r.next))}<div class="mute">${inDays(r.next)}</div>` : '<span class="mute">–</span>'}</td><td class="num">${money2(r.amount)}</td>
       <td class="num" style="white-space:nowrap"><button class="mini edit" data-i="${i}">Edit</button> <button class="mini del" data-i="${i}" title="Not a recurring charge">&times;</button></td></tr>`).join("")
     : `<tr><td class="mute">Nothing tracked yet. Add one, or keep a suggestion below.</td></tr>`;
   $("recTbl").querySelectorAll(".lnk").forEach(td => td.onclick = () => merchantHistory(live[td.parentElement.dataset.i]));
@@ -1852,7 +1922,7 @@ function drawInvChart() {
     : dates.length < 2 ? `Only ${dates[0]} recorded so far. Headroom saves each account's value on every sync, so this chart fills in from here.`
     : `Recorded on each sync since ${shortDate(dates[0])}.`;
   chart("cInv", { type: "line", data: { labels: dates.map(shortDate), datasets: sets },
-    options: { plugins: { legend: { position: "bottom", labels: { boxWidth: 10 } } }, scales: { x: { ticks: { maxTicksLimit: 7 } }, y: { ticks: { callback: moneyTick } } } } });
+    options: { interaction: { mode: "index", intersect: false }, plugins: { legend: { position: "bottom", labels: { boxWidth: 10 } }, tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${money(c.raw)}` } } }, scales: { x: { ticks: { maxTicksLimit: 7 } }, y: { ticks: { callback: moneyTick } } } } });
 }
 $("refreshInv").onclick = async () => {
   const b = $("refreshInv"); b.disabled = true; toast("Pulling positions…");
