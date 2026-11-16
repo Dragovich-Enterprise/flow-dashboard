@@ -227,6 +227,78 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
   .donutwrap{grid-template-columns:1fr}.chartbox.donut{height:220px}
   .hl .v{font-size:19px}.hl .mutev{font-size:15px}
 }
+/* ---------- phone design pass ---------- */
+#pTitle{display:none}
+@media (max-width:760px){
+  /* header: page name instead of the logo; no date picker where dates don't apply */
+  #pTitle{font-size:20px;font-weight:700;color:#fff;letter-spacing:-.01em;white-space:nowrap}
+  .titled .brand .logo{display:none}.titled #pTitle{display:block}
+  .norange .rangebar{display:none}.norange .top .btns{margin-left:auto}
+  /* Home: the swipe cards already carry these numbers */
+  #p-overview>.strip,#p-overview>.grid,#p-overview .card:has(#recurring){display:none}
+  #p-overview h2 .hint{display:none}
+  /* "See all" for long lists */
+  .clamped{display:none!important}
+  .clampbtn{display:block;width:100%;margin-top:8px;padding:11px;border:0;border-top:1px solid var(--line);border-radius:0;background:none;color:var(--accent-d);font-weight:600;font-size:14px}
+  /* stat cards on Budget, Recurring, Accounts, Investments: one compact strip */
+  #p-budget>.grid,#p-recurring>.grid,#p-accts>.grid,#p-invest>.grid{grid-template-columns:repeat(3,1fr);gap:0;background:var(--card);border:1px solid var(--line);border-radius:13px;margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow)}
+  #p-budget>.grid>.card,#p-recurring>.grid>.card,#p-accts>.grid>.card,#p-invest>.grid>.card{border:0;border-radius:0;box-shadow:none;margin:0;padding:12px 10px;background:none;grid-column:auto!important;min-width:0}
+  #p-budget>.grid>.card+.card,#p-recurring>.grid>.card+.card,#p-accts>.grid>.card+.card,#p-invest>.grid>.card+.card{border-left:1px solid var(--line)}
+  #p-budget>.grid .big,#p-recurring>.grid .big,#p-accts>.grid .big,#p-invest>.grid .big{font-size:18px;letter-spacing:-.01em;white-space:nowrap}
+  #p-budget>.grid .mute,#p-recurring>.grid .mute,#p-accts>.grid .mute,#p-invest>.grid .mute{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #p-budget>.grid .sub,#p-recurring>.grid .sub,#p-accts>.grid .sub,#p-invest>.grid .sub{display:none}
+  #p-budget>.grid #bLeftSub{display:block;font-size:11px;margin-top:2px}
+  /* explainers fold behind an (i) in the card title */
+  .explain{display:none!important}.explain.open{display:block!important;background:var(--card2);border-radius:10px;padding:10px 12px;margin:4px 0 12px!important;font-size:13px}
+  .ibtn.mobonly{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line2);color:var(--mute);font-size:11px;font-weight:700;font-style:normal;padding:0;margin-left:6px;vertical-align:1px;background:none;text-transform:none;letter-spacing:0}
+  /* Activity: one search row, filters tucked away */
+  #txCard .filters:first-child input[type=search]{min-width:0;flex:1}
+  #fToggle{flex:0 0 auto;padding:9px 12px;font-size:14px}
+  #fToggle.on{background:var(--mint);border-color:var(--accent);color:var(--accent-d)}
+  #txCard:not(.showF) .filters select,#txCard:not(.showF) .filters .btns{display:none}
+  #txCard .filters:nth-child(2){flex-wrap:nowrap;margin-bottom:10px}
+  #txCard.showF .filters:first-child{flex-wrap:wrap}
+  #txCard.showF #fSearch{flex:1 1 60%}
+  #txCard.showF #fCat,#txCard.showF #fAcct{flex:1 1 40%}#txCard.showF #fSort{flex:1 1 100%}
+  #txCard.showF .filters:nth-child(2){flex-wrap:wrap}#txCard.showF .filters:nth-child(2) .chips{flex:1 1 100%}
+  #txCard.showF .filters:nth-child(2) .btns{margin-left:auto}
+  #txSum span:last-child{display:none}
+  /* Budget: read it first, edit on purpose */
+  #p-budget:not(.editing) #addBud,#p-budget:not(.editing) #applyAll,#p-budget:not(.editing) #budNote,
+  #p-budget:not(.editing) .bin,#p-budget:not(.editing) .bdel,#p-budget:not(.editing) .brow.nob,
+  #p-budget:not(.editing) .brow:not(.other) .bname .mute{display:none}
+  #p-budget:not(.editing) .brow{grid-template-columns:1fr}
+  #p-budget.editing #budEdit{background:var(--brand);color:#fff;border-color:var(--brand)}
+  /* tables become stacked rows */
+  #recTbl,#recSuggest,#invHoldings,#recTbl tbody,#recSuggest tbody,#invHoldings tbody{display:block;width:100%}
+  #recTbl tr:has(th),#recSuggest tr:has(th),#invHoldings tr:has(th){display:none}
+  #recTbl tr,#recSuggest tr,#invHoldings tr{display:flex;flex-wrap:wrap;align-items:center;column-gap:8px;row-gap:3px;padding:12px 0;border-top:1px solid var(--line)}
+  #recTbl tr:nth-child(2),#recSuggest tr:nth-child(2),#invHoldings tr:nth-child(2){border-top:0}
+  #recTbl td,#recSuggest td,#invHoldings td{border:0;padding:0;white-space:normal}
+  #recTbl td:nth-child(1),#recSuggest td:nth-child(1),#invHoldings td:nth-child(1){order:1;width:calc(100% - 118px);font-weight:600;font-size:15px}
+  #recTbl td:nth-child(5),#recSuggest td:nth-child(4),#invHoldings td:nth-child(5){order:2;width:110px;text-align:right;font-weight:600;font-size:15px}
+  #recTbl td:nth-child(2),#recSuggest td:nth-child(2),#invHoldings td:nth-child(2),#invHoldings td:nth-child(6){display:none}
+  #recTbl td:nth-child(3),#recSuggest td:nth-child(3),#invHoldings td:nth-child(3){order:3;font-size:13px;color:var(--mute);text-align:left}
+  #recTbl td:nth-child(4){order:4;font-size:13px;color:var(--mute)}
+  #recTbl td:nth-child(4)::before{content:"· next "}#recTbl td:nth-child(4) div{display:inline}#recTbl td:nth-child(4) div::before{content:" ("}#recTbl td:nth-child(4) div::after{content:")"}
+  #invHoldings td:nth-child(3)::after{content:" shares @"}#invHoldings td:nth-child(4){order:4;font-size:13px;color:var(--mute)}
+  #recTbl td:nth-child(6),#recSuggest td:nth-child(5),#invHoldings td:nth-child(7){order:5;margin-left:auto;font-size:13px}
+  #recTbl td:only-child,#recSuggest td:only-child{width:100%;font-weight:400}
+  /* Trends: keep the category name in view while scrolling months */
+  #catMonthTbl th:first-child,#catMonthTbl td:first-child{position:sticky;left:0;background:var(--card);z-index:1;box-shadow:6px 0 6px -6px rgba(28,25,23,.18)}
+  #recTbl .seen{display:none}
+  #invHoldings td:nth-child(1) .mute{font-weight:400;font-size:13px}
+  .chips{-webkit-mask-image:linear-gradient(to right,#000 82%,transparent);mask-image:linear-gradient(to right,#000 82%,transparent);padding-right:24px}
+  /* Goals: progress first, numbers behind Edit */
+  .goalcard{display:flex;flex-direction:column;background:var(--card)}
+  .goalcard .goalhead{order:1;margin-bottom:8px}.goalcard .bar{order:2;margin-top:0!important}.goalcard .gsum{order:3}.goalcard .fields{order:4;margin-top:14px;grid-template-columns:1fr 1fr}
+  .goalcard:not(.ed) .fields,.goalcard:not(.ed) .g-del{display:none}
+  .goalcard:not(.ed) .g-name{border-color:transparent!important;background:transparent!important;padding:2px 0!important;font-size:17px!important}
+  .goalcard.ed .g-tog{background:var(--brand);color:#fff;border-color:var(--brand)}
+  /* Accounts: names read as text, become a field when tapped */
+  .nick{border-color:transparent!important;background:transparent!important;padding:2px 0!important;font-weight:600;font-size:16px!important;box-shadow:none!important}
+  .nick:focus{border-color:var(--accent)!important;background:#fff!important;padding:6px 8px!important}
+}
 /* phone overview: swipeable chart cards + account summary */
 #mobTop,.mobonly{display:none}
 @media (max-width:760px){
@@ -302,7 +374,7 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
 </div></div>
 <div id="app" class="wrap hidden">
   <header class="top">
-    <div class="brand"><div class="logo"><span>Head</span>room</div><div class="mute small" id="lastSync"></div></div>
+    <div class="brand"><div class="logo"><span>Head</span>room</div><div id="pTitle"></div><div class="mute small" id="lastSync"></div></div>
     <div class="rangebar">
       <button class="nav" id="rPrev" title="Previous period" aria-label="Previous period">&lsaquo;</button>
       <button class="rangebtn" id="rangeBtn"><span id="rangeLbl">This month</span><span class="car">&#9662;</span></button>
@@ -369,6 +441,7 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
     <div class="card" id="txCard">
       <div class="filters">
         <input id="fSearch" type="search" placeholder="Search name, amount, category, note&hellip;">
+        <button class="mobonly" id="fToggle" aria-expanded="false">Filters</button>
         <select id="fCat" aria-label="Category"></select>
         <select id="fAcct" aria-label="Account"></select>
         <select id="fSort" aria-label="Sort">
@@ -399,7 +472,7 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
     <div class="card">
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
         <h2 style="margin:0">Budget by category</h2>
-        <div class="btns"><button id="addBud" class="mini">+ Add category</button><button id="applyAll" class="mini primary">Apply suggested</button></div>
+        <div class="btns"><button id="addBud" class="mini">+ Add category</button><button id="applyAll" class="mini primary">Apply suggested</button><button id="budEdit" class="mini mobonly">Edit</button></div>
       </div>
       <div class="mute" id="budNote" style="margin:8px 0 6px"></div>
       <div class="bsum" id="bSum"></div>
@@ -417,18 +490,18 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
 
   <!-- RECURRING -->
   <div class="pane" id="p-recurring">
-    <div class="grid"><div class="card kpi"><div class="mute">Recurring per month</div><div class="big" id="rTotal">&ndash;</div><div class="sub" id="rTotalSub"></div></div>
-      <div class="card kpi"><div class="mute">Due in next 30 days</div><div class="big" id="rSoon">&ndash;</div></div>
-      <div class="card kpi"><div class="mute">Tracked charges</div><div class="big" id="rCount">&ndash;</div></div></div>
+    <div class="grid"><div class="card kpi"><div class="mute">Per month</div><div class="big" id="rTotal">&ndash;</div><div class="sub" id="rTotalSub"></div></div>
+      <div class="card kpi"><div class="mute">Due in 30 days</div><div class="big" id="rSoon">&ndash;</div></div>
+      <div class="card kpi"><div class="mute">Tracked</div><div class="big" id="rCount">&ndash;</div></div></div>
     <div class="card">
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
         <h2 style="margin:0">Subscriptions &amp; bills</h2><button id="addRecBtn" class="mini">+ Add one</button>
       </div>
-      <div class="mute" style="margin:8px 0 12px">Charges that repeat on a steady schedule. Tap a name to see its history, or edit and remove anything that is wrong.</div>
+      <div class="mute explain" style="margin:8px 0 12px">Charges that repeat on a steady schedule. Tap a name to see its history, or edit and remove anything that is wrong.</div>
       <div class="scroll"><table id="recTbl"></table></div>
     </div>
     <div class="card"><h2>Might be recurring <span class="hint">&mdash; not counted above</span></h2>
-      <div class="mute" style="margin-bottom:10px">These repeat on a schedule but the amount moves around. Keep any that really is a bill.</div>
+      <div class="mute explain" style="margin-bottom:10px">These repeat on a schedule but the amount moves around. Keep any that really is a bill.</div>
       <div class="scroll"><table id="recSuggest"></table></div></div>
     <div class="card"><h2>Removed</h2><div id="recHidden"></div></div>
   </div>
@@ -438,13 +511,13 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
     <div class="grid"><div class="card kpi"><div class="mute">Assets</div><div class="big pos" id="aAssets">&ndash;</div></div>
       <div class="card kpi"><div class="mute">Liabilities</div><div class="big neg" id="aLiab">&ndash;</div></div>
       <div class="card kpi"><div class="mute">Net worth</div><div class="big" id="aNet">&ndash;</div></div></div>
-    <div class="card"><div class="mute" style="margin-bottom:6px">Rename an account by editing its name. Turn off <b>Count in budget</b> for accounts that aren't household money (for example a business account) &mdash; they stay in net worth.</div><div id="acctGroups"></div></div>
+    <div class="card"><h2 class="mobonly" style="margin-bottom:4px">Your accounts</h2><div class="mute explain" style="margin-bottom:6px">Tap a name to rename it. Turn off <b>Count in budget</b> for accounts that aren't household money (for example a business account) &mdash; they stay in net worth.</div><div id="acctGroups"></div></div>
   </div>
 
   <!-- INVESTMENTS -->
   <div class="pane" id="p-invest">
     <div class="grid">
-      <div class="card kpi"><div class="mute">Invested value</div><div class="big" id="iValue">&ndash;</div></div>
+      <div class="card kpi"><div class="mute">Value</div><div class="big" id="iValue">&ndash;</div></div>
       <div class="card kpi"><div class="mute">Cost basis</div><div class="big" id="iCost">&ndash;</div><div class="sub">what you put in</div></div>
       <div class="card kpi"><div class="mute">Gain / loss</div><div class="big" id="iGain">&ndash;</div><div class="sub" id="iGainPct"></div></div>
     </div>
@@ -462,7 +535,7 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
         <h2 style="margin:0">Savings goals</h2><button id="addGoal" class="primary mini">+ Add a goal</button>
       </div>
-      <div class="mute" style="margin:8px 0 14px">Set what you are saving for and how much you need. Link an account and the amount saved updates itself on every sync.</div>
+      <div class="mute explain" style="margin:8px 0 14px">Set what you are saving for and how much you need. Link an account and the amount saved updates itself on every sync.</div>
       <div id="goals"></div>
     </div>
   </div>
@@ -756,11 +829,25 @@ db.auth.onAuthStateChange(async ev => {
 });
 
 // ---------- navigation ----------
+const TITLES = { txns: "Activity", budget: "Budget", trends: "Trends", recurring: "Recurring", accts: "Accounts", invest: "Investments", goals: "Goals", settings: "Settings" };
+const NO_RANGE = ["recurring", "accts", "invest", "goals", "settings"]; // these screens don't depend on the dates picked
+/** Phone only: show the first n items of a list with a "See all" button for the rest. Stays open once expanded. */
+function clampList(box, n, noun) {
+  if (!box || !isMobile()) return;
+  const kids = [...box.children]; if (kids.length <= n || (S._open || new Set()).has(box.id)) return;
+  kids.slice(n).forEach(el => el.classList.add("clamped"));
+  const b = document.createElement("button"); b.className = "clampbtn"; b.textContent = `See all ${kids.length} ${noun}`;
+  b.onclick = () => { (S._open = S._open || new Set()).add(box.id); kids.forEach(el => el.classList.remove("clamped")); b.remove(); };
+  box.appendChild(b);
+}
 const MORE = [["recurring", "Recurring", "🔁"], ["accts", "Accounts", "🏦"], ["invest", "Investments", "📈"], ["goals", "Goals", "🎯"], ["settings", "Settings", "⚙️"]];
 function go(t) {
   if (t === "more") { openModal("More", "", `<div class="pgrid">${MORE.map(([k, l, e]) => `<button data-go="${k}" class="${S.tab === k ? "on" : ""}">${e}&nbsp; ${l}</button>`).join("")}</div>`);
     $("mBody").querySelectorAll("[data-go]").forEach(b => b.onclick = () => { closeModal(); go(b.dataset.go); }); return; }
   S.tab = t;
+  $("pTitle").textContent = TITLES[t] || "";
+  $("app").classList.toggle("titled", !!TITLES[t]);
+  $("app").classList.toggle("norange", NO_RANGE.includes(t));
   document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x.dataset.t === t));
   document.querySelectorAll(".pane").forEach(p => p.classList.toggle("on", p.id === "p-" + t));
   const inMore = MORE.some(m => m[0] === t);
@@ -1122,6 +1209,16 @@ function renderAcSum() {
 }
 $("paceFoot").onclick = () => $("week").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" });
 
+// ---------- phone: filter panel, budget edit mode, (i) explainers ----------
+$("fToggle").onclick = () => { const on = $("txCard").classList.toggle("showF"); $("fToggle").setAttribute("aria-expanded", on); };
+function markFilters() { const n = [$("fCat").value, $("fAcct").value, $("fSort").value !== "new" ? 1 : ""].filter(Boolean).length;
+  $("fToggle").textContent = n ? `Filters · ${n}` : "Filters"; $("fToggle").classList.toggle("on", !!n); }
+["fCat", "fAcct", "fSort"].forEach(id => $(id).addEventListener("change", markFilters));
+$("budEdit").onclick = () => { const on = $("p-budget").classList.toggle("editing"); $("budEdit").textContent = on ? "Done" : "Edit"; };
+document.querySelectorAll(".explain").forEach(el => { const h = el.closest(".card").querySelector("h2"); if (!h) return;
+  const b = document.createElement("button"); b.className = "ibtn mobonly"; b.type = "button"; b.textContent = "i"; b.setAttribute("aria-label", "What is this?");
+  b.onclick = e => { e.stopPropagation(); el.classList.toggle("open"); }; (h.querySelector(".hint") ? h.insertBefore(b, h.querySelector(".hint")) : h.appendChild(b)); });
+
 function renderStrip() {
   const ms = [...S.months].slice(0, 12).reverse(), stats = ms.map(monthStats), max = Math.max(1, ...stats.map(s => Math.max(s.inc, s.sp)));
   const cur = rangeMonth();
@@ -1207,6 +1304,7 @@ function renderOverview() {
   $("merchants").innerHTML = top.length ? top.map(([k, v]) =>
     `<div class="rowline tap" data-m="${esc(k)}" style="display:block"><div style="display:flex;justify-content:space-between;gap:10px"><span>${esc(k)} <span class="mute">· ${visits[k] || 1} visit${(visits[k] || 1) === 1 ? "" : "s"}${(visits[k] || 1) > 1 ? `, avg ${money(v / visits[k])}` : ""}</span></span><b>${money(v)}</b></div>
       <div class="bar" style="height:4px;margin-top:6px"><i data-w="${(v / topMax * 100).toFixed(1)}" style="background:#5EEAD4"></i></div></div>`).join("") : `<div class="empty">Nothing in these dates.</div>`;
+  clampList($("merchants"), 5, "merchants");
   growBars($("merchants"));
   $("merchants").querySelectorAll("[data-m]").forEach(el => el.onclick = () =>
     drillTx(el.dataset.m, rangeSub(), () => rangeTx().filter(t => isSpendish(t) && tname(t) === el.dataset.m)));
@@ -1595,7 +1693,7 @@ function renderRecurring() {
   countTo($("rSoon"), soon);
   $("recTbl").innerHTML = live.length ? `<tr><th>Name</th><th>Category</th><th>How often</th><th>Next due</th><th class="num">Amount</th><th></th></tr>` +
     live.map((r, i) => `<tr data-i="${i}"><td class="tap lnk">${esc(r.name)} ${r.manual ? '<span class="pill">added</span>' : r.edited ? '<span class="pill ok">edited</span>' : ""}</td>
-      <td class="mute">${esc(pretty(r.cat))}</td><td class="mute">${esc(r.cadLabel)}${r.n ? ` · seen ${r.n}×` : ""}</td>
+      <td class="mute">${esc(pretty(r.cat))}</td><td class="mute">${esc(r.cadLabel)}${r.n ? `<span class="seen"> · seen ${r.n}×</span>` : ""}</td>
       <td style="white-space:nowrap">${r.next ? `${esc(shortDate(r.next))}<div class="mute">${inDays(r.next)}</div>` : '<span class="mute">–</span>'}</td><td class="num">${money2(r.amount)}</td>
       <td class="num" style="white-space:nowrap"><button class="mini edit" data-i="${i}">Edit</button> <button class="mini del" data-i="${i}" title="Not a recurring charge">&times;</button></td></tr>`).join("")
     : `<tr><td class="mute">Nothing tracked yet. Add one, or keep a suggestion below.</td></tr>`;
@@ -1714,7 +1812,7 @@ function renderInsights() {
   const today = todayISO(), cur = today.slice(0, 7), day = Number(today.slice(8)), dim = Number(endOfMonth(cur).slice(8));
   // 1. this month vs the same point last month
   const pm = addMonths(cur, -1), now_ = netSpend(monthTx(cur)), then_ = netSpend(monthTx(pm).filter(t => Number(t.date.slice(8)) <= day));
-  if (then_ > 0 && S.months.includes(pm)) {
+  if (then_ > 0 && S.months.includes(pm) && !isMobile()) {
     const d = now_ - then_;
     items.push({ cls: d <= 0 ? "ok" : "warn", ic: d <= 0 ? "📉" : "📈", t1: `You've spent ${money(Math.abs(d))} ${d <= 0 ? "less" : "more"} than this time last month`, t2: `${money(now_)} so far in ${monthLong(cur).split(" ")[0]} vs ${money(then_)} by day ${day} of ${monthLong(pm).split(" ")[0]}` });
   }
@@ -1744,6 +1842,7 @@ function renderInsights() {
   $("insights").innerHTML = items.length ? items.map(x => `<div class="ins"><div class="ii ${x.cls}">${x.ic}</div><div class="it"><div class="t1">${esc(x.t1)}</div><div class="t2">${esc(x.t2 || "")}</div>${x.a ? `<div class="acts">${x.a}</div>` : ""}</div></div>`).join("")
     : `<div class="ins"><div class="ii ok">✓</div><div class="it"><div class="t1">All clear</div><div class="t2">Nothing unusual in your recent spending.</div></div></div>`;
   $("insights").querySelectorAll("[data-a]").forEach(b => b.onclick = () => acts[b.dataset.a]());
+  clampList($("insights"), 3, "insights");
 }
 /** Look at full months since each budget was set and suggest changes; also spot big categories with no budget. */
 function budgetSuggestions() {
@@ -1778,6 +1877,7 @@ function renderBudSug() {
   $("budSug").querySelectorAll("[data-ap]").forEach(b => b.onclick = async () => { const x = list[b.dataset.ap];
     if (x.to) await saveBudget(x.c, x.to, true); else await deleteBudget(x.c, true);
     renderAll(); toast(x.to ? `${pretty(x.c)} budget set to ${money(x.to)}` : `${pretty(x.c)} budget removed`); });
+  clampList($("budSug"), 2, "suggestions");
   $("budSug").querySelectorAll("[data-dm]").forEach(b => b.onclick = async () => { const x = list[b.dataset.dm];
     await saveSetting("dismissed", { ...(S.settings.dismissed || {}), [x.key]: todayISO() }); renderBudget(); renderInsights(); });
 }
@@ -1815,7 +1915,7 @@ function renderBudget() {
     <span>Spending budget <b>${money(monthlyB)}</b></span><span>Left for savings <b class="${inc - monthlyB < 0 ? "neg" : "pos"}">${money(inc - monthlyB)}</b>/mo</span>` : "Expected income appears once Headroom sees two paychecks.";
   const row = (c, s, b, opts = {}) => {
     const pct = b ? Math.min(100, Math.max(0, s / b * 100)) : 0, cls = b && s > b ? "over" : b && s > b * .85 ? "warn" : "", left = b - s;
-    return `<div class="brow ${opts.other ? "other" : ""}">
+    return `<div class="brow ${opts.other ? "other" : ""} ${!b && !opts.other ? "nob" : ""}">
       <div class="bname" data-c="${esc(c)}">${catIcon(c)}<div style="min-width:0"><div class="bt">${esc(pretty(c))}</div><div class="mute" style="font-size:12px">${opts.sub}</div></div></div>
       <div class="bprog">${b || opts.other ? `<div class="bar ${cls}"><i data-w="${pct.toFixed(1)}"></i></div>` : ""}
         <div class="bmeta"><span>${money(s)} spent${b ? ` of ${money(b)}` : ""}</span><span class="${b && left < 0 ? "neg" : ""}">${b ? (left < 0 ? money(-left) + " over" : money(left) + " left") : opts.other ? "no budget" : "in Everything else"}</span></div></div>
@@ -2122,9 +2222,9 @@ function renderGoals() {
       const months = Math.max(0, (dnum(g.target_date) - dnum(todayISO())) / 30.44);
       pace = months >= 0.5 ? `Save ${money(left / months)}/month to hit this by ${shortDate(g.target_date)}.` : `Target date ${shortDate(g.target_date)} is here — ${money(left)} still to go.`;
     } else if (left === 0 && target) pace = "Goal reached 🎉";
-    return `<div class="goalcard" data-id="${g.id}">
+    return `<div class="goalcard ${(S._gEd || new Set()).has(String(g.id)) ? "ed" : ""}" data-id="${g.id}">
       <div class="goalhead"><input class="g-name" value="${esc(g.name)}" style="font-size:16px;font-weight:600;flex:1;min-width:140px" aria-label="Goal name">
-        <button class="mini danger g-del" title="Delete this goal">Delete</button></div>
+        <button class="mini mobonly g-tog">${(S._gEd || new Set()).has(String(g.id)) ? "Done" : "Edit"}</button><button class="mini danger g-del" title="Delete this goal">Delete</button></div>
       <div class="fields">
         <div><label class="lbl">Amount saved so far</label><input class="g-cur" type="number" step="1" inputmode="decimal" value="${saved}" ${g.account_id ? "disabled" : ""}></div>
         <div><label class="lbl">Total you need</label><input class="g-tgt" type="number" step="1" inputmode="decimal" value="${g.target_amount ?? ""}"></div>
@@ -2140,6 +2240,7 @@ function renderGoals() {
   growBars($("goals"));
   $("goals").querySelectorAll(".goalcard").forEach(el => {
     const id = el.dataset.id;
+    el.querySelector(".g-tog").onclick = e => { S._gEd = S._gEd || new Set(); const on = el.classList.toggle("ed"); on ? S._gEd.add(id) : S._gEd.delete(id); e.target.textContent = on ? "Done" : "Edit"; };
     const save = async () => {
       const acct = el.querySelector(".g-acct").value || null;
       const patch = { name: el.querySelector(".g-name").value.trim() || "Untitled goal", current_amount: Number(el.querySelector(".g-cur").value) || 0,
