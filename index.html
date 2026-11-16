@@ -178,6 +178,15 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
 .optrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
 .optrow .t{font-size:14px}.optrow .d{font-size:12px;color:var(--mute)}
 .flagbox{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.segfull{display:flex;width:100%;margin-bottom:6px}.segfull button{flex:1;padding:10px}
+.amtbig{display:flex;align-items:baseline;justify-content:center;gap:2px;padding:14px 0 18px;color:var(--text);cursor:text}
+.amtbig span{font-size:30px;font-weight:600;color:var(--mute)}.amtbig.in span,.amtbig.in input{color:var(--accent-d)}
+.amtbig input{border:0!important;box-shadow:none!important;background:none;padding:0;font-size:44px!important;font-weight:700;letter-spacing:-.02em;width:6.5ch;text-align:left;font-variant-numeric:tabular-nums;transition:width .12s}
+.form2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form2 .full{grid-column:1/-1}.form2>div{min-width:0}
+.form2 input,.form2 select{width:100%;height:46px}.form2 textarea{min-height:0;height:auto}
+.sheetbtns{margin-top:18px}
+.morefoot{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.morefoot .mute{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.pgrid button{text-align:left;padding:11px 12px}.pgrid button.on{border-color:var(--accent);color:var(--accent-d);background:#F0FDFA}
 #bnav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:70;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 6px calc(6px + var(--safe-b))}
 #bnav button{flex:1;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mute);padding:6px 0;border-radius:10px}
@@ -214,6 +223,10 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
   .card{padding:14px;border-radius:13px;margin-bottom:12px}
   .chartbox{height:230px}
   input,select,textarea{font-size:16px}
+  /* iOS draws date fields wider and taller than other inputs: make them behave like the rest */
+  input[type=date]{-webkit-appearance:none;appearance:none;display:block;width:100%;min-width:0;height:46px;text-align:left}
+  input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
+  .sheetbtns .primary{flex:1;padding:14px;font-size:16px}
   .layer{align-items:flex-end;padding:0}
   .layer .box,#sheet .box{max-width:none;border-radius:20px 20px 0 0;max-height:90vh;overflow:auto;padding:16px 16px calc(20px + var(--safe-b));animation:up .32s var(--ease)}
   .layer.closing .box{animation:down .22s ease both}
@@ -803,6 +816,7 @@ const catOptions = sel => allCats().map(c => `<option value="${esc(c)}" ${c === 
 // ---------- auth ----------
 async function boot() {
   const { data: { session } } = await db.auth.getSession();
+  S.user = session ? session.user : null;
   show(!!session);
   if (session && lockOn()) showLock();
   if (session) { await load(); resumeOAuth(); }
@@ -810,7 +824,8 @@ async function boot() {
 function show(on) { $("login").classList.toggle("hidden", on); $("app").classList.toggle("hidden", !on); $("bnav").style.display = on ? "" : "none"; }
 $("loginBtn").onclick = async () => {
   $("err").textContent = ""; $("loginBtn").disabled = true;
-  const { error } = await db.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
+  const { data: li, error } = await db.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
+  if (li && li.user) S.user = li.user;
   $("loginBtn").disabled = false;
   if (error) { $("err").textContent = error.message; return; }
   show(true); await load(); offerFaceId();
@@ -842,7 +857,11 @@ function clampList(box, n, noun) {
 }
 const MORE = [["recurring", "Recurring", "🔁"], ["accts", "Accounts", "🏦"], ["invest", "Investments", "📈"], ["goals", "Goals", "🎯"], ["settings", "Settings", "⚙️"]];
 function go(t) {
-  if (t === "more") { openModal("More", "", `<div class="pgrid">${MORE.map(([k, l, e]) => `<button data-go="${k}" class="${S.tab === k ? "on" : ""}">${e}&nbsp; ${l}</button>`).join("")}</div>`);
+  if (t === "more") { openModal("More", "", `<div class="pgrid">${MORE.map(([k, l, e]) => `<button data-go="${k}" class="${S.tab === k ? "on" : ""}">${e}&nbsp; ${l}</button>`).join("")}</div>
+      <div class="morefoot"><span class="mute">${esc(S.user && S.user.email ? "Signed in as " + S.user.email : "")}</span><button class="danger" id="moreOut">Sign out</button></div>`);
+    $("moreOut").onclick = () => { closeModal(); signOut(); };
+    if (!S.user) db.auth.getSession().then(({ data }) => { S.user = data && data.session ? data.session.user : null;
+      const el = document.querySelector(".morefoot .mute"); if (el && S.user && S.user.email) el.textContent = "Signed in as " + S.user.email; });
     $("mBody").querySelectorAll("[data-go]").forEach(b => b.onclick = () => { closeModal(); go(b.dataset.go); }); return; }
   S.tab = t;
   $("pTitle").textContent = TITLES[t] || "";
@@ -1111,21 +1130,24 @@ async function markReviewed(ids) { await saveSetting("reviewed_flags", [...new S
 function addTx() {
   const accts = S.accts.filter(a => ["depository", "credit"].includes(a.type));
   openLayer("sheet", "Add a transaction", "For cash or anything your banks don't send", `
-    <div class="seg" style="margin-bottom:14px"><button data-ty="out" class="on">Money out</button><button data-ty="in">Money in</button></div>
-    <div class="fields">
-      <div><label class="lbl" for="nName">Description</label><input id="nName" placeholder="e.g. Farmers market"></div>
-      <div><label class="lbl" for="nAmt">Amount</label><input id="nAmt" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0.00"></div>
+    <div class="seg segfull"><button data-ty="out" class="on">Money out</button><button data-ty="in">Money in</button></div>
+    <label class="amtbig" id="nAmtWrap"><span id="nSign">−$</span><input id="nAmt" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0.00" aria-label="Amount"></label>
+    <div class="form2">
+      <div class="full"><label class="lbl" for="nName">Description</label><input id="nName" placeholder="e.g. Farmers market"></div>
       <div><label class="lbl" for="nDate">Date</label><input id="nDate" type="date" value="${todayISO()}"></div>
       <div><label class="lbl" for="nCat">Category</label><select id="nCat">${catOptions("FOOD_AND_DRINK")}</select></div>
-      <div><label class="lbl" for="nAcct">Paid from</label><select id="nAcct"><option value="cash">Cash / other</option>${accts.map(a => `<option value="${esc(a.account_id)}">${esc(a.nickname || a.name)} ${a.mask ? "••" + esc(a.mask) : ""}</option>`).join("")}</select></div>
+      <div class="full"><label class="lbl" for="nAcct" id="nAcctL">Paid from</label><select id="nAcct"><option value="cash">Cash / other</option>${accts.map(a => `<option value="${esc(a.account_id)}">${esc(a.nickname || a.name)} ${a.mask ? "••" + esc(a.mask) : ""}</option>`).join("")}</select></div>
+      <div class="full"><label class="lbl" for="nNote">Note <span class="mute">(optional)</span></label><textarea id="nNote" rows="2"></textarea></div>
     </div>
-    <div style="margin-top:12px"><label class="lbl" for="nNote">Note</label><textarea id="nNote"></textarea></div>
-    <div class="btns" style="margin-top:16px"><button class="primary" id="nSave">Add transaction</button><button id="nCancel">Cancel</button></div>`);
+    <div class="btns sheetbtns"><button class="primary" id="nSave">Add transaction</button><button id="nCancel" class="desk">Cancel</button></div>`);
   let ty = "out";
   $("sBody").querySelectorAll("[data-ty]").forEach(b => b.onclick = () => { ty = b.dataset.ty; $("sBody").querySelectorAll("[data-ty]").forEach(x => x.classList.toggle("on", x === b));
-    $("nCat").value = ty === "in" ? "INCOME" : "FOOD_AND_DRINK"; });
+    $("nCat").value = ty === "in" ? "INCOME" : "FOOD_AND_DRINK";
+    $("nSign").textContent = ty === "in" ? "+$" : "−$"; $("nAmtWrap").classList.toggle("in", ty === "in"); $("nAcctL").textContent = ty === "in" ? "Deposited to" : "Paid from"; });
   $("nCancel").onclick = () => closeLayer("sheet");
-  setTimeout(() => $("nName") && !isMobile() && $("nName").focus(), 250);
+  const fitAmt = () => { $("nAmt").style.width = Math.max(4, ($("nAmt").value || "0.00").length + .4) + "ch"; };
+  $("nAmt").addEventListener("input", fitAmt); fitAmt();
+  setTimeout(() => $("nAmt") && !isMobile() && $("nAmt").focus(), 250);
   $("nSave").onclick = async () => {
     const a = Number($("nAmt").value); if (!a) return toast("Enter an amount", true);
     const row = { transaction_id: "man-" + (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)), account_id: $("nAcct").value, date: $("nDate").value || todayISO(),
