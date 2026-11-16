@@ -329,7 +329,6 @@ html,body,*{touch-action:manipulation}
   .swipe .chartbox{height:200px}.swipe .chartbox canvas{touch-action:pan-x pan-y}
   .swipe .card>.chartbox{flex:1 1 0;min-height:200px;height:auto}
   .swipe #nwHead{min-height:78px;align-content:flex-start}.swipe #nwHead .nwch{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:block}
-  .hero .st{max-width:40%}
   .swipe #paceTitle,.swipe #paceHead{display:none}
   .swipe h2{font-size:13px;color:var(--mute);font-weight:500;margin-bottom:6px}
   .swipe #nwHead{margin-bottom:8px}.swipe #nwHead .v{font-size:34px;letter-spacing:-.025em}
@@ -345,8 +344,11 @@ html,body,*{touch-action:manipulation}
   .dots{display:flex;justify-content:center;gap:8px;margin:12px 0 14px}
   .dots button{width:8px;height:8px;border-radius:50%;padding:0;border:0;background:#D6D3D1;transition:transform .25s var(--ease),background .25s}
   .dots button.on{background:var(--brand);transform:scale(1.25)}
-  .hero{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
-  .hero{min-height:96px}.hero>div:first-child{min-width:0;flex:1}
+  /* grid, not flex: Safari let the flex version grow past the card edge */
+  .hero.mobonly{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:12px;margin-bottom:8px;min-height:96px;width:100%;max-width:100%;overflow:hidden}
+  .hero>div:first-child{min-width:0}
+  .hero.mobonly .st{justify-self:end;max-width:none;white-space:nowrap}
+  .swipe>.card{overflow:hidden}
   .hero .l,.hero .s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .hero .l{font-size:13px;color:var(--mute)}
   .hero .v{font-size:36px;font-weight:700;letter-spacing:-.025em;line-height:1.1;margin-top:3px;font-variant-numeric:tabular-nums}
