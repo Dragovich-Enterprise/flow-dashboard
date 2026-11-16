@@ -183,6 +183,15 @@ html,body,*{touch-action:manipulation}
 .tsel{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;font-size:13px;min-height:32px}
 .tsel .tl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rangebtn #rangeLbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+#impPrev:empty{display:none}
+.iptop{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}.iptop .mute{font-size:13px}
+.ipg{border:1px solid var(--line);border-radius:12px;margin-top:10px;overflow:hidden}
+.iph{display:flex;flex-direction:column;gap:2px;padding:10px 12px;background:var(--card2);border-bottom:1px solid var(--line)}.iph .mute{font-size:12.5px}
+.ipl{max-height:340px;overflow-y:auto}
+.ipr{display:grid;grid-template-columns:22px 74px minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid var(--line);font-size:13.5px;cursor:pointer}
+.ipr:first-child{border-top:0}.ipr .d{color:var(--mute);font-size:12.5px;white-space:nowrap}.ipr .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ipr.dim{opacity:.45}.ipr.unsure .d::after,.unsure-k{content:"?";color:#B45309;font-weight:700;margin-left:3px}
+.flip{padding:4px 8px;font-size:13px;font-variant-numeric:tabular-nums;border-radius:8px;font-weight:600}.flip.pos{color:var(--accent-d)}
 .segfull{display:flex;width:100%;margin-bottom:6px}.segfull button{flex:1;padding:10px}
 .amtbig{display:flex;align-items:baseline;justify-content:center;gap:2px;padding:14px 0 18px;color:var(--text);cursor:text}
 .amtbig span{font-size:30px;font-weight:600;color:var(--mute)}.amtbig.in span,.amtbig.in input{color:var(--accent-d)}
@@ -596,11 +605,12 @@ html,body,*{touch-action:manipulation}
       <div id="itemList" style="margin-bottom:12px"></div>
       <div class="btns"><button id="linkBtn" class="primary">+ Link a bank</button><button id="linkInvBtn">+ Link a brokerage (with holdings)</button><button id="syncBtn2">Sync now</button></div>
       <div class="mute" style="margin-top:10px">Use the brokerage button for Fidelity and Robinhood so Headroom can read your positions. Linking the same place twice creates a second connection &mdash; remove the old one above.</div></div>
-    <div class="card"><h2>Import older history (CSV)</h2>
-      <div class="mute" style="margin-bottom:10px">Capital One only shares ~90 days through Plaid. Download older transactions as CSV from your bank's website, then import them here. Only rows older than the earliest synced transaction for that account are added, so nothing is double-counted.</div>
-      <div class="filters"><select id="impAcct"></select><input type="file" id="impFile" accept=".csv">
-        <label class="mute"><input type="checkbox" id="impPos"> single "Amount" column: positive = money spent</label></div>
-      <div class="btns"><button id="impBtn" class="primary">Import CSV</button><span class="mute" id="impOut"></span></div>
+    <div class="card"><h2>Import older history</h2>
+      <div class="mute" style="margin-bottom:10px">Capital One only shares ~90 days through Plaid. Upload monthly <b>statement PDFs</b> (or a CSV) from your bank, pick the account, and check the list before it's saved. You can choose several statements at once. Only transactions older than what your bank already synced are added, so nothing is counted twice.</div>
+      <div class="filters"><select id="impAcct"></select><input type="file" id="impFile" accept=".csv,.pdf,application/pdf,text/csv" multiple>
+        <label class="mute" id="impPosL"><input type="checkbox" id="impPos"> single "Amount" column: positive = money spent</label></div>
+      <div class="btns"><button id="impBtn" class="primary">Read &amp; review</button><span class="mute" id="impOut"></span></div>
+      <div id="impPrev" style="margin-top:12px"></div>
       <div id="impList" style="margin-top:12px"></div></div>
     <div class="card" id="notifCard"><h2>Notifications</h2>
       <div class="mute" id="pushStatus" style="margin-bottom:12px"></div>
@@ -2481,39 +2491,167 @@ const CSV_CAT = [[/dining|restaurant|food|grocer|coffee|bar/i, "FOOD_AND_DRINK"]
   [/personal|beauty|salon|fitness/i, "PERSONAL_CARE"], [/home|garden|improve/i, "HOME_IMPROVEMENT"], [/fee|interest charge/i, "BANK_FEES"], [/insur|service|ship/i, "GENERAL_SERVICES"]];
 const guessCat = s => { for (const [re, c] of CSV_CAT) if (re.test(s || "")) return c; return "OTHER"; };
 function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
-$("impBtn").onclick = async () => {
-  const f = $("impFile").files[0], acct = $("impAcct").value, out = $("impOut");
-  if (!f || !acct) { out.textContent = "Choose an account and a CSV file."; return; }
-  const rows = parseCSV(await f.text()); if (rows.length < 2) { out.textContent = "That file looks empty."; return; }
-  const head = rows[0].map(h => h.trim().toLowerCase());
-  const col = re => head.findIndex(h => re.test(h));
-  const iDate = (() => { const d = head.findIndex(h => /transaction date/.test(h)); return d >= 0 ? d : col(/date/); })();
-  const iDesc = col(/description|merchant|name|memo/), iDeb = col(/^debit|withdrawal/), iCre = col(/^credit|deposit/), iAmt = col(/^amount|transaction amount/), iType = col(/type/), iCat = col(/^category/);
-  if (iDate < 0 || iDesc < 0 || (iDeb < 0 && iAmt < 0)) { out.textContent = "Couldn't find Date / Description / Amount columns. Headers: " + rows[0].join(", "); return; }
+/** Turn {date, desc, amt (+ = money out), rawCat} rows into transactions for one account and save them.
+ *  Only rows older than the account's earliest synced transaction are kept, so imports never double-count Plaid data. */
+/** Category you already use for a store, learned from your synced transactions ("SHELL OIL 574" -> Auto & Transport). */
+const KEY_STRIP = /^(debit card purchase|pos purchase|card purchase|purchase|checkcard|recurring|pos|sq|tst|sp|py)\b[\s*#:-]*/i;
+const mkKey = s => { const w = String(s || "").toLowerCase().replace(KEY_STRIP, "").replace(/[^a-z ]+/g, " ").trim().split(/\s+/).filter(x => x.length > 1); return [w.slice(0, 2).join(" "), w[0] || ""]; };
+function learnedCat(desc) {
+  if (!S._lc || S._lcN !== S.tx.length) { const m = {};
+    S.tx.forEach(t => { if (t.amount <= 0 || String(t.transaction_id).startsWith("csv-")) return; const c = eff(t); if (!c || /^(TRANSFER|LOAN_PAYMENTS|INCOME|OTHER)/.test(c)) return;
+      const [k2, k1] = mkKey(t.merchant_name || t.name); [k2, k1.length >= 4 ? "1:" + k1 : null].forEach(k => { if (k) { m[k] = m[k] || {}; m[k][c] = (m[k][c] || 0) + 1; } }); });
+    S._lc = m; S._lcN = S.tx.length; }
+  const [k2, k1] = mkKey(desc), hit = S._lc[k2] || (k1.length >= 4 && S._lc["1:" + k1]);
+  return hit ? Object.entries(hit).sort((a, b) => b[1] - a[1])[0][0] : null;
+}
+function buildImport(acct, rows) {
   const a = S.accts.find(x => x.account_id === acct), isCredit = a.type === "credit";
   const earliest = S.tx.filter(t => t.account_id === acct && !String(t.transaction_id).startsWith("csv-")).reduce((m, t) => t.date < m ? t.date : m, "9999-12-31");
-  const seen = {}, recs = []; let skipped = 0;
-  for (const r of rows.slice(1)) {
-    const date = toISO(r[iDate]); if (!date) { skipped++; continue; } if (date >= earliest) continue;
-    let amt = null;
-    if (iDeb >= 0 || iCre >= 0) { const d = num(r[iDeb]), c = num(r[iCre]); amt = d ? Math.abs(d) : c ? -Math.abs(c) : null; }
-    else { const v = num(r[iAmt]); if (v !== null) { const t = iType >= 0 ? (r[iType] || "").toLowerCase() : ""; amt = t ? (/credit|deposit/.test(t) ? -Math.abs(v) : Math.abs(v)) : ($("impPos").checked ? v : -v); } }
-    if (amt === null || amt === 0) continue;
-    const desc = (r[iDesc] || "").trim(), base = `${acct}|${date}|${desc}|${amt}`; seen[base] = (seen[base] || 0) + 1;
-    const rawCat = iCat >= 0 ? r[iCat] : "", txt = rawCat + " " + desc;
-    const pay = isCredit && amt < 0 && /payment|credit/i.test(txt);
+  const seen = {}, recs = [];
+  for (const r of rows) {
+    if (!r.date || r.date >= earliest || !r.amt) continue;
+    const desc = r.desc.trim(), amt = Math.round(r.amt * 100) / 100, base = `${acct}|${r.date}|${desc}|${amt}`; seen[base] = (seen[base] || 0) + 1;
+    const txt = (r.rawCat || "") + " " + desc, pay = isCredit && amt < 0 && /payment|pymt|pmt|autopay|credit|thank you/i.test(txt);
     let category, detailed = null;
     if (pay) { category = "LOAN_PAYMENTS"; detailed = "LOAN_PAYMENTS_CREDIT_CARD_PAYMENT"; }
     else if (amt < 0) category = /payroll|salary|direct dep|dir dep|paycheck|interest paid|dividend/i.test(txt) ? "INCOME" : isCredit ? guessCat(txt) : "TRANSFER_IN";
-    else category = /transfer|xfer|to savings|zelle|venmo/i.test(desc) ? "TRANSFER_OUT" : guessCat(txt);
-    recs.push({ transaction_id: "csv-" + hashStr(base) + "-" + seen[base], account_id: acct, date, name: desc, merchant_name: null, amount: amt, category, category_detailed: detailed, pending: false });
+    else category = /transfer|xfer|to savings|zelle|venmo|withdrawal to/i.test(desc) ? "TRANSFER_OUT" : learnedCat(desc) || guessCat(txt);
+    recs.push({ transaction_id: "csv-" + hashStr(base) + "-" + seen[base], account_id: acct, date: r.date, name: desc, merchant_name: null, amount: amt, category, category_detailed: detailed, pending: false });
   }
-  if (!recs.length) { out.textContent = `No rows older than ${earliest} in that file.` + (skipped ? ` ${skipped} rows had a date I couldn't read.` : ""); return; }
-  const lo = recs.reduce((m, r) => r.date < m ? r.date : m, "9999"), hi = recs.reduce((m, r) => r.date > m ? r.date : m, "0");
-  if (!confirm(`Import ${recs.length} transactions from ${lo} to ${hi} into ${a.nickname || a.name}?` + (skipped ? `\n(${skipped} rows skipped — unreadable date)` : ""))) return;
-  for (let i = 0; i < recs.length; i += 500) { const { error } = await db.from("transactions").upsert(recs.slice(i, i + 500), { onConflict: "transaction_id" }); if (error) { out.textContent = error.message; return; } }
-  out.textContent = `Imported ${recs.length} transactions back to ${lo}. You can remove them below.`;
-  await load();
+  return { recs, earliest, name: a.nickname || a.name };
+}
+async function saveImport(recs) {
+  for (let i = 0; i < recs.length; i += 500) { const { error } = await db.from("transactions").upsert(recs.slice(i, i + 500), { onConflict: "transaction_id" }); if (error) throw error; }
+}
+function csvRows(text, impPos) {
+  const rows = parseCSV(text); if (rows.length < 2) throw new Error("That file looks empty.");
+  const head = rows[0].map(h => h.trim().toLowerCase()), col = re => head.findIndex(h => re.test(h));
+  const iDate = (() => { const d = head.findIndex(h => /transaction date/.test(h)); return d >= 0 ? d : col(/date/); })();
+  const iDesc = col(/description|merchant|name|memo/), iDeb = col(/^debit|withdrawal/), iCre = col(/^credit|deposit/), iAmt = col(/^amount|transaction amount/), iType = col(/type/), iCat = col(/^category/);
+  if (iDate < 0 || iDesc < 0 || (iDeb < 0 && iAmt < 0)) throw new Error("Couldn't find Date / Description / Amount columns. Headers: " + rows[0].join(", "));
+  return rows.slice(1).map(r => {
+    let amt = null;
+    if (iDeb >= 0 || iCre >= 0) { const d = num(r[iDeb]), c = num(r[iCre]); amt = d ? Math.abs(d) : c ? -Math.abs(c) : null; }
+    else { const v = num(r[iAmt]); if (v !== null) { const t = iType >= 0 ? (r[iType] || "").toLowerCase() : ""; amt = t ? (/credit|deposit/.test(t) ? -Math.abs(v) : Math.abs(v)) : (impPos ? v : -v); } }
+    return { date: toISO(r[iDate]), desc: r[iDesc] || "", amt, rawCat: iCat >= 0 ? r[iCat] : "" };
+  });
+}
+
+// ---------- PDF statements ----------
+const PDFJS = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/";
+async function pdfLib() {
+  if (window.pdfjsLib) return window.pdfjsLib;
+  await new Promise((ok, bad) => { const sc = document.createElement("script"); sc.src = PDFJS + "pdf.min.js"; sc.onload = ok; sc.onerror = () => bad(new Error("Couldn't load the PDF reader. Check your connection.")); document.head.appendChild(sc); });
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + "pdf.worker.min.js";
+  return window.pdfjsLib;
+}
+/** Text of a PDF as visual lines: pieces at the same height on a page joined left to right. */
+async function pdfLines(file) {
+  const lib = await pdfLib(), doc = await lib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise, lines = [];
+  for (let n = 1; n <= doc.numPages; n++) {
+    const tc = await (await doc.getPage(n)).getTextContent(), rows = [];
+    for (const it of tc.items) { if (!it.str || !it.str.trim()) continue; const y = it.transform[5], x = it.transform[4];
+      let r = rows.find(q => Math.abs(q.y - y) < 3); if (!r) rows.push(r = { y, parts: [] }); r.parts.push({ x, s: it.str }); }
+    rows.sort((a, b) => b.y - a.y).forEach(r => lines.push(r.parts.sort((a, b) => a.x - b.x).map(q => q.s).join(" ").replace(/\s+/g, " ").trim()));
+  }
+  return lines;
+}
+const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+const MONEY_RE = /([-−–+]\s?)?\(?\$\s?\d{1,3}(?:,\d{3})*\.\d{2}\)?(\s?(?:CR|DR)\b)?|([-−–+]\s?)?\(?\b\d{1,3}(?:,\d{3})*\.\d{2}\)?(\s?(?:CR|DR)\b)?/g;
+/** Read transactions out of statement lines. Works on the common layouts: "Aug 3 [Aug 4] DESCRIPTION $39.15" and
+ *  "08/03 DESCRIPTION Debit - $39.15 $1,234.56". Money in vs out comes from, in order: the running balance column,
+ *  a +/-/CR/parentheses on the amount, a Debit/Credit word, the statement section (card "Payments, Credits"), then wording. */
+function parseStatement(lines, defaultAcct) {
+  const text = lines.join("\n"), byMask = {};
+  S.accts.forEach(a => { if (a.mask) byMask[String(a.mask)] = a; });
+  // the statement's closing date tells which year a "Mon DD" belongs to
+  const mo = "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?";
+  let endY = null, endM = 12;
+  const per = text.match(new RegExp(mo + "\\s+(\\d{1,2}),?\\s+(20\\d{2})\\s*(?:-|–|—|to|through)\\s*" + mo + "\\s+(\\d{1,2}),?\\s+(20\\d{2})", "i"))
+    || text.match(/(\d{1,2})\/(\d{1,2})\/(20\d{2})\s*(?:-|–|—|to|through)\s*(\d{1,2})\/(\d{1,2})\/(20\d{2})/);
+  if (per && isNaN(per[1])) { endY = +per[6]; endM = MONTHS[per[4].slice(0, 3).toLowerCase()]; }
+  else if (per) { endY = +per[6]; endM = +per[4]; }
+  if (!endY) { const ys = (text.match(/\b20\d{2}\b/g) || []).map(Number); endY = ys.length ? Math.max(...ys.filter(y => y <= +todayISO().slice(0, 4))) : +todayISO().slice(0, 4); }
+  const ymd = (m, d, y) => { const yy = y ? (String(y).length === 2 ? 2000 + +y : +y) : (m > endM ? endY - 1 : endY); return `${yy}-${pad(m)}-${pad(d)}`; };
+  const dateRe = new RegExp("^(?:" + mo + "\\s+(\\d{1,2})|(\\d{1,2})\\/(\\d{1,2})(?:\\/(\\d{2,4}))?)\\b\\s*", "i");
+  const out = []; let acct = defaultAcct, section = null, lastBal = {};
+  for (const raw of lines) {
+    const dm = raw.match(dateRe);
+    if (!dm) {
+      // headers: which account we're in (by its last 4 digits) and which part of a card statement
+      const mk = raw.match(/(?:x{2,}|\*{2,}|\.{2,}|ending in|account\s*(?:#|number|no\.?)?)\s*:?\s*(\d{4})\b/i);
+      if (mk && byMask[mk[1]]) { acct = byMask[mk[1]].account_id; section = null; }
+      if (/^payments?,?\s+(credits|and other credits)|^payments and credits|^credits\b/i.test(raw)) section = "in";
+      else if (/^(transactions|purchases|new charges|fees|interest charged|other charges)\b/i.test(raw)) section = "out";
+      const ob = raw.match(/(opening|beginning|previous|starting) balance.*?(\$?\s?\d{1,3}(?:,\d{3})*\.\d{2})/i); if (ob) lastBal[acct] = num(ob[2]);
+      continue;
+    }
+    let date, rest = raw.slice(dm[0].length);
+    date = dm[1] ? ymd(MONTHS[dm[1].slice(0, 3).toLowerCase()], +dm[2]) : ymd(+dm[3], +dm[4], dm[5]);
+    rest = rest.replace(new RegExp("^(?:" + mo + "\\s+\\d{1,2}|\\d{1,2}\\/\\d{1,2}(?:\\/\\d{2,4})?)\\s+", "i"), ""); // posted date
+    if (/^(opening|beginning|previous|starting|ending|closing|new) balance|^total\b/i.test(rest)) {
+      const b = rest.match(/\$?\s?\d{1,3}(?:,\d{3})*\.\d{2}/); if (b && /opening|beginning|previous|starting/i.test(rest)) lastBal[acct] = num(b[0]); continue; }
+    const money = [...rest.matchAll(MONEY_RE)]; if (!money.length) continue;
+    const first = money[0], desc = rest.slice(0, first.index).replace(/\b(debit|credit)\s*$/i, "").trim(); if (!desc) continue;
+    const tok = first[0], val = Math.abs(num(tok.replace(/[−–]/g, "-").replace(/CR|DR/gi, ""))); if (!val) continue;
+    const isCredit = (S.accts.find(a => a.account_id === acct) || {}).type === "credit";
+    let dir = null, how = "";
+    if (money.length >= 2 && lastBal[acct] != null) { const bal = num(money[money.length - 1][0]), ch = bal - lastBal[acct];
+      if (Math.abs(Math.abs(ch) - val) < 0.011) { dir = isCredit ? (ch > 0 ? "out" : "in") : (ch > 0 ? "in" : "out"); how = "balance"; } }
+    if (money.length >= 2) lastBal[acct] = num(money[money.length - 1][0]);
+    if (!dir && (/[-−–]|\(/.test(tok) || /CR\b/i.test(tok))) { dir = isCredit ? "in" : "out"; how = "sign"; }
+    else if (!dir && /^\+/.test(tok.trim())) { dir = isCredit ? "out" : "in"; how = "sign"; }
+    if (!dir && /\bcredit\b/i.test(rest.slice(0, first.index))) { dir = "in"; how = "word"; }
+    else if (!dir && /\bdebit\b/i.test(rest.slice(0, first.index))) { dir = "out"; how = "word"; }
+    if (!dir && isCredit && section) { dir = section; how = "section"; }
+    if (!dir) { dir = /deposit|payroll|dir dep|direct dep|interest paid|refund|transfer from|deposit from|zelle from|received|payment.*thank/i.test(desc) ? (isCredit ? "in" : "in") : "out"; how = "guess"; }
+    out.push({ acct, date, desc, amt: dir === "out" ? val : -val, how });
+  }
+  return out;
+}
+/** Preview what will be imported: per account, with a checkbox per row and a ± to flip money in/out. */
+function showImportPreview(rows, files) {
+  const box = $("impPrev"), groups = {};
+  rows.forEach((r, k) => { r.k = k; r.on = true; (groups[r.acct] = groups[r.acct] || []).push(r); });
+  const draw = () => {
+    const parts = Object.entries(groups).map(([acct, list]) => {
+      const { recs, earliest, name } = buildImport(acct, list.filter(r => r.on)), keep = new Set(recs.map(x => x.date + "|" + x.name + "|" + x.amount));
+      const older = list.filter(r => r.date < earliest).length, lo = list.reduce((m, r) => r.date < m ? r.date : m, "9999"), hi = list.reduce((m, r) => r.date > m ? r.date : m, "0");
+      return `<div class="ipg"><div class="iph"><b>${esc(name)}</b><span class="mute">${list.length} found, ${shortDate(lo)} – ${shortDate(hi)} · <b>${recs.length}</b> to add${list.length - older ? ` · ${list.length - older} already synced` : ""}</span></div>
+        <div class="ipl">${list.map(r => { const synced = r.date >= earliest;
+          return `<label class="ipr ${synced ? "dim" : ""} ${r.how === "guess" ? "unsure" : ""}"><input type="checkbox" data-k="${r.k}" ${r.on && !synced ? "checked" : ""} ${synced ? "disabled" : ""}>
+            <span class="d">${new Date(r.date + "T12:00:00").toLocaleString("en-US", { month: "short", day: "numeric" })}${r.date.slice(0, 4) !== todayISO().slice(0, 4) ? " '" + r.date.slice(2, 4) : ""}</span><span class="n">${esc(r.desc)}</span>
+            <button type="button" class="flip ${r.amt < 0 ? "pos" : ""}" data-f="${r.k}" title="Switch money in / out">${r.amt < 0 ? "+" : "−"}${money2(Math.abs(r.amt))}</button></label>`; }).join("")}</div></div>`; }).join("");
+    const total = Object.entries(groups).reduce((s, [a, l]) => s + buildImport(a, l.filter(r => r.on)).recs.length, 0);
+    box.innerHTML = `<div class="iptop"><b>Check before saving</b><span class="mute">${files} file${files > 1 ? "s" : ""} read. Rows marked <span class="unsure-k">?</span> were a guess on in vs. out; tap the amount to switch it.</span></div>${parts}
+      <div class="btns" style="margin-top:12px"><button class="primary" id="ipGo" ${total ? "" : "disabled"}>Import ${total} transaction${total === 1 ? "" : "s"}</button><button id="ipNo">Cancel</button></div>`;
+    box.querySelectorAll("input[data-k]").forEach(c => c.onchange = () => { rows[+c.dataset.k].on = c.checked; draw(); });
+    box.querySelectorAll("[data-f]").forEach(b => b.onclick = e => { e.preventDefault(); const r = rows[+b.dataset.f]; r.amt = -r.amt; r.how = "manual"; draw(); });
+    $("ipNo").onclick = () => { box.innerHTML = ""; $("impFile").value = ""; };
+    $("ipGo").onclick = async () => { $("ipGo").disabled = true; let n = 0;
+      try { for (const [acct, list] of Object.entries(groups)) { const { recs } = buildImport(acct, list.filter(r => r.on)); await saveImport(recs); n += recs.length; } }
+      catch (e) { if ($("ipGo")) $("ipGo").disabled = false; return toast(e.message, true); }
+      box.innerHTML = ""; $("impFile").value = ""; $("impOut").textContent = `Imported ${n} transactions. You can remove them below.`; toast(`Imported ${n} transactions`);
+      try { await load(); } catch (e) { toast(e.message, true); } };
+  };
+  draw(); box.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+// the "positive = spent" option only matters for CSV files
+$("impFile").addEventListener("change", () => { const fs = [...$("impFile").files]; $("impPosL").style.display = fs.length && fs.every(f => /\.pdf$/i.test(f.name)) ? "none" : ""; $("impPrev").innerHTML = ""; });
+$("impBtn").onclick = async () => {
+  const files = [...$("impFile").files], acct = $("impAcct").value, out = $("impOut");
+  if (!files.length || !acct) { out.textContent = "Choose an account and a file."; return; }
+  out.textContent = "Reading…"; $("impPrev").innerHTML = "";
+  try {
+    const rows = [];
+    for (const f of files) {
+      if (/\.pdf$/i.test(f.name) || f.type === "application/pdf") rows.push(...parseStatement(await pdfLines(f), acct));
+      else rows.push(...csvRows(await f.text(), $("impPos").checked).map(r => ({ ...r, acct, how: "csv" })));
+    }
+    const good = rows.filter(r => r.date && r.amt);
+    if (!good.length) { out.textContent = "I couldn't find any transactions in that file. If it's a scanned image rather than text, it can't be read; send me one and I'll adapt the reader."; return; }
+    out.textContent = ""; good.sort((a, b) => a.date < b.date ? -1 : 1); showImportPreview(good, files.length);
+  } catch (e) { out.textContent = e.message; }
 };
 // ---------- installable app + push notifications ----------
 const VAPID = "BAqutLVJ6IyuxDeGMKPPupAgvxAqKPUwyWT7uHKk0_JHZU-WRpHNUoaomVuzCYJI-vB35j9-J1f0uTW75l4f2fM";
