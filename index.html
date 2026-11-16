@@ -178,6 +178,9 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
 .optrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
 .optrow .t{font-size:14px}.optrow .d{font-size:12px;color:var(--mute)}
 .flagbox{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.tsel{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;font-size:13px;min-height:32px}
+.tsel .tl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rangebtn #rangeLbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .segfull{display:flex;width:100%;margin-bottom:6px}.segfull button{flex:1;padding:10px}
 .amtbig{display:flex;align-items:baseline;justify-content:center;gap:2px;padding:14px 0 18px;color:var(--text);cursor:text}
 .amtbig span{font-size:30px;font-weight:600;color:var(--mute)}.amtbig.in span,.amtbig.in input{color:var(--accent-d)}
@@ -211,8 +214,10 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
   .top{flex-wrap:nowrap;padding:10px;border-radius:14px}
   .brand .small{display:none}
   .logo{font-size:19px}
-  .rangebar{flex:1;justify-content:flex-end}
-  .rangebtn{min-width:0;flex:1;max-width:220px;padding:8px 10px;font-size:14px}
+  /* fixed-width date control so the arrows never move when the label changes */
+  .brand{flex:1;min-width:0}#pTitle{overflow:hidden;text-overflow:ellipsis}
+  .rangebar{flex:0 0 auto;justify-content:flex-end}
+  .rangebtn{min-width:0;flex:0 0 150px;width:150px;padding:8px 10px;font-size:14px}
   .rangebar .nav{padding:7px 9px}
   .iconbtn .lbl-d{display:none}
   .grid{grid-template-columns:1fr 1fr;gap:10px}
@@ -323,8 +328,12 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
   .swipe #paceTitle,.swipe #paceHead{display:none}
   .swipe h2{font-size:13px;color:var(--mute);font-weight:500;margin-bottom:6px}
   .swipe #nwHead{margin-bottom:8px}.swipe #nwHead .v{font-size:34px;letter-spacing:-.025em}
-  .swipe h2 .hint,.swipe #nwY,.swipe #netNote{display:none!important}
-  .swipe #cTrend{max-height:none}.swipe .card:has(#cTrend) .chartbox{height:240px}
+  .swipe h2 .hint{display:none!important}
+  .swipe #nwY{border:0;background:none}.swipe #nwY button[data-y=fit]{display:none}
+  .swipe #nwY button[data-y=zero]{border:1px solid var(--line);border-radius:8px}
+  .swipe #netNote{font-size:12px;line-height:1.35;margin-top:8px}
+  .swipe #cTrend{max-height:none}.swipe .card:has(#cTrend) .chartbox{height:215px}
+  .swipe .tsel{border-top:1px solid var(--line);margin:auto -16px -16px;padding:10px 16px}
   .swipe #catBreak .cbrow:nth-child(n+5){display:none}
   .swipe .donutwrap{grid-template-columns:1fr}.swipe .chartbox.donut{height:175px}
   .swipe .seg button{padding:5px 8px;font-size:12px}
@@ -332,6 +341,8 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
   .dots button{width:8px;height:8px;border-radius:50%;padding:0;border:0;background:#D6D3D1;transition:transform .25s var(--ease),background .25s}
   .dots button.on{background:var(--brand);transform:scale(1.25)}
   .hero{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
+  .hero{min-height:96px}.hero>div:first-child{min-width:0;flex:1}
+  .hero .l,.hero .s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .hero .l{font-size:13px;color:var(--mute)}
   .hero .v{font-size:36px;font-weight:700;letter-spacing:-.025em;line-height:1.1;margin-top:3px;font-variant-numeric:tabular-nums}
   .hero .s{font-size:12px;color:var(--mute);margin-top:3px}
@@ -441,7 +452,7 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
     <div class="two">
       <div class="card"><h2>Spending by category <span class="hint">&mdash; vs. the same point last period</span></h2>
         <div class="donutwrap"><div class="chartbox donut"><canvas id="cDonut"></canvas></div><div id="catBreak"></div></div></div>
-      <div class="card"><h2>Income vs. spending <span class="hint">&mdash; tap a bar</span></h2><div class="hero mobonly" id="trendHero"></div><div class="chartbox"><canvas id="cTrend"></canvas></div></div>
+      <div class="card"><h2>Income vs. spending <span class="hint">&mdash; tap a month</span></h2><div class="hero mobonly" id="trendHero"></div><div class="chartbox"><canvas id="cTrend"></canvas></div><div class="tsel" id="trendSel"></div></div>
     </div>
     <div class="two">
       <div class="card"><h2>Top merchants <span class="hint">&mdash; tap to see charges</span></h2><div id="merchants"></div></div>
@@ -966,6 +977,7 @@ async function load() {
     db.from("merchant_rules").select("*"),
     db.from("app_settings").select("*"),
   ]);
+  try { const { data: nm } = await db.rpc("item_names"); S.inst = Object.fromEntries((nm || []).map(r => [r.item_id, r.institution_name])); } catch (e) { S.inst = {}; }
   S.tx = tx.sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
   S.accts = ac.data || []; S.budgets = bu.data || []; S.goals = go_.data || []; S.snaps = sn.data || [];
   S.rules = ru.data || []; S.holdings = ho.data || []; S.invtx = it.data || [];
@@ -1196,11 +1208,21 @@ const ICON = {
   loan: '<path d="M3 21h18M5 21V10l7-5 7 5v11M10 21v-6h4v6"/>' };
 const svgI = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
 S._acOpen = new Set();
+/** The month picked on the Income vs. spending chart: recolor the bars, fill the headline and the "See transactions" row. */
+function drawTrendSel() {
+  const ms = S.trendMs || [], m = S.trendSel, ch = S.charts.cTrend; if (!m) return;
+  if (ch) { const k = ms.indexOf(m); ch.data.datasets[0].backgroundColor = ms.map((_, i) => i === k ? "#0D9488" : "rgba(13,148,136,.32)");
+    ch.data.datasets[1].backgroundColor = ms.map((_, i) => i === k ? "#A8A29E" : "#E7E5E4"); ch.update("none"); }
+  const st = monthStats(m);
+  $("trendSel").innerHTML = `<span class="tl"><b>${monthLong(m)}</b><span class="desk"> · in ${money(st.inc)} · out ${money(st.sp)} · ${st.net < 0 ? "overspent" : "kept"} ${money(Math.abs(st.net))}</span></span><button class="mini" id="trendGo">See transactions ›</button>`;
+  $("trendGo").onclick = () => drillTx("Income & spending", monthLong(m), () => monthTx(m).filter(t => isIncome(t) || isSpendish(t)));
+  renderTrendHero();
+}
 function renderTrendHero() {
-  const m = rangeMonth() || todayISO().slice(0, 7), st = monthStats(m), thisM = m === todayISO().slice(0, 7);
-  $("trendHero").innerHTML = `<div><div class="l">${thisM ? "Left over this month" : "Left over in " + monthLong(m)}</div><div class="v ${st.net < 0 ? "neg" : ""}">${money(st.net)}</div>
+  const m = S.trendSel || rangeMonth() || todayISO().slice(0, 7), st = monthStats(m), thisM = m === todayISO().slice(0, 7);
+  $("trendHero").innerHTML = `<div><div class="l">${thisM ? "Left over this month" : "Left over in " + new Date(m + "-15").toLocaleString("en-US", m.slice(0, 4) === todayISO().slice(0, 4) ? { month: "long" } : { month: "short", year: "numeric" })}</div><div class="v ${st.net < 0 ? "neg" : ""}">${money(st.net)}</div>
     <div class="s">Earned ${money(st.inc)} · spent ${money(st.sp)}</div></div>`
-    + (st.inc ? `<div class="st ${st.net < 0 ? "bad" : "ok"}"><i>${st.net < 0 ? "!" : "✓"}</i><span>${st.net < 0 ? "Spent more than you earned" : `Kept ${Math.round(st.net / st.inc * 100)}% of income`}</span></div>` : "");
+    + (st.inc ? `<div class="st ${st.net < 0 ? "bad" : "ok"}"><i>${st.net < 0 ? "!" : "✓"}</i><span>${st.net < 0 ? "Spent more than you earned" : `Kept ${Math.round(st.net / st.inc * 100)}%`}</span></div>` : "");
 }
 function renderAcSum() {
   renderTrendHero();
@@ -1431,15 +1453,20 @@ function drawCharts() {
     r.onmouseleave = () => { const ch = S.charts.cDonut; ch.setActiveElements([]); ch.update("none"); }; });
 
   const ms = chartMonths(), st = ms.map(monthStats);
+  S.trendMs = ms;
+  if (!ms.includes(S.trendSel)) S.trendSel = ms.includes(rangeMonth()) ? rangeMonth() : ms.includes(todayISO().slice(0, 7)) ? todayISO().slice(0, 7) : ms[ms.length - 1];
+  const selI = ms.indexOf(S.trendSel), pick = (on, off) => ms.map((_, k) => k === selI ? on : off);
   chart("cTrend", { type: "bar", data: { labels: ms.map(monthLabel), datasets: [
-      { label: "Income", data: st.map(s => Math.round(s.inc)), backgroundColor: "#0D9488", hoverBackgroundColor: "#0F766E", borderRadius: 4, ...SLIM },
-      { label: "Spending", data: st.map(s => Math.round(s.sp)), backgroundColor: "#D6D3D1", hoverBackgroundColor: "#A8A29E", borderRadius: 4, ...SLIM }] },
+      { label: "Income", data: st.map(s => Math.round(s.inc)), backgroundColor: pick("#0D9488", "rgba(13,148,136,.32)"), hoverBackgroundColor: "#0F766E", borderRadius: 4, ...SLIM },
+      { label: "Spending", data: st.map(s => Math.round(s.sp)), backgroundColor: pick("#A8A29E", "#E7E5E4"), hoverBackgroundColor: "#A8A29E", borderRadius: 4, ...SLIM }] },
     options: { interaction: { mode: "index", intersect: false }, plugins: { legend: { position: "bottom" },
         tooltip: { callbacks: { title: i => monthLong(ms[i[0].dataIndex]), label: c => ` ${c.dataset.label}: ${money(c.raw)}`,
           footer: i => { const s = st[i[0].dataIndex]; return `${s.net >= 0 ? "Saved" : "Overspent"} ${money(Math.abs(s.net))}${s.inc ? ` (${Math.round(s.net / s.inc * 100)}% of income)` : ""}`; } } } },
       scales: { y: { ticks: { callback: moneyTick } } },
-      onClick: (e, els) => { if (!els.length) return; const i = els[0].index; if (!tapGuard("t" + i, e)) return; const m = ms[i];
-        drillTx("Income & spending", monthLong(m), () => monthTx(m).filter(t => isIncome(t) || isSpendish(t))); } } });
+      // tapping a month selects it (numbers above, "See transactions" below); it never jumps straight into a list
+      onClick: (e, els) => { const ch = S.charts.cTrend, hit = els.length ? els : ch.getElementsAtEventForMode(e, "index", { intersect: false }, false);
+        if (!hit.length) return; S.trendSel = ms[hit[0].index]; drawTrendSel(); } } });
+  drawTrendSel();
 
   // pace: cumulative spending across the selected days vs. the budget spread evenly and the same days last month
   const t = todayISO(), end = S.range.to < t ? S.range.to : t, d0 = dnum(S.range.from), total = rangeDays();
@@ -1475,19 +1502,35 @@ function drawCharts() {
   drawNetWorth();
 }
 
-/** Net worth for every day since data starts: today's balances walked backward through cash and card activity. */
+/** Net worth over time, rebuilt from today's balances by undoing each day's cash and card activity.
+ *  Each bank only sends history back to some date (USAA sent 18 months, Capital One about 3). Before a bank's
+ *  history begins it counts as $0 here, so money that arrived from outside your tracked accounts shows up as a
+ *  step on the day that bank's history starts. Connections with only a handful of transactions (a card you rarely use)
+ *  and investments (Plaid has no past balances for them) are held at today's value the whole way. */
 function nwSeries(cashOnly) {
-  const walkable = ["depository", "credit", "loan"]; let nowVal = 0;
-  S.accts.forEach(a => { const v = Number(a.current_balance || 0); if (cashOnly && a.type === "investment") return; if (["credit", "loan"].includes(a.type)) nowVal -= v; else nowVal += v; });
-  const byDay = {}; S.tx.forEach(t => { if (walkable.includes(typeOf(t.account_id))) byDay[t.date] = (byDay[t.date] || 0) + t.amount; });
-  const start = S.tx.length ? S.tx[S.tx.length - 1].date : null, labels = [], vals = [];
-  if (start) { let cur = nowVal; for (let d = dnum(todayISO()); d >= dnum(start); d--) { const k = dstr(d); labels.push(k); vals.push(Math.round(cur)); cur += (byDay[k] || 0); } labels.reverse(); vals.reverse(); }
-  return { labels, vals, start };
+  const walkable = ["depository", "credit", "loan"], val = a => (["credit", "loan"].includes(a.type) ? -1 : 1) * Number(a.current_balance || 0);
+  const acct = Object.fromEntries(S.accts.map(a => [a.account_id, a])), items = {};
+  S.accts.forEach(a => { if (!walkable.includes(a.type)) return; const it = items[a.item_id] = items[a.item_id] || { id: a.item_id, n: 0, first: null, now: 0, byDay: {}, accts: [] }; it.now += val(a); it.accts.push(a); });
+  S.tx.forEach(t => { const a = acct[t.account_id]; if (!a || !walkable.includes(a.type)) return; const it = items[a.item_id];
+    it.n++; it.byDay[t.date] = (it.byDay[t.date] || 0) + t.amount; if (!it.first || t.date < it.first) it.first = t.date; });
+  const all = Object.values(items), real = all.filter(it => it.n >= 10).sort((x, y) => x.first < y.first ? -1 : 1);
+  let base = all.filter(it => it.n < 10).reduce((s, it) => s + it.now, 0);
+  if (!cashOnly) base += S.accts.filter(a => a.type === "investment").reduce((s, a) => s + Number(a.current_balance || 0), 0);
+  const start = real.length ? real[0].first : null, labels = [], vals = [], cur = Object.fromEntries(real.map(it => [it.id, it.now])), joinVal = {};
+  if (start) for (let d = dnum(todayISO()); d >= dnum(start); d--) { const k = dstr(d);
+    let tot = base; real.forEach(it => { if (k >= it.first) tot += cur[it.id]; if (k === it.first) joinVal[it.id] = cur[it.id]; cur[it.id] += it.byDay[k] || 0; });
+    labels.push(k); vals.push(Math.round(tot)); }
+  labels.reverse(); vals.reverse();
+  const nameOf = it => (S.inst || {})[it.id] || (it.accts.slice().sort((x, y) => Math.abs(val(y)) - Math.abs(val(x)))[0] || {}).name || "A bank";
+  // a bank whose history starts after the chart does: the line steps up (or down) by its balance that day
+  const events = real.slice(1).map(it => ({ date: it.first, name: nameOf(it), amount: Math.round(joinVal[it.id] || 0) })).filter(e => Math.abs(e.amount) >= 50);
+  return { labels, vals, start, events };
 }
 const NW_RANGES = { "1w": 7, "1m": 30, "3m": 91, "6m": 182, "1y": 365, all: 1e5 };
 S.nwRange = store.get("hr_nw_range") || "3m"; S.nwFit = store.get("hr_nw_fit") !== false;
 document.querySelectorAll("#nwRange [data-r]").forEach(b => b.onclick = () => { if (b.disabled) return; S.nwRange = b.dataset.r; store.set("hr_nw_range", S.nwRange); drawNetWorth(); });
-document.querySelectorAll("#nwY [data-y]").forEach(b => b.onclick = () => { S.nwFit = b.dataset.y === "fit"; store.set("hr_nw_fit", S.nwFit); drawNetWorth(); });
+// on phones only the "From $0" chip shows, so it toggles
+document.querySelectorAll("#nwY [data-y]").forEach(b => b.onclick = () => { S.nwFit = b.dataset.y === "fit" ? true : isMobile() ? !S.nwFit : false; store.set("hr_nw_fit", S.nwFit); drawNetWorth(); });
 function drawNetWorth() {
   const cashOnly = S.nwMode === "cash", all = nwSeries(cashOnly);
   const hist = all.start ? dnum(todayISO()) - dnum(all.start) : 0;
@@ -1501,14 +1544,19 @@ function drawNetWorth() {
   const labels = idx.map(i => all.labels[i]), vals = idx.map(i => all.vals[i]);
   const first = vals[0] || 0, last = vals[vals.length - 1] || 0, ch = last - first;
   const rl = { "1w": "this week", "1m": "in the last month", "3m": "in 3 months", "6m": "in 6 months", "1y": "this year", all: `since ${all.start ? shortDate(all.start) : "the start"}` }[S.nwRange];
-  $("nwHead").innerHTML = vals.length ? `<div><div class="v">${money(last)}</div></div><span class="${ch >= 0 ? "pos" : "neg"}" style="font-weight:600;align-self:center">${ch >= 0 ? "▲" : "▼"} ${money(Math.abs(ch))}${first ? ` (${(ch / Math.abs(first) * 100).toFixed(1)}%)` : ""} <span class="mute" style="font-weight:400">${rl}</span></span>` : "";
+  $("nwHead").innerHTML = vals.length ? `<div><div class="v">${money(last)}</div></div><span class="${ch >= 0 ? "pos" : "neg"}" style="font-weight:600;align-self:center">${ch >= 0 ? "▲" : "▼"} ${money(Math.abs(ch))}${first > 0 ? ` (${(ch / first * 100).toFixed(1)}%)` : ""} <span class="mute" style="font-weight:400">${rl}</span></span>` : "";
   const invTotal = S.accts.filter(a => a.type === "investment").reduce((s, a) => s + Number(a.current_balance || 0), 0);
-  $("netNote").textContent = !all.start ? "" : (hist < 180 ? `History starts ${shortDate(all.start)}; longer ranges unlock as it builds. ` : "") + (cashOnly
+  const evs = all.events || [], evAt = Object.fromEntries(evs.map(e => [e.date, e]));
+  $("netNote").textContent = !all.start ? "" : (evs.length ? evs.map(e => `${e.name} starts ${shortDate(e.date)} (${e.amount >= 0 ? "+" : "−"}${money(Math.abs(e.amount))}); before that its history isn't available, so it counts as $0. `).join("")
+      : hist < 180 ? `History starts ${shortDate(all.start)}; longer ranges unlock as it builds. ` : "") + (cashOnly
     ? "Cash minus credit cards and loans, rebuilt from your transactions."
-    : `Investments (${money(invTotal)}) are held at today's value because Plaid has no past balances for them.`);
-  chart("cNet", { type: "line", data: { labels: labels.map(shortDate), datasets: [{ label: "Net worth", data: vals, borderColor: "#0F766E", fill: S.nwFit ? "start" : "origin", backgroundColor: "rgba(13,148,136,.10)", pointRadius: 0, pointHoverRadius: 5, pointHoverBackgroundColor: "#0F766E", tension: .25, borderWidth: 2.5 }] },
+    : `Investments (${money(invTotal)}) are held at today's value; Plaid has no past balances for them.`);
+  const mark = labels.map(l => evAt[l] ? 5 : 0);
+  chart("cNet", { type: "line", data: { labels: labels.map(shortDate), datasets: [{ label: "Net worth", data: vals, borderColor: "#0F766E", fill: S.nwFit ? "start" : "origin", backgroundColor: "rgba(13,148,136,.10)",
+      pointRadius: mark, pointBackgroundColor: "#fff", pointBorderColor: "#0F766E", pointBorderWidth: 2, pointHoverRadius: 5, pointHoverBackgroundColor: "#0F766E", tension: labels.length > 200 ? 0 : .25, borderWidth: labels.length > 200 ? 2 : 2.5 }] },
     options: { interaction: { mode: "index", intersect: false },
-      plugins: { legend: { display: false }, tooltip: { displayColors: false, callbacks: { label: c => money(c.raw), footer: i => { const d = i[0].raw - first; return i[0].dataIndex ? `${d >= 0 ? "+" : "−"}${money(Math.abs(d))} since ${shortDate(labels[0])}` : ""; } } } },
+      plugins: { legend: { display: false }, tooltip: { displayColors: false, callbacks: { label: c => money(c.raw), footer: i => { const e = evAt[labels[i[0].dataIndex]], d = i[0].raw - first;
+          return [e ? `${e.name} added here: ${e.amount >= 0 ? "+" : "−"}${money(Math.abs(e.amount))}` : "", i[0].dataIndex ? `${d >= 0 ? "+" : "−"}${money(Math.abs(d))} since ${shortDate(labels[0])}` : ""].filter(Boolean); } } } },
       scales: { x: { ticks: { maxTicksLimit: 7 } }, y: { beginAtZero: !S.nwFit, ticks: { callback: moneyTick } } },
       onClick: (e, els) => { if (tapGuard("nw", e)) netWorthBreakdown(); } } });
 }
