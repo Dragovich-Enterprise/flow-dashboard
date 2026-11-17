@@ -2452,9 +2452,16 @@ $("linkInvBtn").onclick = () => startLink(true);
 async function doSync() {
   const b = $("syncBtn"); if (b.classList.contains("spin")) return;
   b.classList.add("spin"); $("syncBtn2").disabled = true; toast("Syncing with your banks…");
-  try { const r = await fn({ action: "sync" }); await load();
+  // 1) ask every bank connection to pull fresh activity from the bank now (Plaid otherwise checks on its own schedule,
+  //    sometimes only once a day), 2) collect whatever Plaid already has, 3) about 40 seconds later collect again.
+  try { await fn({ action: "refresh" }).catch(() => null);
+    const r = await fn({ action: "sync" }); await load();
     const notes = (r.synced || []).filter(x => x.error).map(x => x.error);
-    toast(notes.length ? "Synced, with issues: " + notes[0] : "Up to date ✓", !!notes.length);
+    if (notes.length) toast("Synced, with issues: " + notes[0], true); else toast("Asked your banks for new activity; checking again in a moment…");
+    setTimeout(async () => { try { const r2 = await fn({ action: "sync" }), n = (r2.synced || []).reduce((s, x) => s + (x.added || 0), 0);
+      if (n) await load(); toast(n ? `${n} new transaction${n > 1 ? "s" : ""} ✓` : "Up to date ✓"); } catch (e) { /* the scheduled syncs will catch up */ }
+      b.classList.remove("spin"); $("syncBtn2").disabled = false; }, 40000);
+    return;
   } catch (e) { toast(e.message, true); }
   b.classList.remove("spin"); $("syncBtn2").disabled = false;
 }
