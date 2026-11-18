@@ -245,6 +245,14 @@ html,body,*{touch-action:manipulation}
 .propose{align-self:flex-start;max-width:88%;border:1px solid var(--accent);background:var(--mint);border-radius:14px;padding:11px 13px;font-size:14px}
 .propose b{display:block;font-size:15px;margin-bottom:3px}.propose .btns{margin-top:9px}
 .propose.done{border-color:var(--line);background:var(--card2);color:var(--mute)}
+.propose.txp{width:88%}.propose .ph{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-d);margin-bottom:2px}
+.propose.done .ph{color:var(--mute)}
+.pitem{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid rgba(19,78,74,.12);cursor:pointer}
+.pitem:first-of-type{border-top:0}.pitem input{width:20px;height:20px;margin:1px 0 0;flex:0 0 auto;accent-color:var(--accent-d)}
+.pitem b{display:block;font-size:14.5px;margin:0;font-weight:600;color:var(--text)}.propose.done .pitem b{color:var(--mute)}
+.pitem .why{display:block;font-size:13px;color:var(--mute);margin-top:2px}.pitem .txs{display:block;font-size:12.5px;color:var(--mute);margin-top:4px;line-height:1.45}
+.pitem.skip{opacity:.55}.pitem.skip b{text-decoration:line-through}
+.pdone{margin-top:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .chatsug{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .chatsug button{border-radius:999px;padding:8px 12px;font-size:14px;text-align:left}
 .chatin{display:flex;gap:8px;align-items:flex-end;padding:10px 12px max(10px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--card)}
@@ -1385,10 +1393,10 @@ async function ai(body) {
 const r0 = n => Math.round(n), r2 = n => Math.round(n * 100) / 100;
 const dim = m => new Date(+m.slice(0, 4), +m.slice(5), 0).getDate();
 /** Category from a name the assistant used ("Groceries", "dining", or a key like FOOD_AND_DRINK). */
-function resolveCat(s) {
+function resolveCat(s, strict) {
   if (!s) return null; const n = x => String(x).toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ").trim(), q = n(s), all = [...allCats(), "__OTHER"];
   const names = c => [n(c), n(pretty(c))];
-  return all.find(c => names(c).includes(q)) || all.find(c => names(c).some(x => x.startsWith(q))) || all.find(c => names(c).some(x => x.includes(q) || q.includes(x))) || null;
+  return all.find(c => names(c).includes(q)) || all.find(c => names(c).some(x => x.startsWith(q))) || (strict ? null : all.find(c => names(c).some(x => x.includes(q) || q.includes(x)))) || null;
 }
 function usualByCat(exclude, n = 6) {
   const fm = coverage().fullMonths.filter(m => m !== exclude).slice(0, n), out = {};
@@ -1396,7 +1404,12 @@ function usualByCat(exclude, n = 6) {
   return out;
 }
 function budgetMap() { return Object.fromEntries(S.budgets.map(b => [b.category, Number(b.monthly_amount)])); }
-function txRow(t) { const a = S.accts.find(x => x.account_id === t.account_id); return { date: t.date, name: tname(t), amount: r2(t.amount), category: pretty(eff(t)), account: a ? (a.nickname || a.name) : "Cash" }; }
+/** Short refs (T1, T2…) so the assistant can point at transactions without copying long bank ids. Kept per conversation. */
+function refOf(id) { const r = S.chat.refs || (S.chat.refs = { n: 0, byId: {}, byRef: {} }); if (!r.byId[id]) { const k = "T" + (++r.n); r.byId[id] = k; r.byRef[k] = id; } return r.byId[id]; }
+const txByRef = k => { const id = ((S.chat.refs || {}).byRef || {})[String(k).trim().toUpperCase()]; return id ? S.tx.find(t => t.transaction_id === id) : null; };
+const COUNTED = { spend: "spending", refund: "refund", income: "income", transfer: "transfer", excluded: "excluded" };
+function txRow(t) { const a = S.accts.find(x => x.account_id === t.account_id), raw = t.name && t.name !== tname(t) ? t.name : undefined;
+  return { ref: refOf(t.transaction_id), date: t.date, name: tname(t), bank_description: raw, amount: r2(t.amount), category: pretty(eff(t)), counted_as: COUNTED[t._k] || t._k, account: a ? (a.nickname || a.name) : "Cash" }; }
 function nwChange(days) { const s = nwSeries(false); if (!s.vals.length) return null; const i = Math.max(0, s.vals.length - 1 - days); return s.labels[i] >= s.start ? r0(s.vals[s.vals.length - 1] - s.vals[i]) : null; }
 
 const AI_TOOLS = {
@@ -1426,13 +1439,14 @@ const AI_TOOLS = {
   find_transactions({ query, category, start, end, min_amount, max_amount, kind = "spending", sort = "newest", limit = 15 }) {
     const c = category ? resolveCat(category) : null; if (category && !c) return { error: `No category called "${category}".` };
     const words = String(query || "").toLowerCase().split(/\s+/).filter(Boolean);
-    let list = S.tx.filter(t => (kind === "all" || (kind === "income" ? isIncome(t) : isSpendish(t)))
+    const kindOk = t => kind === "all" ? true : kind === "income" ? isIncome(t) : kind === "transfer" ? t._k === "transfer" : kind === "excluded" ? t._k === "excluded" : isSpendish(t);
+    let list = S.tx.filter(t => kindOk(t)
       && (!start || t.date >= start) && (!end || t.date <= end) && (!c || eff(t) === c)
       && (min_amount == null || Math.abs(t.amount) >= min_amount) && (max_amount == null || Math.abs(t.amount) <= max_amount)
       && (!words.length || words.every(w => (tname(t) + " " + (t.name || "") + " " + (t.notes || "")).toLowerCase().includes(w))));
-    const total = kind === "income" ? incomeOf(list) : kind === "all" ? list.reduce((s, t) => s + t.amount, 0) : netSpend(list);
+    const total = kind === "income" ? incomeOf(list) : kind === "spending" || !kind ? netSpend(list) : list.reduce((s, t) => s + t.amount, 0);
     if (sort === "largest") list = [...list].sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
-    return { count: list.length, [kind === "income" ? "total_received" : kind === "all" ? "net_total_out" : "total_spent"]: r2(total), shown: Math.min(list.length, limit), transactions: list.slice(0, Math.min(40, limit || 15)).map(txRow) };
+    return { count: list.length, [kind === "income" ? "total_received" : kind === "spending" || !kind ? "total_spent" : "net_total_out"]: r2(total), shown: Math.min(list.length, limit), transactions: list.slice(0, Math.min(40, limit || 15)).map(txRow) };
   },
   budgets_status() {
     const m = todayISO().slice(0, 7), bud = budgetMap(), sp = sumBy(monthTx(m).filter(isSpendish), eff, t => t.amount), out = [];
@@ -1455,12 +1469,91 @@ const AI_TOOLS = {
       groups: GROUPS.map(([title, f]) => ({ group: title, accounts: shownAccts().filter(f).map(a => ({ name: a.nickname || a.name, balance: r0(Number(a.current_balance || 0)) })) })).filter(g => g.accounts.length) };
   },
   propose_budget_change({ category, new_amount }) {
-    const c = resolveCat(category); if (!c) return { error: `No category called "${category}".` };
-    return { status: "Shown to the user with an Apply button. Don't say it has changed.", category: pretty(c), current_budget: budgetMap()[c] || null, proposed: r0(new_amount) };
+    const c = resolveCat(category, true);
+    return { status: "Shown to the user with an Apply button. Don't say it has changed.", category: c ? pretty(c) : String(category), new_category: !c || undefined, current_budget: c ? budgetMap()[c] || null : null, proposed: r0(new_amount) };
+  },
+  propose_transaction_changes(input) {
+    const plan = planTxChanges(input);
+    if (!plan.items.length) return { error: `None of those refs matched. Use refs from find_transactions in this conversation.${plan.bad.length ? " Unknown: " + plan.bad.join(", ") : ""}` };
+    return { status: "Shown to the user as a checklist with an Apply button. Nothing has changed yet; don't say it has.", items: plan.items.map(it => ({ change: it.label, transactions: it.txs.length })), unknown_refs: plan.bad.length ? plan.bad : undefined };
   },
 };
 const TOOL_LABEL = { month_summary: "Looking at the month", spending_by_category: "Adding up categories", category_trend: "Checking the trend", find_transactions: "Searching transactions",
-  budgets_status: "Checking budgets", recurring_bills: "Checking bills", upcoming: "Checking what's coming up", accounts_and_net_worth: "Checking balances", propose_budget_change: "Suggesting a budget" };
+  budgets_status: "Checking budgets", recurring_bills: "Checking bills", upcoming: "Checking what's coming up", accounts_and_net_worth: "Checking balances", propose_budget_change: "Suggesting a budget",
+  propose_transaction_changes: "Preparing fixes" };
+
+// ---------- transaction fixes the assistant proposes (applied only when you tap Apply, and undoable) ----------
+const cleanCatName = s => String(s || "").replace(/[^\p{L}\p{N} &'\/-]/gu, "").replace(/\s+/g, " ").trim().slice(0, 40);
+function planTxChanges(input) {
+  const items = [], bad = [];
+  (Array.isArray(input && input.changes) ? input.changes : []).slice(0, 20).forEach(c => {
+    const seen = new Set(), txs = [];
+    (Array.isArray(c.refs) ? c.refs : []).slice(0, 40).forEach(r => { const t = txByRef(r); if (!t) { bad.push(String(r)); return; } if (!seen.has(t)) { seen.add(t); txs.push(t); } });
+    if (!txs.length) return;
+    const counted = ["transfer", "excluded", "normal"].includes(c.counted_as) ? c.counted_as : null;
+    let cat = null, newCat = null;
+    if (c.category && counted !== "transfer" && counted !== "excluded") {
+      cat = resolveCat(c.category, true); if (cat === "__OTHER") cat = "OTHER";
+      if (!cat) { newCat = cleanCatName(c.category); if (!newCat) cat = null; }
+    }
+    const rename = c.rename ? String(c.rename).trim().slice(0, 60) || null : null, always = !!c.always_for_merchant;
+    if (!cat && !newCat && !counted && !rename) return;
+    const parts = [];
+    if (counted === "transfer") parts.push("Count as a transfer, not spending");
+    if (counted === "excluded") parts.push("Leave out of totals");
+    if (counted === "normal") parts.push("Count it again");
+    if (cat || newCat) parts.push(`Move to ${cat ? pretty(cat) : newCat}${newCat ? " (new category)" : ""}`);
+    if (rename) parts.push(`Rename to “${rename}”`);
+    items.push({ txs, cat, newCat, counted, rename, always, why: String(c.why || "").slice(0, 140), label: parts.join(" · ") + (always ? " — and future ones from this merchant" : "") });
+  });
+  return { items, bad };
+}
+const txState = t => ({ id: t.transaction_id, user_category: t.user_category || null, user_name: t.user_name || null, excluded: !!t.excluded });
+/** Write per-transaction patches, grouped so identical patches go in one request. */
+async function patchTxs(pairs) {
+  const groups = {}; pairs.forEach(([t, patch]) => { const k = JSON.stringify(patch); (groups[k] = groups[k] || { patch, txs: [] }).txs.push(t); });
+  for (const g of Object.values(groups)) {
+    const { error } = await db.from("transactions").update(g.patch).in("transaction_id", g.txs.map(t => t.transaction_id));
+    if (error) throw error; g.txs.forEach(t => Object.assign(t, g.patch));
+  }
+}
+async function applyTxPlan(plan, picked) {
+  const undo = { tx: [], rules: [], cats: [] }, saved = new Set(), pairs = [];
+  const keep = t => { if (!saved.has(t.transaction_id)) { saved.add(t.transaction_id); undo.tx.push(txState(t)); } };
+  for (const it of plan.items.filter((_, k) => picked.includes(k))) {
+    if (it.newCat && !customCats().includes(it.newCat)) { if (!(await saveSetting("custom_categories", [...customCats(), it.newCat]))) throw new Error("Couldn't create " + it.newCat); undo.cats.push(it.newCat); S.filterSig = null; }
+    const catFor = t => it.counted === "transfer" ? (t.amount < 0 ? "TRANSFER_IN" : "TRANSFER_OUT") : (it.cat || it.newCat || undefined);
+    if (it.always) {
+      for (const key of [...new Set(it.txs.map(mk))]) {
+        const t0 = it.txs.find(t => mk(t) === key), prev = S.mrules[key] ? { ...S.mrules[key] } : null;
+        const rr = { match: key, category: catFor(t0) || (prev && prev.category) || null, rename: it.rename || (prev && prev.rename) || null,
+          excluded: it.counted === "excluded" ? true : it.counted === "normal" ? false : !!(prev && prev.excluded), updated_at: new Date().toISOString() };
+        const { error } = await db.from("merchant_rules").upsert(rr, { onConflict: "match" }); if (error) throw error;
+        undo.rules.push({ key, prev }); S.mrules[key] = { ...(prev || {}), ...rr };
+        // the rule now decides for this merchant, so one-off overrides are cleared (and remembered for undo)
+        S.tx.filter(x => mk(x) === key && (x.user_category || x.user_name || (it.counted && x.excluded !== (it.counted === "excluded")))).forEach(x => { keep(x);
+          pairs.push([x, { user_category: null, user_name: null, ...(it.counted === "excluded" || it.counted === "normal" ? { excluded: it.counted === "excluded" } : {}) }]); });
+      }
+    } else {
+      it.txs.forEach(t => { keep(t); const p = {}, c = catFor(t);
+        if (c) p.user_category = c; if (it.rename) p.user_name = it.rename;
+        if (it.counted === "excluded") p.excluded = true; if (it.counted === "normal") { p.excluded = false; if (["TRANSFER_IN", "TRANSFER_OUT"].includes(t.user_category) && !c) p.user_category = null; }
+        pairs.push([t, p]); });
+    }
+  }
+  await patchTxs(pairs);
+  return { undo, n: picked.length, txCount: saved.size };
+}
+async function undoTxPlan(u) {
+  const byId = Object.fromEntries(S.tx.map(t => [t.transaction_id, t]));
+  await patchTxs(u.tx.filter(x => byId[x.id]).map(x => [byId[x.id], { user_category: x.user_category, user_name: x.user_name, excluded: x.excluded }]));
+  for (const r of u.rules.reverse()) {
+    if (r.prev) { const { match, category, rename, excluded } = r.prev; const { error } = await db.from("merchant_rules").upsert({ match, category: category || null, rename: rename || null, excluded: !!excluded, updated_at: new Date().toISOString() }, { onConflict: "match" }); if (error) throw error; S.mrules[r.key] = r.prev; }
+    else { const { error } = await db.from("merchant_rules").delete().eq("match", r.key); if (error) throw error; delete S.mrules[r.key]; }
+  }
+  const stillUsed = c => S.tx.some(t => t.user_category === c) || Object.values(S.mrules).some(r => r.category === c) || S.budgets.some(b => b.category === c);
+  const drop = u.cats.filter(c => !stillUsed(c)); if (drop.length) { await saveSetting("custom_categories", customCats().filter(c => !drop.includes(c))); S.filterSig = null; }
+}
 
 /** Background the assistant gets with every question: categories, budgets, accounts, income and how far back data goes. */
 function chatContext() {
@@ -1472,9 +1565,17 @@ function chatContext() {
     `Accounts: ${shownAccts().map(a => `${a.nickname || a.name} (${SUB[a.subtype] || a.type})`).join(", ")}.`,
     `Regular income: ${inc.map(x => `${x.name} about ${money(x.amount)} every ${x.gap} days`).join("; ") || "not detected"}.`,
     `History starts: ${Object.entries(firstByBank).map(([b, d]) => `${b} ${d}`).join(", ")}. Months before a bank's start date are missing that bank's activity.`,
-  ].join("\n");
+    proposalStatus(),
+  ].filter(Boolean).join("\n");
 }
 
+function proposalStatus() {
+  const out = []; S.chat.msgs.forEach(m => m.role === "assistant" && (m.content || []).forEach(b => {
+    if (b.type !== "tool_use" || !b.name.startsWith("propose_")) return; const a = S.chat.applied[b.id], st = a && (a.state || a);
+    const what = b.name === "propose_budget_change" ? `budget ${b.input.category} $${b.input.new_amount}` : `transaction fixes (${(b.input.changes || []).length})`;
+    out.push(`${what}: ${st === "yes" ? (a.n && a.of && a.n < a.of ? `applied ${a.n} of ${a.of}` : "applied") : st === "no" ? "declined" : st === "undone" ? "applied then undone" : "not answered yet"}`); }));
+  return out.length ? "Your proposals in this chat so far: " + out.join("; ") + "." : "";
+}
 /** Exact numbers for the Sunday review, saved to the database whenever they change (the review runs on the server at 8 AM Sunday). */
 function buildDigest() {
   const today = todayISO(), m = today.slice(0, 7), day = +today.slice(8), pm = [...S.months].sort().filter(x => x < m).pop();
@@ -1560,7 +1661,7 @@ function recentMsgs(max, maxBytes) {
   for (const k of starts) { i = k; if (m.length - k <= max && JSON.stringify(m.slice(k)).length <= maxBytes) break; }
   return m.slice(i);
 }
-const saveChat = () => store.set("hr_chat", { msgs: recentMsgs(40, 200000), applied: S.chat.applied });
+const saveChat = () => store.set("hr_chat", { msgs: recentMsgs(40, 200000), applied: S.chat.applied, refs: S.chat.refs });
 function mdLite(t) {
   const lines = esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").split("\n"); let html = "", list = null;
   for (const ln of lines) { const li = ln.match(/^\s*(?:[-•*]|\d+[.)])\s+(.*)/);
@@ -1576,7 +1677,8 @@ function renderChat(status) {
     if (m.role === "user") { if (typeof m.content === "string") out.push(`<div class="msg u">${esc(m.content)}</div>`); return; }
     (m.content || []).forEach(b => {
       if (b.type === "text" && b.text.trim()) out.push(`<div class="msg a">${mdLite(b.text)}</div>`);
-      else if (b.type === "tool_use" && b.name === "propose_budget_change") { const c = resolveCat(b.input.category), done = S.chat.applied[b.id];
+      else if (b.type === "tool_use" && b.name === "propose_transaction_changes") out.push(txCard(b));
+      else if (b.type === "tool_use" && b.name === "propose_budget_change") { const c = resolveCat(b.input.category, true), done = S.chat.applied[b.id];
         out.push(`<div class="propose ${done ? "done" : ""}"><b>${esc(c ? pretty(c) : b.input.category)}: ${money(b.input.new_amount)}/month</b>${esc(b.input.reason || "")}
           ${done ? `<div style="margin-top:6px">${done === "yes" ? "✓ Applied" : "Not applied"}</div>` : `<div class="btns"><button class="mini primary" data-aiap="${esc(b.id)}">Apply</button><button class="mini" data-aino="${esc(b.id)}">No thanks</button></div>`}</div>`); }
       else if (b.type === "tool_use") out.push(`<div class="tooln">${esc(TOOL_LABEL[b.name] || "Checking")} ✓</div>`);
@@ -1586,10 +1688,36 @@ function renderChat(status) {
   if (S.chat.err) out.push(`<div class="msg a err">${esc(S.chat.err)}</div>`);
   log.innerHTML = out.join(""); log.scrollTop = log.scrollHeight;
   log.querySelectorAll("[data-q]").forEach(b => b.onclick = () => sendChat(b.dataset.q));
-  log.querySelectorAll("[data-aiap]").forEach(b => b.onclick = async () => { const blk = findBlock(b.dataset.aiap), c = resolveCat(blk.input.category); if (!c) return;
-    b.disabled = true; await saveBudget(c, Math.round(blk.input.new_amount), true); S.chat.applied[blk.id] = "yes"; saveChat(); renderAll(); renderChat(); toast(`${pretty(c)} budget set to ${money(blk.input.new_amount)}`); });
+  log.querySelectorAll("[data-aiap]").forEach(b => b.onclick = async () => { const blk = findBlock(b.dataset.aiap); let c = resolveCat(blk.input.category, true);
+    b.disabled = true;
+    if (!c) { c = cleanCatName(blk.input.category); if (!c) return; if (!customCats().includes(c) && !(await saveSetting("custom_categories", [...customCats(), c]))) { b.disabled = false; return; } S.filterSig = null; }
+    await saveBudget(c, Math.round(blk.input.new_amount), true); S.chat.applied[blk.id] = "yes"; saveChat(); renderAll(); renderChat(); toast(`${pretty(c)} budget set to ${money(blk.input.new_amount)}`); });
+  log.querySelectorAll("[data-txap]").forEach(b => b.onclick = async () => {
+    const blk = findBlock(b.dataset.txap), card = b.closest(".propose"), plan = planTxChanges(blk.input);
+    const picked = [...card.querySelectorAll("[data-pi]")].filter(x => x.checked).map(x => +x.dataset.pi); if (!picked.length) return toast("Nothing ticked");
+    b.disabled = true; b.textContent = "Applying…";
+    try { const r = await applyTxPlan(plan, picked); S.chat.applied[blk.id] = { state: "yes", n: r.n, of: plan.items.length, picked, txCount: r.txCount, undo: r.undo };
+      saveChat(); renderAll(); renderChat(); toast(`Updated ${r.txCount} transaction${r.txCount === 1 ? "" : "s"}`); }
+    catch (e) { toast((e && e.message) || "Couldn't apply", true); b.disabled = false; b.textContent = "Apply"; renderAll(); } });
+  log.querySelectorAll("[data-txundo]").forEach(b => b.onclick = async () => { const a = S.chat.applied[b.dataset.txundo]; if (!a || !a.undo) return;
+    b.disabled = true; b.textContent = "Undoing…";
+    try { await undoTxPlan(a.undo); S.chat.applied[b.dataset.txundo] = { state: "undone" }; saveChat(); renderAll(); renderChat(); toast("Undone"); }
+    catch (e) { toast((e && e.message) || "Couldn't undo", true); b.disabled = false; b.textContent = "Undo"; } });
   log.querySelectorAll("[data-aino]").forEach(b => b.onclick = () => { S.chat.applied[b.dataset.aino] = "no"; saveChat(); renderChat(); });
 }
+function txCard(b) {
+  const plan = planTxChanges(b.input), a = S.chat.applied[b.id], st = a && (a.state || a);
+  if (!plan.items.length) return `<div class="propose done">Those transactions couldn't be found, so there's nothing to apply.</div>`;
+  const total = new Set(plan.items.flatMap(it => it.txs)).size;
+  const amt = n => Number.isInteger(n) ? money(n) : money2(n), skipped = k => st === "yes" && Array.isArray(a.picked) && !a.picked.includes(k);
+  const rows = plan.items.map((it, k) => { const ex = it.txs.slice(0, 3).map(t => `${esc(tname(t))} · ${amt(Math.abs(t.amount))} · ${esc(fmtShort(t.date))}`).join("<br>") + (it.txs.length > 3 ? `<br>+ ${it.txs.length - 3} more` : "");
+    return `<label class="pitem ${skipped(k) ? "skip" : ""}">${st ? "" : `<input type="checkbox" data-pi="${k}" checked>`}<span><b>${skipped(k) ? "Skipped: " : ""}${esc(it.label)}</b>${it.why ? `<span class="why">${esc(it.why)}</span>` : ""}<span class="txs">${ex}</span></span></label>`; }).join("");
+  const foot = st === "yes" ? `<div class="pdone">✓ Applied ${a.n === a.of ? "" : a.n + " of " + a.of + " "}· ${a.txCount} transaction${a.txCount === 1 ? "" : "s"} updated <button class="mini" data-txundo="${esc(b.id)}">Undo</button></div>`
+    : st === "undone" ? `<div class="pdone">Undone. Nothing was kept.</div>` : st === "no" ? `<div class="pdone">Not applied</div>`
+    : `<div class="btns"><button class="mini primary" data-txap="${esc(b.id)}">Apply</button><button class="mini" data-aino="${esc(b.id)}">No thanks</button></div>`;
+  return `<div class="propose txp ${st ? "done" : ""}"><b class="ph">${plan.items.length} fix${plan.items.length === 1 ? "" : "es"} · ${total} transaction${total === 1 ? "" : "s"}</b>${rows}${foot}</div>`;
+}
+const fmtShort = d => new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
 const findBlock = id => { for (const m of S.chat.msgs) if (m.role === "assistant") for (const b of m.content || []) if (b.id === id) return b; };
 function openChat(prefill) {
   $("chat").classList.remove("hidden"); if (isMobile()) document.body.style.overflow = "hidden"; S.chat.err = null; renderChat();
@@ -1608,8 +1736,11 @@ async function sendChat(text) {
     for (let i = 0; i < 8; i++) {
       const r = await ai({ action: "chat", messages: recentMsgs(50, 120000), context: chatContext() });
       if (r.error) { S.chat.err = r.error; if (i === 0) { S.chat.msgs.pop(); $("chatText").value = text; autoGrow(); } break; }
-      S.chat.msgs.push({ role: "assistant", content: r.content || [] });
-      const uses = (r.content || []).filter(b => b.type === "tool_use");
+      let content = r.content || [];
+      if (r.stop_reason !== "tool_use") content = content.filter(b => b.type !== "tool_use");   // cut off mid-call: drop the unfinished call
+      if (r.stop_reason === "max_tokens") content = [...content, { type: "text", text: "(That got long, so I stopped there. Ask me to continue.)" }];
+      S.chat.msgs.push({ role: "assistant", content });
+      const uses = content.filter(b => b.type === "tool_use");
       if (r.stop_reason !== "tool_use" || !uses.length) break;
       renderChat(TOOL_LABEL[uses[0].name] || "Checking");
       const results = uses.map(b => { let out; try { out = (AI_TOOLS[b.name] || (() => ({ error: "unknown tool" })))(b.input || {}); } catch (e) { out = { error: String(e.message || e) }; }
