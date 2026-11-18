@@ -214,6 +214,43 @@ html,body,*{touch-action:manipulation}
 #monthTbl .pmark{color:var(--mute);margin-left:2px}#monthTbl .kp{display:block;font-size:11.5px;color:var(--mute);font-weight:400}
 #monthNote{font-size:12px;margin-top:8px}#monthNote:empty{display:none}
 @media (max-width:760px){ #cmCard:not(.open) #cmWrap{display:none} #cmCard h2 .hint{display:none} #cmToggle{white-space:nowrap} #cmCard .trhead{margin-bottom:0} #cmCard.open .trhead{margin-bottom:10px} }
+/* ---------- AI: weekly review card + chat ---------- */
+.aicard .aih{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.aicard .aih h2{margin:0;display:flex;align-items:center;gap:6px}.aicard .aih h2 svg{width:15px;height:15px;color:var(--accent)}
+.aicard .aih .mute{font-size:12.5px}
+.aicard .hl{font-size:17px;font-weight:600;line-height:1.35;letter-spacing:-.005em}
+.aicard ul{margin:10px 0 0;padding-left:18px}.aicard li{margin:6px 0;line-height:1.45;font-size:14.5px}
+.aicard .try{margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--mint);color:#134E4A;font-size:14px;line-height:1.4}
+.aicard .try b{font-weight:600}
+.aicard .aib{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.aicard.short li:nth-child(n+3){display:none}
+.aicard .more{background:none;border:0;padding:4px 0;color:var(--accent-d);font-weight:600;font-size:14px}
+.chat{position:fixed;inset:0;z-index:85;background:var(--bg);display:flex;flex-direction:column;animation:chatin .22s var(--ease)}
+.chat.hidden{display:none}
+@keyframes chatin{from{transform:translateY(24px);opacity:0}}
+@media (min-width:761px){.chat{inset:auto 24px 24px auto;width:420px;height:min(680px,calc(100vh - 48px));border-radius:18px;border:1px solid var(--line);box-shadow:0 18px 50px rgba(28,25,23,.18)}}
+.chathead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:max(14px,env(safe-area-inset-top)) 16px 12px;border-bottom:1px solid var(--line);background:var(--card)}
+@media (min-width:761px){.chathead{border-radius:18px 18px 0 0;padding-top:14px}}
+.chathead>div:first-child{display:flex;flex-direction:column;min-width:0}.chathead b{font-size:16px}.chathead .mute{font-size:12px}
+.chathead .close{font-size:24px;line-height:1;padding:2px 10px}
+.chatlog{flex:1;overflow-y:auto;padding:14px 14px 6px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.msg{max-width:88%;padding:10px 13px;border-radius:16px;line-height:1.45;font-size:15px;word-wrap:break-word}
+.msg.u{align-self:flex-end;background:var(--brand);color:#fff;border-bottom-right-radius:5px}
+.msg.a{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:5px}
+.msg.a p{margin:0 0 8px}.msg.a p:last-child{margin:0}.msg.a ul,.msg.a ol{margin:4px 0 8px;padding-left:20px}.msg.a li{margin:3px 0}
+.msg.err{border-color:#FECACA;background:#FEF2F2;color:#991B1B}
+.tooln{align-self:flex-start;font-size:12px;color:var(--mute);padding:0 4px;display:flex;align-items:center;gap:6px}
+.tooln.live::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite alternate}
+@keyframes pulse{from{opacity:.25}}
+.propose{align-self:flex-start;max-width:88%;border:1px solid var(--accent);background:var(--mint);border-radius:14px;padding:11px 13px;font-size:14px}
+.propose b{display:block;font-size:15px;margin-bottom:3px}.propose .btns{margin-top:9px}
+.propose.done{border-color:var(--line);background:var(--card2);color:var(--mute)}
+.chatsug{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chatsug button{border-radius:999px;padding:8px 12px;font-size:14px;text-align:left}
+.chatin{display:flex;gap:8px;align-items:flex-end;padding:10px 12px max(10px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--card)}
+@media (min-width:761px){.chatin{border-radius:0 0 18px 18px}}
+.chatin textarea{flex:1;resize:none;max-height:120px;min-height:44px;padding:11px 12px;border-radius:14px;font-size:16px;line-height:1.35}
+.chatin button{width:44px;height:44px;border-radius:50%;padding:0;font-size:20px;flex:0 0 auto}
 .segfull{display:flex;width:100%;margin-bottom:6px}.segfull button{flex:1;padding:10px}
 .amtbig{display:flex;align-items:baseline;justify-content:center;gap:2px;padding:14px 0 18px;color:var(--text);cursor:text}
 .amtbig span{font-size:30px;font-weight:600;color:var(--mute)}.amtbig.in span,.amtbig.in input{color:var(--accent-d)}
@@ -231,6 +268,8 @@ html,body,*{touch-action:manipulation}
 .fab{position:fixed;right:20px;bottom:calc(24px + var(--safe-b));z-index:60;width:54px;height:54px;border-radius:50%;padding:0;font-size:28px;line-height:1;background:var(--accent-d);color:#fff;border:0;box-shadow:0 10px 30px rgba(15,118,110,.35);transition:transform .25s var(--ease),opacity .25s}
 .fab:hover{background:var(--brand2)}
 .fab.off{transform:scale(0);opacity:0;pointer-events:none}
+.askfab{display:none;position:fixed;right:18px;bottom:calc(84px + var(--safe-b));z-index:60;width:52px;height:52px;border-radius:50%;padding:0;align-items:center;justify-content:center;background:var(--brand);color:#fff;border:0;box-shadow:0 6px 18px rgba(19,78,74,.32);transition:transform .18s var(--ease),opacity .18s}
+.askfab svg{width:24px;height:24px}.askfab.off{transform:scale(0);opacity:0;pointer-events:none}.askfab.tuck{transform:translateY(150%);opacity:0;pointer-events:none}
 #bulk{position:fixed;left:50%;bottom:calc(20px + var(--safe-b));transform:translate(-50%,120%);z-index:75;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;box-shadow:0 10px 40px rgba(28,25,23,.18);transition:transform .3s var(--ease),visibility .3s;max-width:96vw}
 #bulk{visibility:hidden;pointer-events:none}#bulk.show{transform:translate(-50%,0);visibility:visible;pointer-events:auto}
 .sk{position:relative;overflow:hidden;color:transparent!important;background:var(--soft);border-radius:8px;min-width:90px;display:inline-block}
@@ -253,6 +292,8 @@ html,body,*{touch-action:manipulation}
   .rangebtn{min-width:0;flex:0 0 150px;width:150px;padding:8px 10px;font-size:14px}
   .rangebar .nav{padding:7px 9px}
   .iconbtn .lbl-d{display:none}
+  #askBtn{display:none}
+  .askfab{display:flex}
   .grid{grid-template-columns:1fr 1fr;gap:10px}
   .grid .card{padding:13px}
   .grid>.card:last-child:nth-child(odd){grid-column:1/-1}
@@ -446,6 +487,7 @@ html,body,*{touch-action:manipulation}
       <button class="nav" id="rNext" title="Next period" aria-label="Next period">&rsaquo;</button>
     </div>
     <div class="btns">
+      <button id="askBtn" class="iconbtn" title="Ask Headroom" aria-label="Ask Headroom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg><span class="lbl-d">Ask</span></button>
       <button id="syncBtn" class="iconbtn" title="Sync with your banks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span class="lbl-d">Sync</span></button>
       <button id="outBtn" class="desk">Sign out</button>
     </div>
@@ -468,6 +510,7 @@ html,body,*{touch-action:manipulation}
     <div id="installHint"></div>
     <div id="coverage"></div>
     <div id="mobTop"><div class="swipe" id="swipe"></div><div class="dots" id="swipeDots"></div><div class="card acsum" id="acSum"></div></div>
+    <div class="card aicard" id="aiCard"></div>
     <div class="strip" id="strip"></div>
     <div class="grid">
       <div class="card tap kpi" id="cardInc"><div class="mute">Income</div><div class="big pos" id="kInc"><span class="sk">&nbsp;</span></div><div class="sub" id="kIncSub"></div></div>
@@ -613,6 +656,7 @@ html,body,*{touch-action:manipulation}
 
   <!-- SETTINGS -->
   <div class="pane" id="p-settings">
+    <div class="card" id="aiSet"><h2>AI assistant</h2><div id="aiSetBody" class="mute">Checking…</div></div>
     <div class="card"><h2>How money is counted</h2>
       <div class="optrow" style="border-top:0"><div><div class="t">Count money from outside as income</div>
         <div class="d">Zelle, Venmo, and transfers from other banks count as income. Moves between your own linked accounts never do.</div></div>
@@ -672,6 +716,13 @@ html,body,*{touch-action:manipulation}
   <button data-t="more"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>More</button>
 </nav>
 <button id="fab" class="fab off" title="Add a transaction" aria-label="Add a transaction">+</button>
+<button id="askFab" class="askfab off" title="Ask Headroom" aria-label="Ask Headroom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></button>
+<div id="chat" class="chat hidden" role="dialog" aria-label="Ask Headroom">
+  <div class="chathead"><div><b>Ask Headroom</b><span class="mute" id="chatSub">Answers come from your own numbers</span></div>
+    <div class="btns"><button class="mini" id="chatNew">New chat</button><button class="close" id="chatClose" aria-label="Close">×</button></div></div>
+  <div class="chatlog" id="chatLog"></div>
+  <form class="chatin" id="chatForm"><textarea id="chatText" rows="1" placeholder="Ask about your money…" enterkeyhint="send"></textarea><button class="primary" id="chatSend" aria-label="Send">↑</button></form>
+</div>
 <div id="bulk"><span id="bulkN" class="mute">0 selected</span><select id="bulkCat"></select><button class="mini primary" id="bulkApply">Set category</button><button class="mini" id="bulkEx">Exclude</button><button class="mini" id="bulkIn">Include</button><button class="mini ghost" id="bulkDone">Done</button></div>
 
 <div id="modal" class="layer hidden"><div class="box">
@@ -914,14 +965,14 @@ function clampList(box, n, noun) {
   b.onclick = () => { (S._open = S._open || new Set()).add(box.id); kids.forEach(el => el.classList.remove("clamped")); b.remove(); };
   box.appendChild(b);
 }
-const MORE = [["recurring", "Recurring", "🔁"], ["accts", "Accounts", "🏦"], ["invest", "Investments", "📈"], ["goals", "Goals", "🎯"], ["settings", "Settings", "⚙️"]];
+const MORE = [["ask", "Ask Headroom", "✨"], ["recurring", "Recurring", "🔁"], ["accts", "Accounts", "🏦"], ["invest", "Investments", "📈"], ["goals", "Goals", "🎯"], ["settings", "Settings", "⚙️"]];
 function go(t) {
   if (t === "more") { openModal("More", "", `<div class="pgrid">${MORE.map(([k, l, e]) => `<button data-go="${k}" class="${S.tab === k ? "on" : ""}">${e}&nbsp; ${l}</button>`).join("")}</div>
       <div class="morefoot"><span class="mute">${esc(S.user && S.user.email ? "Signed in as " + S.user.email : "")}</span><button class="danger" id="moreOut">Sign out</button></div>`);
     $("moreOut").onclick = () => { closeModal(); signOut(); };
     if (!S.user) db.auth.getSession().then(({ data }) => { S.user = data && data.session ? data.session.user : null;
       const el = document.querySelector(".morefoot .mute"); if (el && S.user && S.user.email) el.textContent = "Signed in as " + S.user.email; });
-    $("mBody").querySelectorAll("[data-go]").forEach(b => b.onclick = () => { closeModal(); go(b.dataset.go); }); return; }
+    $("mBody").querySelectorAll("[data-go]").forEach(b => b.onclick = () => { closeModal(); b.dataset.go === "ask" ? openChat() : go(b.dataset.go); }); return; }
   S.tab = t;
   $("pTitle").textContent = TITLES[t] || "";
   $("app").classList.toggle("titled", !!TITLES[t]);
@@ -931,7 +982,7 @@ function go(t) {
   const inMore = MORE.some(m => m[0] === t);
   document.querySelectorAll("#bnav button").forEach(b => b.classList.toggle("on", b.dataset.t === t || (inMore && b.dataset.t === "more")));
   moveInk();
-  $("fab").classList.toggle("off", t !== "txns" || !isMobile());
+  $("fab").classList.toggle("off", t !== "txns" || !isMobile()); fabs();
   if (t !== "txns") setSelMode(false);
   if (t === "overview") drawCharts();
   if (t === "invest") drawInvChart();
@@ -946,7 +997,13 @@ function moveInk() { const on = document.querySelector(".tab.on"), ink = $("ink"
 document.querySelectorAll(".tab").forEach(b => b.onclick = () => go(b.dataset.t));
 document.querySelectorAll("#bnav button").forEach(b => b.onclick = () => go(b.dataset.t));
 let rsT, wasMobile = isMobile();
-addEventListener("resize", () => { clearTimeout(rsT); rsT = setTimeout(() => { moveInk(); $("fab").classList.toggle("off", S.tab !== "txns" || !isMobile());
+/** Phone: the ✦ Ask button floats on the money screens (the header has no room next to the date picker). */
+const ASK_TABS = ["overview", "budget", "trends", "recurring", "accts"];
+function fabs() { const el = $("askFab"); if (el) el.classList.toggle("off", !isMobile() || !ASK_TABS.includes(S.tab)); }
+// tucks away while scrolling down so it doesn't sit on top of numbers you're reading; comes back when you scroll up or stop near the top
+let lastY = 0; addEventListener("scroll", () => { const y = scrollY, el = $("askFab"); if (!el) return; if (Math.abs(y - lastY) < 6) return;
+  el.classList.toggle("tuck", y > lastY && y > 120); lastY = y; }, { passive: true });
+addEventListener("resize", () => { clearTimeout(rsT); rsT = setTimeout(() => { moveInk(); $("fab").classList.toggle("off", S.tab !== "txns" || !isMobile()); fabs();
   if (wasMobile !== isMobile()) { wasMobile = isMobile(); if (S.tab === "overview") drawCharts(); } }, 150); });
 
 // ---------- date range ----------
@@ -1038,7 +1095,9 @@ async function load() {
   $("lastSync").textContent = last ? "Synced " + timeAgo(last) : "";
   S.loaded = true;
   renderAll();
+  if (!S._aiLoaded) { S._aiLoaded = true; loadAi(); }
   const h = location.hash.slice(1); if (h && h !== S.tab && document.querySelector(`.pane#p-${h}`)) go(h);
+  if (h === "review") goReview(); fabs();
   moveInk();
 }
 function timeAgo(iso) { const s = (Date.now() - Date.parse(iso)) / 1000; if (s < 90) return "just now"; if (s < 3600) return Math.round(s / 60) + " min ago"; if (s < 86400) return Math.round(s / 3600) + " h ago"; return Math.round(s / 86400) + " d ago"; }
@@ -1059,7 +1118,7 @@ function renderAll() {
   classify(); S._ver = (S._ver || 0) + 1; S.flags = computeFlags();
   $("rangeLbl").textContent = rangeLabel(); $("rangeBtn").title = rangeSub();
   renderOverview(); renderStrip(); renderTrends(); renderRecurring(); renderBudget();
-  renderTxns(); renderAccts(); renderAcSum(); renderInvest(); renderGoals(); renderSettings(); renderPush(); renderInstallHint(); saveSchedule();
+  renderTxns(); renderAccts(); renderAcSum(); renderInvest(); renderGoals(); renderSettings(); renderPush(); renderInstallHint(); saveSchedule(); saveDigest(); renderAiCard(); renderAiSettings();
   if (S.drill) refreshDrill();
 }
 
@@ -1310,6 +1369,268 @@ $("budEdit").onclick = () => { const on = $("p-budget").classList.toggle("editin
 document.querySelectorAll(".explain").forEach(el => { const h = el.closest(".card").querySelector("h2"); if (!h) return;
   const b = document.createElement("button"); b.className = "ibtn mobonly"; b.type = "button"; b.textContent = "i"; b.setAttribute("aria-label", "What is this?");
   b.onclick = e => { e.stopPropagation(); el.classList.toggle("open"); }; (h.querySelector(".hint") ? h.insertBefore(b, h.querySelector(".hint")) : h.appendChild(b)); });
+
+// ======================= AI assistant =======================
+// The app works out every number; the assistant (a Supabase function holding the Anthropic key) only explains them.
+async function ai(body) {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) return { error: "You're signed out. Sign in again." };
+  let r; try { r = await fetch(`${SUPABASE_URL}/functions/v1/assistant`, { method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token, apikey: SUPABASE_KEY }, body: JSON.stringify(body) }); }
+  catch (e) { return { error: "Couldn't reach the assistant. Check your connection and try again.", offline: true }; }
+  const j = await r.json().catch(() => ({ error: "The assistant didn't answer. Try again in a moment." }));
+  if (!r.ok && !j.error) j.error = `The assistant failed (${r.status})`;
+  return j;
+}
+const r0 = n => Math.round(n), r2 = n => Math.round(n * 100) / 100;
+const dim = m => new Date(+m.slice(0, 4), +m.slice(5), 0).getDate();
+/** Category from a name the assistant used ("Groceries", "dining", or a key like FOOD_AND_DRINK). */
+function resolveCat(s) {
+  if (!s) return null; const n = x => String(x).toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ").trim(), q = n(s), all = [...allCats(), "__OTHER"];
+  const names = c => [n(c), n(pretty(c))];
+  return all.find(c => names(c).includes(q)) || all.find(c => names(c).some(x => x.startsWith(q))) || all.find(c => names(c).some(x => x.includes(q) || q.includes(x))) || null;
+}
+function usualByCat(exclude, n = 6) {
+  const fm = coverage().fullMonths.filter(m => m !== exclude).slice(0, n), out = {};
+  fm.forEach(m => monthTx(m).filter(isSpendish).forEach(t => out[eff(t)] = (out[eff(t)] || 0) + t.amount / fm.length));
+  return out;
+}
+function budgetMap() { return Object.fromEntries(S.budgets.map(b => [b.category, Number(b.monthly_amount)])); }
+function txRow(t) { const a = S.accts.find(x => x.account_id === t.account_id); return { date: t.date, name: tname(t), amount: r2(t.amount), category: pretty(eff(t)), account: a ? (a.nickname || a.name) : "Cash" }; }
+function nwChange(days) { const s = nwSeries(false); if (!s.vals.length) return null; const i = Math.max(0, s.vals.length - 1 - days); return s.labels[i] >= s.start ? r0(s.vals[s.vals.length - 1] - s.vals[i]) : null; }
+
+const AI_TOOLS = {
+  month_summary({ month }) {
+    const m = /^\d{4}-\d{2}$/.test(month || "") ? month : todayISO().slice(0, 7), st = monthStats(m), bud = budgetMap(), usual = usualByCat(m);
+    const sp = sumBy(monthTx(m).filter(isSpendish), eff, t => t.amount);
+    const cats = [...new Set([...Object.keys(sp), ...Object.keys(bud)])].filter(c => !NOT_BUDGETED.includes(c))
+      .map(c => ({ category: pretty(c), spent: r0(sp[c] || 0), budget: bud[c] ? r0(bud[c]) : null, usual: usual[c] ? r0(usual[c]) : null }))
+      .filter(x => x.spent || x.budget).sort((a, b) => b.spent - a.spent);
+    const partial = m === todayISO().slice(0, 7);
+    return { month: monthLong(m), partial_month: partial, day_of_month: partial ? +todayISO().slice(8) : dim(m), days_in_month: dim(m),
+      income: r0(st.inc), spending: r0(st.sp), kept: r0(st.net), budget_total: r0(Object.values(bud).reduce((a, b) => a + b, 0)), categories: cats,
+      history_starts: coverage().min };
+  },
+  spending_by_category({ start, end }) {
+    const list = S.tx.filter(t => t.date >= start && t.date <= end && isSpendish(t)), by = {};
+    list.forEach(t => { const c = eff(t); by[c] = by[c] || { total: 0, count: 0 }; by[c].total += t.amount; by[c].count++; });
+    return { start, end, total: r0(netSpend(list)), categories: Object.entries(by).map(([c, v]) => ({ category: pretty(c), total: r0(v.total), transactions: v.count })).sort((a, b) => b.total - a.total) };
+  },
+  category_trend({ category, months = 6 }) {
+    const c = resolveCat(category); if (!c) return { error: `No category called "${category}". Categories: ${allCats().map(pretty).join(", ")}` };
+    const ms = [...S.months].sort().slice(-Math.min(24, months || 6));
+    const vals = ms.map(m => ({ month: monthLong(m), spent: r0(monthTx(m).filter(t => isSpendish(t) && eff(t) === c).reduce((s, t) => s + t.amount, 0)), partial: m === todayISO().slice(0, 7) }));
+    const full = vals.filter(v => !v.partial);
+    return { category: pretty(c), months: vals, average_full_months: full.length ? r0(full.reduce((s, v) => s + v.spent, 0) / full.length) : null, budget: budgetMap()[c] || null };
+  },
+  find_transactions({ query, category, start, end, min_amount, max_amount, kind = "spending", sort = "newest", limit = 15 }) {
+    const c = category ? resolveCat(category) : null; if (category && !c) return { error: `No category called "${category}".` };
+    const words = String(query || "").toLowerCase().split(/\s+/).filter(Boolean);
+    let list = S.tx.filter(t => (kind === "all" || (kind === "income" ? isIncome(t) : isSpendish(t)))
+      && (!start || t.date >= start) && (!end || t.date <= end) && (!c || eff(t) === c)
+      && (min_amount == null || Math.abs(t.amount) >= min_amount) && (max_amount == null || Math.abs(t.amount) <= max_amount)
+      && (!words.length || words.every(w => (tname(t) + " " + (t.name || "") + " " + (t.notes || "")).toLowerCase().includes(w))));
+    const total = kind === "income" ? incomeOf(list) : kind === "all" ? list.reduce((s, t) => s + t.amount, 0) : netSpend(list);
+    if (sort === "largest") list = [...list].sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
+    return { count: list.length, [kind === "income" ? "total_received" : kind === "all" ? "net_total_out" : "total_spent"]: r2(total), shown: Math.min(list.length, limit), transactions: list.slice(0, Math.min(40, limit || 15)).map(txRow) };
+  },
+  budgets_status() {
+    const m = todayISO().slice(0, 7), bud = budgetMap(), sp = sumBy(monthTx(m).filter(isSpendish), eff, t => t.amount), out = [];
+    let other = 0; Object.entries(sp).forEach(([c, v]) => { if (!bud[c] && !NOT_BUDGETED.includes(c)) other += v; });
+    Object.entries(bud).forEach(([c, b]) => { const s = c === "__OTHER" ? other : (sp[c] || 0); out.push({ category: pretty(c), budget: r0(b), spent: r0(s), left: r0(b - s) }); });
+    if (!bud.__OTHER && other > .5) out.push({ category: "Everything else", budget: null, spent: r0(other), left: null });
+    const tb = Object.values(bud).reduce((a, b) => a + b, 0), ts = out.reduce((s, x) => s + x.spent, 0);
+    return { month: monthLong(m), day_of_month: +todayISO().slice(8), days_in_month: dim(m), budget_total: r0(tb), spent_total: r0(ts), left_total: r0(tb - ts), categories: out.sort((a, b) => (b.spent / (b.budget || 1e9)) - (a.spent / (a.budget || 1e9))) };
+  },
+  recurring_bills() {
+    const live = recurringList().live;
+    return { monthly_total: r0(live.reduce((s, r) => s + (Number(r.cadence) === 30 ? r.amount : r.amount * 30.44 / (Number(r.cadence) || 30)), 0)),
+      bills: live.map(r => ({ name: r.name, amount: r2(r.amount), how_often: r.cadLabel, next: r.next, category: pretty(r.cat) })),
+      price_increases: priceChanges().map(p => ({ name: p.name, from: r2(p.from), to: r2(p.to), since: p.date })) };
+  },
+  upcoming({ days = 14 }) { return { events: upcoming(Math.min(60, days || 14)).map(e => ({ date: e.d, kind: e.kind === "pay" ? "payday" : "bill", name: e.name, amount: r2(e.amt) })) }; },
+  accounts_and_net_worth() {
+    const n = netWorth();
+    return { net_worth: r0(n.net), assets: r0(n.a), owed: r0(n.l), change_30_days: nwChange(30), change_90_days: nwChange(90),
+      groups: GROUPS.map(([title, f]) => ({ group: title, accounts: shownAccts().filter(f).map(a => ({ name: a.nickname || a.name, balance: r0(Number(a.current_balance || 0)) })) })).filter(g => g.accounts.length) };
+  },
+  propose_budget_change({ category, new_amount }) {
+    const c = resolveCat(category); if (!c) return { error: `No category called "${category}".` };
+    return { status: "Shown to the user with an Apply button. Don't say it has changed.", category: pretty(c), current_budget: budgetMap()[c] || null, proposed: r0(new_amount) };
+  },
+};
+const TOOL_LABEL = { month_summary: "Looking at the month", spending_by_category: "Adding up categories", category_trend: "Checking the trend", find_transactions: "Searching transactions",
+  budgets_status: "Checking budgets", recurring_bills: "Checking bills", upcoming: "Checking what's coming up", accounts_and_net_worth: "Checking balances", propose_budget_change: "Suggesting a budget" };
+
+/** Background the assistant gets with every question: categories, budgets, accounts, income and how far back data goes. */
+function chatContext() {
+  const bud = budgetMap(), inc = incomeStreams();
+  const firstByBank = {}; S.tx.forEach(t => { const a = S.accts.find(x => x.account_id === t.account_id); const b = a ? ((S.inst || {})[a.item_id] || "Bank") : "Manual"; if (!firstByBank[b] || t.date < firstByBank[b]) firstByBank[b] = t.date; });
+  return [
+    `Categories: ${allCats().filter(c => !["INCOME", "TRANSFER_IN", "TRANSFER_OUT"].includes(c)).map(pretty).join(", ")}. Spending in a category with no budget counts toward "Everything else".`,
+    `Monthly budgets: ${Object.entries(bud).map(([c, v]) => `${pretty(c)} ${money(v)}`).join(", ") || "none set"}.`,
+    `Accounts: ${shownAccts().map(a => `${a.nickname || a.name} (${SUB[a.subtype] || a.type})`).join(", ")}.`,
+    `Regular income: ${inc.map(x => `${x.name} about ${money(x.amount)} every ${x.gap} days`).join("; ") || "not detected"}.`,
+    `History starts: ${Object.entries(firstByBank).map(([b, d]) => `${b} ${d}`).join(", ")}. Months before a bank's start date are missing that bank's activity.`,
+  ].join("\n");
+}
+
+/** Exact numbers for the Sunday review, saved to the database whenever they change (the review runs on the server at 8 AM Sunday). */
+function buildDigest() {
+  const today = todayISO(), m = today.slice(0, 7), day = +today.slice(8), pm = [...S.months].sort().filter(x => x < m).pop();
+  const st = monthStats(m), bud = budgetMap(), tb = Object.values(bud).reduce((a, b) => a + b, 0), usual = usualByCat(m, 3);
+  const sp = sumBy(monthTx(m).filter(isSpendish), eff, t => t.amount);
+  const lastSame = pm ? netSpend(monthTx(pm).filter(t => +t.date.slice(8) <= day)) : null;
+  const wk = S.tx.filter(t => t.date > dstr(dnum(today) - 7) && t.date <= today), pwk = S.tx.filter(t => t.date > dstr(dnum(today) - 14) && t.date <= dstr(dnum(today) - 7));
+  const nw = netWorth();
+  return {
+    as_of: today, month: monthLong(m), day_of_month: day, days_in_month: dim(m),
+    this_month: { income: r0(st.inc), spending: r0(st.sp), kept: r0(st.net), budget_total: r0(tb), budget_pace_by_today: r0(tb * day / dim(m)), last_month_by_same_day: lastSame == null ? null : r0(lastSame) },
+    last_month: pm ? (s => ({ month: monthLong(pm), income: r0(s.inc), spending: r0(s.sp), kept: r0(s.net) }))(monthStats(pm)) : null,
+    categories: [...new Set([...Object.keys(sp), ...Object.keys(bud)])].filter(c => !NOT_BUDGETED.includes(c))
+      .map(c => ({ category: pretty(c), spent: r0(sp[c] || 0), budget: bud[c] ? r0(bud[c]) : null, usual_month: usual[c] ? r0(usual[c]) : null })).filter(x => x.spent || x.budget).sort((a, b) => b.spent - a.spent).slice(0, 14),
+    last_7_days: { spent: r0(netSpend(wk)), previous_7_days: r0(netSpend(pwk)), biggest: wk.filter(t => isSpendish(t) && t.amount > 0).sort((a, b) => b.amount - a.amount).slice(0, 8).map(txRow) },
+    flagged: Object.entries(S.flags || {}).map(([id, f]) => f.msg).slice(0, 6),
+    price_increases: priceChanges().map(p => `${p.name}: ${money2(p.from)} → ${money2(p.to)}`),
+    next_14_days: upcoming(14).map(e => `${e.d} ${e.kind === "pay" ? "payday" : "bill"} ${e.name} ${money(e.amt)}`).slice(0, 12),
+    net_worth: { now: r0(nw.net), change_30_days: nwChange(30) },
+  };
+}
+function saveDigest() {
+  if (!S.loaded) return; const d = buildDigest(), sig = JSON.stringify({ ...d, as_of: 0 });
+  if (S._digSig === sig) return; S._digSig = sig;
+  db.from("app_settings").upsert({ key: "ai_digest", value: d, updated_at: new Date().toISOString() }, { onConflict: "key" }).then(() => {}, () => {});
+}
+
+// ---------- weekly review card ----------
+/** Opened from the Sunday notification: Home, scrolled to the review. */
+function goReview() {
+  if (location.hash === "#review") history.replaceState(null, "", location.pathname + location.search);
+  if (S.tab !== "overview") go("overview"); closeChat();
+  setTimeout(() => scrollTo({ top: $("aiCard").getBoundingClientRect().top + scrollY - (isMobile() ? 64 : 16) }), 700);
+}
+const SPARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>';
+async function loadAi() {
+  const [st, rv] = await Promise.all([ai({ action: "status" }), db.from("ai_reviews").select("*").order("created_at", { ascending: false }).limit(1)]);
+  S.aiStatus = st && !st.error && "configured" in st ? st : { configured: false, offline: !!(st && st.error) }; S.aiReview = (rv.data || [])[0] || null;
+  renderAiCard(); renderAiSettings();
+}
+function renderAiCard() {
+  const el = $("aiCard"), st = S.aiStatus, r = S.aiReview; if (!el) return;
+  if (!st) { el.innerHTML = ""; el.hidden = true; return; } el.hidden = false;
+  const head = sub => `<div class="aih"><h2>${SPARK} Weekly review</h2><span class="mute">${sub || ""}</span></div>`;
+  if (!st.configured) { el.innerHTML = head() + `<div class="mute">Get a short written review of your week, and ask questions about your money. <a href="#" id="aiSetup">Set it up</a></div>`;
+    $("aiSetup").onclick = e => { e.preventDefault(); go("settings"); setTimeout(() => $("aiSet").scrollIntoView({ behavior: "smooth" }), 150); }; return; }
+  if (!r) { el.innerHTML = head() + `<div class="mute">A short take on your week: what changed, what needs attention, one thing to try. One arrives every Sunday morning.</div>
+      <div class="aib"><button class="primary" id="aiWrite">Write my first review</button><button id="aiAsk2">Ask a question</button></div>`; }
+  else { const b = r.body || {}, when = new Date(r.created_at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    el.innerHTML = head(when) + `<div class="hl">${esc(b.headline || "")}</div>${(b.points || []).length ? `<ul>${b.points.map(p => `<li>${esc(p)}</li>`).join("")}</ul>` : ""}
+      ${(b.points || []).length > 2 && isMobile() ? `<button class="more" id="aiMore">${S._aiOpen ? "Show less" : "Read all " + b.points.length}</button>` : ""}
+      ${b.try ? `<div class="try"><b>Try this week:</b> ${esc(b.try)}</div>` : ""}
+      <div class="aib"><button class="primary" id="aiAsk2">Ask a follow-up</button><button id="aiWrite">Write a fresh one</button></div>`;
+    el.classList.toggle("short", !S._aiOpen && isMobile());
+    if ($("aiMore")) $("aiMore").onclick = () => { S._aiOpen = !S._aiOpen; renderAiCard(); }; }
+  $("aiAsk2").onclick = () => openChat(r ? `About my weekly review ("${(r.body || {}).headline || ""}"): ` : "");
+  $("aiWrite").onclick = async () => { const b = $("aiWrite"); b.disabled = true; b.textContent = "Writing…"; saveDigest(); S._digSig = null; await new Promise(ok => setTimeout(ok, 50));
+    await db.from("app_settings").upsert({ key: "ai_digest", value: buildDigest(), updated_at: new Date().toISOString() }, { onConflict: "key" });
+    const j = await ai({ action: "review" }); if (j.error) { toast(j.error, true); b.disabled = false; b.textContent = "Try again"; return; }
+    S.aiReview = j.review; S._aiOpen = false; renderAiCard(); toast("Review ready"); refreshAiUsage(); };
+}
+async function refreshAiUsage() { const st = await ai({ action: "status" }); if (st && !st.error) { S.aiStatus = st; renderAiSettings(); } }
+function renderAiSettings() {
+  const el = $("aiSetBody"), st = S.aiStatus; if (!el || !st) return;
+  if (!st.configured) { el.innerHTML = `<div style="line-height:1.5">To turn it on, add an Anthropic API key to Supabase. It stays on the server; the app never sees it.
+      <ol style="margin:8px 0 0;padding-left:20px"><li>Create a key at <b>console.anthropic.com</b> → API Keys (add a few dollars of credit and a monthly spend limit there).</li>
+      <li>In Supabase: <b>Isaac's Budget Project → Edge Functions → Secrets → Add new secret</b>. Name: <code>ANTHROPIC_API_KEY</code>, value: your key.</li>
+      <li>Close and reopen Headroom.</li></ol></div>`; return; }
+  const u = st.month || {}, cost = (u.input_tokens || 0) / 1e6 * 2 + (u.output_tokens || 0) / 1e6 * 10, on = (S.settings.ai || {}).weekly !== false;
+  el.innerHTML = `<div class="optrow" style="border-top:0"><div><div class="t">Status</div><div class="d">Connected ✓ · ${esc(st.model || "")} · up to ${st.cap} requests a day</div></div></div>
+    <div class="optrow"><div><div class="t">Sunday review</div><div class="d">Written at 8 AM Sunday and sent as your weekly notification.</div></div><label class="sw"><input type="checkbox" id="aiWeekly" ${on ? "checked" : ""}><span></span></label></div>
+    <div class="optrow"><div><div class="t">This month</div><div class="d">${u.calls || 0} requests · about ${cost < .01 ? "less than 1¢" : "$" + cost.toFixed(2)} in AI charges</div></div></div>
+    <div class="optrow"><div><div class="t">What it sees</div><div class="d">Totals, categories, store names and amounts from this app. Never account numbers or bank logins.</div></div></div>`;
+  $("aiWeekly").onchange = e => saveSetting("ai", { ...(S.settings.ai || {}), weekly: e.target.checked });
+}
+
+// ---------- chat ----------
+S.chat = (() => { const c = store.get("hr_chat"); return c && Array.isArray(c.msgs) ? c : { msgs: [], applied: {} }; })();
+/** The newest part of the conversation that fits: always starts at one of the user's own questions, so no tool reply is cut from its call. */
+function recentMsgs(max, maxBytes) {
+  const m = S.chat.msgs; let i = 0;
+  const starts = m.map((x, k) => x.role === "user" && typeof x.content === "string" ? k : -1).filter(k => k >= 0);
+  for (const k of starts) { i = k; if (m.length - k <= max && JSON.stringify(m.slice(k)).length <= maxBytes) break; }
+  return m.slice(i);
+}
+const saveChat = () => store.set("hr_chat", { msgs: recentMsgs(40, 200000), applied: S.chat.applied });
+function mdLite(t) {
+  const lines = esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").split("\n"); let html = "", list = null;
+  for (const ln of lines) { const li = ln.match(/^\s*(?:[-•*]|\d+[.)])\s+(.*)/);
+    if (li) { const tag = /^\s*\d/.test(ln) ? "ol" : "ul"; if (list !== tag) { if (list) html += `</${list}>`; html += `<${tag}>`; list = tag; } html += `<li>${li[1]}</li>`; continue; }
+    if (list) { html += `</${list}>`; list = null; } if (ln.trim()) html += `<p>${ln}</p>`; }
+  return html + (list ? `</${list}>` : "");
+}
+function renderChat(status) {
+  const log = $("chatLog"), out = [];
+  if (!S.chat.msgs.length) out.push(`<div class="msg a"><p>Hi! Ask me anything about your money. I look up your real numbers before answering.</p></div>
+    <div class="chatsug">${["How are we doing this month?", "Where can we cut back?", "What should my grocery budget be?", "What bills are coming up?", "Compare dining this month vs last"].map(q => `<button data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>`);
+  S.chat.msgs.forEach(m => {
+    if (m.role === "user") { if (typeof m.content === "string") out.push(`<div class="msg u">${esc(m.content)}</div>`); return; }
+    (m.content || []).forEach(b => {
+      if (b.type === "text" && b.text.trim()) out.push(`<div class="msg a">${mdLite(b.text)}</div>`);
+      else if (b.type === "tool_use" && b.name === "propose_budget_change") { const c = resolveCat(b.input.category), done = S.chat.applied[b.id];
+        out.push(`<div class="propose ${done ? "done" : ""}"><b>${esc(c ? pretty(c) : b.input.category)}: ${money(b.input.new_amount)}/month</b>${esc(b.input.reason || "")}
+          ${done ? `<div style="margin-top:6px">${done === "yes" ? "✓ Applied" : "Not applied"}</div>` : `<div class="btns"><button class="mini primary" data-aiap="${esc(b.id)}">Apply</button><button class="mini" data-aino="${esc(b.id)}">No thanks</button></div>`}</div>`); }
+      else if (b.type === "tool_use") out.push(`<div class="tooln">${esc(TOOL_LABEL[b.name] || "Checking")} ✓</div>`);
+    });
+  });
+  if (status) out.push(`<div class="tooln live">${esc(status)}…</div>`);
+  if (S.chat.err) out.push(`<div class="msg a err">${esc(S.chat.err)}</div>`);
+  log.innerHTML = out.join(""); log.scrollTop = log.scrollHeight;
+  log.querySelectorAll("[data-q]").forEach(b => b.onclick = () => sendChat(b.dataset.q));
+  log.querySelectorAll("[data-aiap]").forEach(b => b.onclick = async () => { const blk = findBlock(b.dataset.aiap), c = resolveCat(blk.input.category); if (!c) return;
+    b.disabled = true; await saveBudget(c, Math.round(blk.input.new_amount), true); S.chat.applied[blk.id] = "yes"; saveChat(); renderAll(); renderChat(); toast(`${pretty(c)} budget set to ${money(blk.input.new_amount)}`); });
+  log.querySelectorAll("[data-aino]").forEach(b => b.onclick = () => { S.chat.applied[b.dataset.aino] = "no"; saveChat(); renderChat(); });
+}
+const findBlock = id => { for (const m of S.chat.msgs) if (m.role === "assistant") for (const b of m.content || []) if (b.id === id) return b; };
+function openChat(prefill) {
+  $("chat").classList.remove("hidden"); if (isMobile()) document.body.style.overflow = "hidden"; S.chat.err = null; renderChat();
+  if (prefill != null) $("chatText").value = prefill; if (!isMobile() || prefill) setTimeout(() => $("chatText").focus(), 80);
+  if (!S.aiStatus) loadAi();
+}
+function closeChat() { $("chat").classList.add("hidden"); document.body.style.overflow = ""; }
+async function sendChat(text) {
+  text = String(text || "").trim(); if (!text || S.chat.busy) return;
+  if (!S.aiStatus || !S.aiStatus.configured) { await loadAi();
+    if (!S.aiStatus.configured) { S.chat.err = S.aiStatus.offline ? "Couldn't reach the assistant. Check your connection and try again." : "The assistant isn't set up yet. See More → Settings → AI assistant."; renderChat(); return; } }
+  S.chat.busy = true; S.chat.err = null; $("chatSend").disabled = true; $("chatText").value = ""; autoGrow();
+  // a pending unanswered budget card shouldn't block: just carry on the conversation
+  S.chat.msgs.push({ role: "user", content: text }); renderChat("Thinking");
+  try {
+    for (let i = 0; i < 8; i++) {
+      const r = await ai({ action: "chat", messages: recentMsgs(50, 120000), context: chatContext() });
+      if (r.error) { S.chat.err = r.error; if (i === 0) { S.chat.msgs.pop(); $("chatText").value = text; autoGrow(); } break; }
+      S.chat.msgs.push({ role: "assistant", content: r.content || [] });
+      const uses = (r.content || []).filter(b => b.type === "tool_use");
+      if (r.stop_reason !== "tool_use" || !uses.length) break;
+      renderChat(TOOL_LABEL[uses[0].name] || "Checking");
+      const results = uses.map(b => { let out; try { out = (AI_TOOLS[b.name] || (() => ({ error: "unknown tool" })))(b.input || {}); } catch (e) { out = { error: String(e.message || e) }; }
+        return { type: "tool_result", tool_use_id: b.id, content: JSON.stringify(out).slice(0, 12000) }; });
+      S.chat.msgs.push({ role: "user", content: results });
+      renderChat("Thinking");
+    }
+  } catch (e) { S.chat.err = "Couldn't reach the assistant. Check your connection and try again."; }
+  // never leave the conversation ending on a tool call (the next question would be rejected)
+  const last = S.chat.msgs[S.chat.msgs.length - 1];
+  if (last && last.role === "user" && Array.isArray(last.content)) S.chat.msgs.push({ role: "assistant", content: [{ type: "text", text: "Sorry, I couldn't finish that one. Try asking again." }] });
+  S.chat.busy = false; $("chatSend").disabled = false; saveChat(); renderChat(); refreshAiUsage();
+}
+function autoGrow() { const t = $("chatText"); t.style.height = "auto"; t.style.height = Math.min(120, t.scrollHeight) + "px"; }
+$("askBtn").onclick = () => openChat(); $("askFab").onclick = () => openChat();
+$("chatClose").onclick = closeChat;
+$("chatNew").onclick = () => { S.chat = { msgs: [], applied: {} }; saveChat(); renderChat(); };
+$("chatForm").onsubmit = e => { e.preventDefault(); sendChat($("chatText").value); };
+$("chatText").addEventListener("input", autoGrow);
+$("chatText").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !isMobile()) { e.preventDefault(); sendChat($("chatText").value); } });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("chat").classList.contains("hidden")) closeChat(); });
 
 function renderStrip() {
   const ms = [...S.months].slice(0, 12).reverse(), stats = ms.map(monthStats), max = Math.max(1, ...stats.map(s => Math.max(s.inc, s.sp)));
@@ -2773,9 +3094,9 @@ const pushSupported = () => "serviceWorker" in navigator && "PushManager" in win
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
   // tapping a notification while the app is open jumps to the right tab
-  navigator.serviceWorker.addEventListener("message", e => { const t = e.data && e.data.go; if (t && document.getElementById("p-" + t)) go(t); });
+  navigator.serviceWorker.addEventListener("message", e => { const t = e.data && e.data.go; if (t === "review") goReview(); else if (t && document.getElementById("p-" + t)) go(t); });
 }
-addEventListener("hashchange", () => { const t = location.hash.slice(1); if (t && t !== S.tab && document.getElementById("p-" + t)) go(t); });
+addEventListener("hashchange", () => { const t = location.hash.slice(1); if (t === "review") return goReview(); if (t && t !== S.tab && document.getElementById("p-" + t)) go(t); });
 async function fnNotify(body) {
   const { data: { session } } = await db.auth.getSession();
   const r = await fetch(`${SUPABASE_URL}/functions/v1/notify`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token, apikey: SUPABASE_KEY }, body: JSON.stringify(body) });
