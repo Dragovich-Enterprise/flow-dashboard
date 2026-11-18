@@ -182,6 +182,7 @@ html,body,*{touch-action:manipulation}
 .flagbox{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px;display:flex;justify-content:space-between;gap:10px;align-items:center}
 .tsel{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;font-size:13px;min-height:32px}
 .tsel .tl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.norange .rangebar{visibility:hidden}
 .rangebtn #rangeLbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 #impPrev:empty{display:none}
 .iptop{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}.iptop .mute{font-size:13px}
@@ -192,6 +193,27 @@ html,body,*{touch-action:manipulation}
 .ipr:first-child{border-top:0}.ipr .d{color:var(--mute);font-size:12.5px;white-space:nowrap}.ipr .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ipr.dim{opacity:.45}.ipr.unsure .d::after,.unsure-k{content:"?";color:#B45309;font-weight:700;margin-left:3px}
 .flip{padding:4px 8px;font-size:13px;font-variant-numeric:tabular-nums;border-radius:8px;font-weight:600}.flip.pos{color:var(--accent-d)}
+/* Trends */
+.trhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.trseg button{padding:5px 10px;font-size:13px}
+.trhero .l{font-size:13px;color:var(--mute)}.trhero .v{font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1.15;font-variant-numeric:tabular-nums}
+.trhero .s{font-size:13px;color:var(--mute);margin-top:2px}
+.trchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:12px -2px 4px;padding:2px}
+.trchips::-webkit-scrollbar{display:none}
+.trchips button{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;font-size:13px;white-space:nowrap}
+.trchips button i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.trchips button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.trlist{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.trlh{display:flex;flex-direction:column;gap:1px;margin-bottom:4px}.trlh .mute{font-size:12.5px}
+.trrow{display:grid;grid-template-columns:10px minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;row-gap:5px;align-items:center;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+.trrow:first-child{border-top:0}
+.trrow>i{width:10px;height:10px;border-radius:3px;grid-row:1}
+.trrow .tn{display:flex;flex-direction:column;min-width:0}.trrow .tn b{font-weight:600;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trrow .tn .mute{font-size:12px}
+.trrow .ta{font-weight:600;font-variant-numeric:tabular-nums}
+.trrow .tb{grid-column:2/4;height:4px;border-radius:2px;background:var(--line);overflow:hidden}.trrow .tb span{display:block;height:100%;border-radius:2px}
+#monthTbl .pmark{color:var(--mute);margin-left:2px}#monthTbl .kp{display:block;font-size:11.5px;color:var(--mute);font-weight:400}
+#monthNote{font-size:12px;margin-top:8px}#monthNote:empty{display:none}
+@media (max-width:760px){ #cmCard:not(.open) #cmWrap{display:none} #cmCard h2 .hint{display:none} #cmToggle{white-space:nowrap} #cmCard .trhead{margin-bottom:0} #cmCard.open .trhead{margin-bottom:10px} }
 .segfull{display:flex;width:100%;margin-bottom:6px}.segfull button{flex:1;padding:10px}
 .amtbig{display:flex;align-items:baseline;justify-content:center;gap:2px;padding:14px 0 18px;color:var(--text);cursor:text}
 .amtbig span{font-size:30px;font-weight:600;color:var(--mute)}.amtbig.in span,.amtbig.in input{color:var(--accent-d)}
@@ -526,9 +548,15 @@ html,body,*{touch-action:manipulation}
 
   <!-- TRENDS -->
   <div class="pane" id="p-trends">
-    <div class="card"><h2>Spending by category, month over month <span class="hint" id="trendHint"></span></h2><div class="chartbox" style="height:340px"><canvas id="cStack"></canvas></div></div>
+    <div class="card" id="trCard">
+      <div class="trhead"><h2 style="margin:0">Spending by category</h2><div class="seg trseg" id="trRange"><button data-r="6">6M</button><button data-r="12">12M</button><button data-r="all">All</button></div></div>
+      <div class="trhero" id="trHero"></div>
+      <div class="trchips" id="trChips"></div>
+      <div class="chartbox" style="height:240px"><canvas id="cStack"></canvas></div>
+      <div class="trlist" id="trList"></div>
+    </div>
     <div class="card"><h2>Month by month <span class="hint">&mdash; tap a row to open that month</span></h2><div class="scroll"><table id="monthTbl"></table></div></div>
-    <div class="card"><h2>Category by month <span class="hint">&mdash; tap any amount</span></h2><div class="scroll"><table id="catMonthTbl"></table></div></div>
+    <div class="card" id="cmCard"><div class="trhead"><h2 style="margin:0">Category by month <span class="hint">&mdash; tap any amount</span></h2><button class="mini mobonly" id="cmToggle">Show table</button></div><div class="scroll" id="cmWrap"><table id="catMonthTbl"></table></div></div>
   </div>
 
   <!-- RECURRING -->
@@ -876,7 +904,7 @@ db.auth.onAuthStateChange(async ev => {
 
 // ---------- navigation ----------
 const TITLES = { txns: "Activity", budget: "Budget", trends: "Trends", recurring: "Recurring", accts: "Accounts", invest: "Investments", goals: "Goals", settings: "Settings" };
-const NO_RANGE = ["recurring", "accts", "invest", "goals", "settings"]; // these screens don't depend on the dates picked
+const NO_RANGE = ["trends", "recurring", "accts", "invest", "goals", "settings"]; // these screens don't depend on the dates picked
 /** Phone only: show the first n items of a list with a "See all" button for the rest. Stays open once expanded. */
 function clampList(box, n, noun) {
   if (!box || !isMobile()) return;
@@ -1409,6 +1437,9 @@ const HERO_SCRUB = {
   cPace: i => S.paceHero && S.paceHero(i),
   cNet: i => S.nwHead && S.nwHead(i),
   cTrend: i => { if (i == null || !S.trendMs || S.trendMs[i] === S.trendSel) return; S.trendSel = S.trendMs[i]; drawTrendSel(); },
+  cStack: i => { const c = S.trCtx; if (i == null || !c || c.ms[i] === S.trSel) return; S.trSel = c.ms[i];
+    const ch = S.charts.cStack; ch.data.datasets.forEach(ds => { if (ds.type === "line") return; const k = c.g.keys.find(x => c.g.name(x) === ds.label), col = c.g.col[k];
+      ds.backgroundColor = c.ms.map((_, j) => j === i ? col : fadeHex(col, .35)); }); ch.update("none"); drawTrendTop(); },
 };
 function chart(id, cfg) {
   // Pointer events: a finger lifting off (or the mouse leaving) fires pointerleave, which Chart.js treats as "mouse out" and clears the highlight.
@@ -1432,7 +1463,7 @@ function chart(id, cfg) {
     cv0.addEventListener("pointerdown", e => { S._pd = { t: Date.now(), x: e.clientX, y: e.clientY, moved: false }; });
     cv0.addEventListener("pointermove", e => { const p = S._pd; if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > 10) p.moved = true; });
     const reset = () => { const ch = Object.values(S.charts).find(x => x.canvas === cv0); if (!ch) return; ch.setActiveElements([]); ch.tooltip.setActiveElements([], { x: 0, y: 0 }); ch.update("none");
-      if (HERO_SCRUB[id] && id !== "cTrend") HERO_SCRUB[id](null); };
+      if (HERO_SCRUB[id] && id !== "cTrend" && id !== "cStack") HERO_SCRUB[id](null); };
     cv0.addEventListener("pointerup", e => { if (e.pointerType !== "mouse") setTimeout(reset, 0); });
     cv0.addEventListener("pointercancel", reset); cv0.addEventListener("pointerleave", reset); }
   if (!RM) { const cv = $(id); cv.classList.remove("reveal", "pop"); void cv.offsetWidth; cv.classList.add(cfg.type === "doughnut" ? "pop" : "reveal"); } // CSS entrance, independent of Chart.js
@@ -1600,35 +1631,109 @@ function drawNetWorth() {
 }
 
 // ---------- trends ----------
+/** Months shown on Trends: the last 6 or 12 with any activity, or all of them (picked inside the card, not the header). */
+S.trRange = store.get("hr_tr_range") || "12";
 function trendData() {
-  const ms = chartMonths().length >= 2 && rangeDays() > 40 ? chartMonths() : [...S.months].reverse().slice(-12);
-  const set = new Set(ms);
-  const spendTx = S.tx.filter(t => isSpendish(t) && set.has(t.date.slice(0, 7)));
+  const asc = [...S.months].sort(), ms = S.trRange === "all" ? asc : asc.slice(-Number(S.trRange));
+  const set = new Set(ms), spendTx = S.tx.filter(t => isSpendish(t) && set.has(t.date.slice(0, 7)));
   const catTotals = sumBy(spendTx, eff, t => t.amount);
   const cats = Object.keys(catTotals).filter(c => catTotals[c] > 0.5).sort((a, b) => catTotals[b] - catTotals[a]);
   const by = {}; spendTx.forEach(t => { const k = eff(t) + "|" + t.date.slice(0, 7); by[k] = (by[k] || 0) + t.amount; });
-  return { ms, cats, by };
+  return { ms, cats, by, catTotals };
 }
+const TR_TOP = 5, REST = "__REST", REST_COLOR = "#D6D3D1";
+const fadeHex = (h, a) => { if (!/^#[0-9a-f]{6}$/i.test(h)) return h; const n = parseInt(h.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+/** The chart stacks your 5 biggest categories and lumps the rest into one gray block, each with its own color. */
+function trendGroups(cats) {
+  // a "1 smaller" group says less than the category's own name, so only group when there are 2 or more
+  const n = cats.length === TR_TOP + 1 ? TR_TOP + 1 : TR_TOP;
+  const top = cats.slice(0, n), rest = cats.slice(n), used = new Set(), col = {};
+  top.forEach(c => { let k = catColor(c); if (used.has(k)) k = COLORS.find(x => !used.has(x)) || k; used.add(k); col[c] = k; });
+  col[REST] = REST_COLOR;
+  return { top, rest, keys: rest.length ? [...top, REST] : top, col, name: c => c === REST ? `${rest.length} smaller` : pretty(c) };
+}
+function trVal(by, key, m, rest) { return key === REST ? rest.reduce((s, c) => s + Math.max(0, by[c + "|" + m] || 0), 0) : Math.max(0, by[key + "|" + m] || 0); }
+
 function drawStack() {
-  const { ms, cats, by } = trendData();
-  $("trendHint").textContent = `— ${monthLabel(ms[0])} to ${monthLabel(ms[ms.length - 1])}`;
-  chart("cStack", { type: "bar",
-    data: { labels: ms.map(monthLabel), datasets: cats.map(c => ({ label: pretty(c), data: ms.map(m => Math.round(Math.max(0, by[c + "|" + m] || 0))), backgroundColor: catColor(c), borderRadius: 2, categoryPercentage: .4, barPercentage: .9, maxBarThickness: 22 })) },
-    options: { scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: moneyTick } } }, plugins: { legend: { position: "bottom", labels: { boxWidth: 10 } },
-        tooltip: { filter: i => i.raw > 0, itemSort: (a, b) => b.raw - a.raw, callbacks: { title: i => monthLong(ms[i[0].dataIndex]), label: c => ` ${c.dataset.label}: ${money(c.raw)}`, footer: i => "Total " + money(i.reduce((s, x) => s + x.raw, 0)) } } },
+  const d = trendData(), { ms, by, cats } = d, g = trendGroups(cats);
+  if (!ms.length) return;
+  if (!ms.includes(S.trSel)) S.trSel = ms[ms.length - 1];
+  if (S.trFocus && !g.keys.includes(S.trFocus)) S.trFocus = null;
+  S.trCtx = { ...d, g };
+  document.querySelectorAll("#trRange button").forEach(b => b.classList.toggle("on", b.dataset.r === S.trRange));
+  // category chips (the legend): tap one to see just that category over time
+  $("trChips").innerHTML = `<button data-k="" class="${S.trFocus ? "" : "on"}">All</button>` + g.keys.map(k =>
+    `<button data-k="${esc(k)}" class="${S.trFocus === k ? "on" : ""}"><i style="background:${g.col[k]}"></i>${esc(g.name(k))}</button>`).join("");
+  $("trChips").querySelectorAll("button").forEach(b => b.onclick = () => { S.trFocus = b.dataset.k || null; drawStack(); });
+  const labels = ms.map(m => new Date(m + "-15").toLocaleString("en-US", { month: "short" }));
+  const sel = ms.indexOf(S.trSel), keys = S.trFocus ? [S.trFocus] : g.keys;
+  const sets = keys.map(k => { const data = ms.map(m => Math.round(trVal(by, k, m, g.rest))), c = g.col[k];
+    return { type: "bar", label: g.name(k), data, backgroundColor: ms.map((_, i) => i === sel ? c : fadeHex(c, .35)), hoverBackgroundColor: c,
+      borderRadius: S.trFocus ? 4 : 2, categoryPercentage: .62, barPercentage: .9, maxBarThickness: 30, stack: "s" }; });
+  if (S.trFocus) { const v = sets[0].data, avg = v.reduce((a, b) => a + b, 0) / (v.length || 1);
+    sets.push({ type: "line", label: "Average", data: ms.map(() => Math.round(avg)), borderColor: "#78716C", borderDash: [5, 4], borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 0, fill: false }); }
+  chart("cStack", { type: "bar", data: { labels, datasets: sets },
+    options: { scales: { x: { stacked: true, grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, autoSkipPadding: 6 } }, y: { stacked: true, ticks: { callback: moneyTick, maxTicksLimit: 6 } } },
+      plugins: { legend: { display: false },
+        tooltip: { filter: i => i.raw > 0 && i.dataset.type !== "line", itemSort: (a, b) => b.raw - a.raw,
+          callbacks: { title: i => monthLong(ms[i[0].dataIndex]), label: c => ` ${c.dataset.label}: ${money(c.raw)}`, footer: i => S.trFocus ? "" : "Total " + money(i.reduce((s, x) => s + x.raw, 0)) } } },
       interaction: { mode: "index", intersect: false },
-      onClick: (e, els) => { if (!els.length || !tapGuard("s" + els[0].index + ":" + els[0].datasetIndex, e)) return; const m = ms[els[0].index], c = cats[els[0].datasetIndex];
-        drillTx(pretty(c), monthLong(m), () => monthTx(m).filter(t => isSpendish(t) && eff(t) === c), "amt"); } } });
+      // tapping a month selects it; the list below shows that month. Nothing opens until you tap a row.
+      onClick: (e, els) => { const ch = S.charts.cStack, hit = els.length ? els : ch.getElementsAtEventForMode(e, "index", { intersect: false }, false);
+        if (hit.length) { S.trSel = ms[hit[0].index]; drawStack(); } } } });
+  drawTrendTop();
 }
+/** Headline + list under the chart, for the selected month (and category, if one is picked). */
+function drawTrendTop() {
+  const c = S.trCtx; if (!c) return; const { ms, by, g } = c, m = S.trSel, f = S.trFocus;
+  const total = mm => (f ? [f] : g.keys).reduce((s, k) => s + trVal(by, k, mm, g.rest), 0);
+  const vals = ms.map(total), cur = total(m), avg = vals.reduce((a, b) => a + b, 0) / (vals.length || 1), dv = avg ? (cur - avg) / avg : 0;
+  const partial = m === todayISO().slice(0, 7);
+  $("trHero").innerHTML = `<div class="l">${f ? esc(g.name(f)) + " in " : "Spent in "}${monthLong(m)}${partial ? " (so far)" : ""}</div>
+    <div class="v">${money(cur)}</div><div class="s">${money(avg)}/mo average · <span class="${dv > .05 ? "neg" : dv < -.05 ? "pos" : ""}">${Math.abs(dv) < .005 ? "right on average" : (dv > 0 ? "▲ " : "▼ ") + Math.round(Math.abs(dv) * 100) + "% vs average"}</span></div>`;
+  const avgOf = k => ms.reduce((s, mm) => s + (by[k + "|" + mm] || 0), 0) / ms.length;
+  const row = (dot, name, amt, frac, sub, attrs) => `<div class="trrow" ${attrs}><i style="background:${dot}"></i><span class="tn"><b>${esc(name)}</b><span class="mute">${sub}</span></span>
+      <span class="ta">${money(amt)}</span><span class="tb"><span style="width:${Math.max(2, Math.round(frac * 100))}%;background:${dot}"></span></span></div>`;
+  let html;
+  if (!f || f === REST) {
+    // the month's categories, biggest first (only the smaller ones when "N smaller" is picked)
+    const list = (f === REST ? g.rest : c.cats).map(k => ({ k, v: Math.max(0, by[k + "|" + m] || 0) })).filter(x => x.v > .5).sort((a, b) => b.v - a.v);
+    const max = list.length ? list[0].v : 1;
+    html = `<div class="trlh"><b>${monthLong(m)}</b><span class="mute">${list.length} categor${list.length === 1 ? "y" : "ies"} · tap one to see transactions</span></div>` +
+      `<div id="trRows">${list.map(x => { const a = avgOf(x.k), d = a ? (x.v - a) / a : 0;
+        return row(g.col[x.k] || REST_COLOR, pretty(x.k), x.v, x.v / max, Math.abs(d) < .1 ? "about usual" : `${d > 0 ? "▲" : "▼"} ${Math.round(Math.abs(d) * 100)}% vs ${money(a)} avg`, `data-c="${esc(x.k)}" data-m="${m}"`); }).join("")}</div>`;
+  } else {
+    // one category picked: every month for it, newest first
+    const list = [...ms].reverse().map(mm => ({ mm, v: Math.max(0, by[f + "|" + mm] || 0) })), max = Math.max(1, ...list.map(x => x.v));
+    html = `<div class="trlh"><b>${esc(g.name(f))} by month</b><span class="mute">tap a month to see transactions</span></div>` +
+      `<div id="trRows">${list.map(x => row(x.mm === m ? g.col[f] : fadeHex(g.col[f], .45), monthLong(x.mm), x.v, x.v / max, x.mm === m ? "selected" : "", `data-c="${esc(f)}" data-m="${x.mm}"`)).join("")}</div>`;
+  }
+  $("trList").innerHTML = html;
+  $("trList").querySelectorAll(".trrow[data-c]").forEach(r => r.onclick = () =>
+    drillTx(pretty(r.dataset.c), monthLong(r.dataset.m), () => monthTx(r.dataset.m).filter(t => isSpendish(t) && eff(t) === r.dataset.c), "amt"));
+  clampList($("trRows"), 6, f && f !== REST ? "months" : "categories");
+}
+document.querySelectorAll("#trRange button").forEach(b => b.onclick = () => { S.trRange = b.dataset.r; store.set("hr_tr_range", S.trRange); renderTrends(); });
+$("cmToggle").onclick = () => { const on = $("cmCard").classList.toggle("open"); $("cmToggle").textContent = on ? "Hide table" : "Show table"; };
+
 function renderTrends() {
   const { ms, cats, by } = trendData();
   if ($("p-trends").classList.contains("on")) drawStack();
   const cov = coverage();
   const rows = [...ms].reverse().map(monthStats);
-  $("monthTbl").innerHTML = `<tr><th>Month</th><th class="num">Earned</th><th class="num">Spent</th><th class="num">Net</th><th class="num">Saved</th></tr>` +
-    rows.map(r => `<tr class="tap" data-m="${r.m}"><td>${monthLabel(r.m)}${cov.fullMonths.includes(r.m) ? "" : ' <span class="pill">partial</span>'}</td><td class="num pos">${money(r.inc)}</td><td class="num">${money(r.sp)}</td>
-      <td class="num ${r.net < 0 ? "neg" : "pos"}">${money(r.net)}</td><td class="num">${r.inc ? Math.round(r.net / r.inc * 100) + "%" : "–"}</td></tr>`).join("");
+  $("monthTbl").innerHTML = `<tr><th>Month</th><th class="num">Earned</th><th class="num">Spent</th><th class="num">Kept</th></tr>` +
+    rows.map(r => `<tr class="tap" data-m="${r.m}"><td>${monthLabel(r.m)}${cov.fullMonths.includes(r.m) ? "" : '<span class="pmark" title="Partial month">*</span>'}</td><td class="num pos">${money(r.inc)}</td><td class="num">${money(r.sp)}</td>
+      <td class="num ${r.net < 0 ? "neg" : "pos"}">${money(r.net)}<span class="kp">${r.inc ? Math.round(r.net / r.inc * 100) + "%" : ""}</span></td></tr>`).join("");
+  { let n = $("monthNote"); if (!n) { n = document.createElement("div"); n.id = "monthNote"; n.className = "mute"; $("monthTbl").parentElement.after(n); }
+    n.textContent = rows.some(r => !cov.fullMonths.includes(r.m)) ? "* partial month (still in progress, or before your history starts)" : ""; }
   $("monthTbl").querySelectorAll("tr[data-m]").forEach(tr => tr.onclick = () => { setMonth(tr.dataset.m); go("overview"); });
+  // phone: newest 6 months, the rest behind "See all"
+  const mt = $("monthTbl"), mrows = [...mt.querySelectorAll("tr[data-m]")], oldBtn = mt.parentElement.parentElement.querySelector(".clampbtn"); if (oldBtn) oldBtn.remove();
+  if (isMobile() && mrows.length > 6 && !(S._open || new Set()).has("monthTbl")) {
+    mrows.slice(6).forEach(r => r.classList.add("clamped"));
+    const b = document.createElement("button"); b.className = "clampbtn"; b.textContent = `See all ${mrows.length} months`;
+    b.onclick = () => { (S._open = S._open || new Set()).add("monthTbl"); mrows.forEach(r => r.classList.remove("clamped")); b.remove(); };
+    mt.parentElement.after(b); }
   const rev = [...ms].reverse();
   $("catMonthTbl").innerHTML = `<tr><th>Category</th>${rev.map(m => `<th class="num">${monthLabel(m)}</th>`).join("")}</tr>` +
     cats.map(c => `<tr><td style="white-space:nowrap">${esc(pretty(c))}</td>${rev.map(m => Math.abs(by[c + "|" + m] || 0) > 0.5
