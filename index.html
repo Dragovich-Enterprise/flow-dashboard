@@ -277,6 +277,12 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
 .fchead .mute{font-size:12px}.fchead b{font-size:19px;letter-spacing:-.01em}.warnc{color:var(--warn)}
 .fcbox{height:150px;position:relative}.fcfoot{font-size:13.5px;color:var(--mute);margin-top:8px;line-height:1.45}
 .setupcard[hidden],.leftcard[hidden],.recapcard[hidden],.fccard[hidden]{display:none!important}
+.histcard .hcb{display:flex;gap:6px;align-items:center;flex:0 0 auto}.histcard.loading{border-color:var(--line);background:var(--card)}
+.hbank{padding:10px 0;border-top:1px solid var(--line)}.hbank:first-child{border-top:0;padding-top:0}
+.hb1{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.hb1 .mute{font-size:13px}.hok{font-size:13px;font-weight:600}
+.hgap{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:8px;font-size:14px}.hgap .mute{font-size:13px}
+.hgap .hbtns{display:flex;gap:6px;flex:0 0 auto}.hgap .hrng{display:block;margin-top:1px}
+#impCard.flash{animation:flash 1.6s ease}@keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:none}}
 .setupcard{display:flex;gap:12px;align-items:center;justify-content:space-between;border:1px solid var(--accent);background:linear-gradient(180deg,var(--mint),var(--card) 80%)}
 .setupcard b{font-size:15.5px}.setupcard .mute{font-size:13.5px;margin-top:3px;line-height:1.4}.setupcard button{flex:0 0 auto}
 .bsrow{display:grid;grid-template-columns:22px minmax(0,1fr) 92px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);cursor:pointer}
@@ -462,7 +468,6 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
   .swipe h2 .hint{display:none!important}
   .swipe #nwY{border:0;background:none}.swipe #nwY button[data-y=fit]{display:none}
   .swipe #nwY button[data-y=zero]{border:1px solid var(--line);border-radius:8px}
-  .swipe #netNote{font-size:12px;line-height:1.35;margin-top:8px}
   .swipe #cTrend{max-height:none}.swipe .card:has(#cTrend) .chartbox{min-height:215px}
   .swipe .tsel{border-top:1px solid var(--line);margin:auto -16px -16px;padding:10px 16px}
   .swipe #catBreak .cbrow:nth-child(n+5){display:none}
@@ -601,6 +606,7 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
     <div class="card leftcard" id="leftCard" hidden></div>
     <div class="card recapcard" id="recapCard" hidden></div>
     <div class="card setupcard" id="homeSetup" hidden></div>
+    <div class="card setupcard histcard" id="histCard" hidden></div>
     <div id="mobTop"><div class="swipe" id="swipe"></div><div class="dots" id="swipeDots"></div><div class="card acsum" id="acSum"></div></div>
     <div class="card aicard" id="aiCard"></div>
     <div class="strip" id="strip"></div>
@@ -619,20 +625,20 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
         <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px">
           <div class="seg" id="nwRange"><button data-r="1w">1W</button><button data-r="1m">1M</button><button data-r="3m">3M</button><button data-r="6m">6M</button><button data-r="1y">1Y</button><button data-r="all">All</button></div>
           <div class="seg" id="nwY" title="How tall the line's swings look"><button data-y="fit">Zoom in</button><button data-y="zero">From $0</button></div></div>
-        <div class="chartbox"><canvas id="cNet"></canvas></div><div class="mute" id="netNote"></div></div>
+        <div class="chartbox"><canvas id="cNet"></canvas></div></div>
     </div>
     <div class="two">
-      <div class="card"><h2>Insights <span class="hint">&mdash; what Headroom noticed</span></h2><div id="insights"></div></div>
+      <div class="card"><h2>Insights</h2><div id="insights"></div></div>
       <div class="card"><h2>Coming up <span class="hint" id="payHint"></span></h2><div class="week" id="week"></div><div id="upList" style="margin-top:10px"></div></div>
     </div>
-    <div class="card fccard" id="fcCard" hidden><h2>Cash forecast <span class="hint">&mdash; checking, next 30 days</span></h2><div class="fchead" id="fcHead"></div><div class="fcbox"><canvas id="cFc"></canvas></div><div class="fcfoot" id="fcFoot"></div></div>
+    <div class="card fccard" id="fcCard" hidden><h2>Cash forecast <span class="hint">&mdash; next 30 days</span></h2><div class="fchead" id="fcHead"></div><div class="fcbox"><canvas id="cFc"></canvas></div><div class="fcfoot" id="fcFoot"></div></div>
     <div class="two">
       <div class="card"><h2>Spending by category <span class="hint">&mdash; vs. the same point last period</span></h2>
         <div class="donutwrap"><div class="chartbox donut"><canvas id="cDonut"></canvas></div><div id="catBreak"></div></div></div>
-      <div class="card"><h2>Income vs. spending <span class="hint">&mdash; tap a month</span></h2><div class="hero mobonly" id="trendHero"></div><div class="chartbox"><canvas id="cTrend"></canvas></div><div class="tsel" id="trendSel"></div></div>
+      <div class="card"><h2>Income vs. spending</h2><div class="hero mobonly" id="trendHero"></div><div class="chartbox"><canvas id="cTrend"></canvas></div><div class="tsel" id="trendSel"></div></div>
     </div>
     <div class="two">
-      <div class="card"><h2>Top merchants <span class="hint">&mdash; tap to see charges</span></h2><div id="merchants"></div></div>
+      <div class="card"><h2>Top merchants</h2><div id="merchants"></div></div>
       <div class="card"><h2>Recurring charges</h2><div id="recurring"></div></div>
     </div>
   </div>
@@ -681,7 +687,7 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
       <div id="budList"></div>
       <div class="btns" style="margin-top:10px"><button class="mini ghost" id="budSetup">✨ Suggest a full budget from my spending</button></div>
     </div>
-    <div class="card" id="sugCard"><h2>Suggestions <span class="hint">&mdash; Headroom watches how your budget is working</span></h2><div id="budSug"></div></div>
+    <div class="card" id="sugCard"><h2>Suggestions</h2><div id="budSug"></div></div>
   </div>
 
   <!-- TRENDS -->
@@ -693,8 +699,8 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
       <div class="chartbox" style="height:240px"><canvas id="cStack"></canvas></div>
       <div class="trlist" id="trList"></div>
     </div>
-    <div class="card"><h2>Month by month <span class="hint">&mdash; tap a row to open that month</span></h2><div class="scroll"><table id="monthTbl"></table></div></div>
-    <div class="card" id="cmCard"><div class="trhead"><h2 style="margin:0">Category by month <span class="hint">&mdash; tap any amount</span></h2><button class="mini mobonly" id="cmToggle">Show table</button></div><div class="scroll" id="cmWrap"><table id="catMonthTbl"></table></div></div>
+    <div class="card"><h2>Month by month</h2><div class="scroll"><table id="monthTbl"></table></div></div>
+    <div class="card" id="cmCard"><div class="trhead"><h2 style="margin:0">Category by month</h2><button class="mini mobonly" id="cmToggle">Show table</button></div><div class="scroll" id="cmWrap"><table id="catMonthTbl"></table></div></div>
   </div>
 
   <!-- RECURRING -->
@@ -732,7 +738,7 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
     </div>
     <div id="invEmpty"></div>
     <div class="btns" style="margin-bottom:16px"><button id="refreshInv">Refresh holdings &amp; activity</button></div>
-    <div class="card"><h2>Accounts <span class="hint">&mdash; tap to see positions</span></h2><div id="iAccts"></div></div>
+    <div class="card"><h2>Accounts</h2><div id="iAccts"></div></div>
     <div class="card"><h2>Value over time</h2><div class="chartbox"><canvas id="cInv"></canvas></div><div class="mute" id="invNote"></div></div>
     <div class="card"><h2>Positions</h2><div class="scroll"><table id="invHoldings"></table></div></div>
     <div class="card"><h2>Recent activity</h2><div class="scroll"><table id="invTx"></table></div></div>
@@ -768,20 +774,20 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
       <div class="optrow"><div><div class="t">What was left out</div><div class="d">See every transfer, card payment and excluded item in the selected dates.</div></div><button class="mini" id="showOut">View</button></div>
     </div>
     <div class="card"><h2>Categories</h2>
-      <div class="mute" style="margin-bottom:10px">Tap a category to change its emoji, color or name, or to hide it. Add your own below.</div>
+      <div class="mute" style="margin-bottom:10px">Tap one to change its emoji, color or name.</div>
       <div id="catList"></div>
       <div class="btns" style="margin-top:10px"><input id="newCat" placeholder="New category name" style="flex:1;min-width:160px"><button id="addCat" class="primary">Add</button></div>
     </div>
     <div class="card"><h2>Merchant rules</h2>
-      <div class="mute" style="margin-bottom:10px">Created when you tick &ldquo;Always use this&rdquo; while editing a transaction. They apply to past and future transactions from that merchant.</div>
       <div id="ruleList"></div>
     </div>
     <div class="card"><h2>Banks</h2><div id="setInfo" class="mute" style="margin-bottom:12px"></div>
       <div id="itemList" style="margin-bottom:12px"></div>
-      <div class="btns"><button id="linkBtn" class="primary">+ Link a bank</button><button id="linkInvBtn">+ Link a brokerage (with holdings)</button><button id="syncBtn2">Sync now</button></div>
-      <div class="mute" style="margin-top:10px">Use the brokerage button for Fidelity and Robinhood so Headroom can read your positions. Linking the same place twice creates a second connection &mdash; remove the old one above.</div></div>
-    <div class="card"><h2>Import older history</h2>
-      <div class="mute" style="margin-bottom:10px">Capital One only shares ~90 days through Plaid. Upload monthly <b>statement PDFs</b> (or a CSV) from your bank, pick the account, and check the list before it's saved. You can choose several statements at once. Only transactions older than what your bank already synced are added, so nothing is counted twice.</div>
+      <div class="btns"><button id="linkBtn" class="primary">+ Link a bank</button><button id="linkInvBtn">+ Link a brokerage</button><button id="syncBtn2">Sync now</button></div>
+</div>
+    <div class="card" id="impCard"><h2>History</h2>
+      <div id="histList"></div>
+      <div class="mute" style="margin:12px 0 10px">Add older activity from statement PDFs or a CSV. Anything your bank already sent is skipped.</div>
       <div class="filters"><select id="impAcct"></select><input type="file" id="impFile" accept=".csv,.pdf,application/pdf,text/csv" multiple>
         <label class="mute" id="impPosL"><input type="checkbox" id="impPos"> single "Amount" column: positive = money spent</label></div>
       <div class="btns"><button id="impBtn" class="primary">Read &amp; review</button><span class="mute" id="impOut"></span></div>
@@ -800,7 +806,6 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
         <div class="optrow"><div><div class="t">Low balance</div><div class="d">When checking drops under <input id="npLow" type="number" min="0" step="50" inputmode="numeric" style="width:84px;padding:3px 6px">, or is about to within a week</div></div><label class="sw"><input type="checkbox" data-np="lowbal"><span></span></label></div>
         <div class="optrow"><div><div class="t">Monthly recap</div><div class="d">On the 1st: how last month went</div></div><label class="sw"><input type="checkbox" data-np="monthly"><span></span></label></div>
       </div>
-      <div class="mute" style="margin-top:10px">Alerts go out around 8 AM and 6 PM, right after your banks sync.</div>
     </div>
     <div class="card"><h2>Account &amp; security</h2>
       <div class="optrow" style="border-top:0"><div><div class="t">Face ID sign-in</div><div class="d" id="pkStatus">Checking…</div></div><button class="mini primary" id="pkAdd">Set up on this device</button></div>
@@ -808,7 +813,7 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
       <div class="optrow"><div><div class="t">Ask for Face ID when opening the app</div><div class="d">Locks Headroom on this device after 5 minutes away. Needs Face ID sign-in set up.</div></div><label class="sw"><input type="checkbox" id="lockOpt"><span></span></label></div>
       <div class="btns" style="margin-top:12px"><button id="outBtn2">Sign out</button></div></div>
     <div class="card"><h2>Reset connections</h2>
-      <div class="mute" style="margin-bottom:12px">Only needed if a bank connection breaks or you want a clean start. This disconnects your banks and clears pulled and imported transactions (budgets and goals are kept), then you link each bank again.</div>
+      <div class="mute" style="margin-bottom:12px">Disconnects your banks and clears synced and imported transactions. Budgets and goals stay.</div>
       <button id="resetBtn" class="danger">Reset &amp; re-link all banks</button></div>
   </div>
 </div>
@@ -1089,7 +1094,7 @@ $("forgot").onclick = async () => {
   $("err").textContent = error ? error.message : "Check your email for a reset link.";
 };
 /** Sign out and leave nothing of this person's behind on the device (the next person may share the phone). */
-const PERSONAL_KEYS = ["hr_chat", "plaid_link_token", "hr_lock", "hr_pk_offered", "hr_slide"];
+const PERSONAL_KEYS = ["hr_chat", "plaid_link_token", "hr_lock", "hr_pk_offered", "hr_slide", "hr_hist_hide", "hr_recap_seen"];
 function forgetLocal() { PERSONAL_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} }); }
 const signOut = async () => {
   try { const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); const sub = reg && reg.pushManager && await reg.pushManager.getSubscription();
@@ -1232,7 +1237,7 @@ async function load() {
     db.from("merchant_rules").select("*"),
     db.from("app_settings").select("*"),
   ]);
-  try { const { data: nm } = await db.rpc("item_names"); S.inst = Object.fromEntries((nm || []).map(r => [r.item_id, r.institution_name])); } catch (e) { S.inst = {}; }
+  await loadItemInfo();
   try { const { data: adm } = await db.rpc("is_admin"); S.isAdmin = adm === true; } catch (e) { S.isAdmin = false; }
   // things saved on this device belong to whoever was signed in; a different person starts clean
   const uid = S.user && S.user.id, prev = store.get("hr_owner");
@@ -1253,7 +1258,14 @@ async function load() {
   if (!S._aiLoaded) { S._aiLoaded = true; loadAi(); }
   const h = location.hash.slice(1); if (h && h !== S.tab && document.querySelector(`.pane#p-${h}`)) go(h);
   if (h === "review") goReview(); if (h === "recap") { history.replaceState(null, "", location.pathname + location.search); setTimeout(() => openRecap(), 400); } fabs();
-  moveInk();
+  moveInk(); pollHistory();
+}
+/** Bank names, when each was linked, and whether Plaid has finished sending its history. */
+async function loadItemInfo() {
+  try { let { data: nm, error } = await db.rpc("item_info"); if (error) ({ data: nm } = await db.rpc("item_names"));
+    S.inst = Object.fromEntries((nm || []).map(r => [r.item_id, r.institution_name]));
+    S.items = Object.fromEntries((nm || []).map(r => [r.item_id, { name: r.institution_name || "Bank", linked: r.linked_at || null, status: r.history_status || null }]));
+  } catch (e) { S.inst = {}; S.items = {}; }
 }
 function timeAgo(iso) { const s = (Date.now() - Date.parse(iso)) / 1000; if (s < 90) return "just now"; if (s < 3600) return Math.round(s / 60) + " min ago"; if (s < 86400) return Math.round(s / 3600) + " h ago"; return Math.round(s / 86400) + " d ago"; }
 async function saveSetting(key, value) {
@@ -1273,7 +1285,7 @@ function renderAll() {
   classify(); S._ver = (S._ver || 0) + 1; S.flags = computeFlags();
   $("rangeLbl").textContent = rangeLabel(); $("rangeBtn").title = rangeSub();
   renderOverview(); renderStrip(); renderTrends(); renderRecurring(); renderBudget();
-  renderTxns(); renderAccts(); renderAcSum(); renderInvest(); renderGoals(); renderSettings(); renderPush(); renderInstallHint(); saveSchedule(); saveDigest(); renderAiCard(); renderAiSettings(); renderWelcome(); renderLeft(); renderRecap(); renderSetupCards(); renderForecast();
+  renderTxns(); renderAccts(); renderAcSum(); renderInvest(); renderGoals(); renderSettings(); renderPush(); renderInstallHint(); saveSchedule(); saveDigest(); renderAiCard(); renderAiSettings(); renderWelcome(); renderLeft(); renderRecap(); renderSetupCards(); renderForecast(); renderHistCard(); renderHistory();
   if (S.drill) refreshDrill();
 }
 
@@ -1308,7 +1320,7 @@ function refreshDrill(open) {
   const body = `<div class="filters" style="justify-content:space-between"><span class="mute">${list.length} transaction${list.length === 1 ? "" : "s"} · ${tot}</span>
       <span class="seg"><button data-s="date" class="${d.sort === "date" ? "on" : ""}">By date</button><button data-s="amt" class="${d.sort === "amt" ? "on" : ""}">By amount</button></span></div>
     ${list.length ? `<div class="txlist">${list.map(t => txRowHTML(t, { date: true })).join("")}</div>` : `<div class="empty">Nothing here.</div>`}
-    <div class="mute" style="margin-top:10px">Tap any transaction to change its category, rename it, add a note or exclude it.</div>`;
+`;
   if (open || !$("modal").classList.contains("hidden")) openModal(d.title, d.sub, body);
   $("mBody").querySelectorAll("[data-s]").forEach(b => b.onclick = () => { d.sort = b.dataset.s; refreshDrill(); });
   bindRows($("mBody"));
@@ -1772,7 +1784,7 @@ function renderAiCard() {
   if (!st.configured && !S.isAdmin) { el.innerHTML = ""; el.hidden = true; return; }
   if (!st.configured) { el.innerHTML = head() + `<div class="mute">Get a short written review of your week, and ask questions about your money. <a href="#" id="aiSetup">Set it up</a></div>`;
     $("aiSetup").onclick = e => { e.preventDefault(); go("settings"); setTimeout(() => $("aiSet").scrollIntoView({ behavior: "smooth" }), 150); }; return; }
-  if (!r) { el.innerHTML = head() + `<div class="mute">A short take on your week: what changed, what needs attention, one thing to try. One arrives every Sunday morning.</div>
+  if (!r) { el.innerHTML = head() + `<div class="mute">A short take on your week, every Sunday.</div>
       <div class="aib"><button class="primary" id="aiWrite">Write my first review</button><button id="aiAsk2">Ask a question</button></div>`; }
   else { const b = r.body || {}, when = new Date(r.created_at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
     el.innerHTML = head(when) + `<div class="hl">${esc(b.headline || "")}</div>${(b.points || []).length ? `<ul>${b.points.map(p => `<li>${esc(p)}</li>`).join("")}</ul>` : ""}
@@ -1989,12 +2001,8 @@ function showLeftOut() {
 $("showOut").onclick = showLeftOut;
 
 function renderOverview() {
-  const { min, fullMonths } = coverage();
-  const msg = [];
-  if (min) msg.push(`Data starts ${shortDate(min)} · ${fullMonths.length} full month${fullMonths.length === 1 ? "" : "s"} of history.`);
-  if (fullMonths.length < 4) msg.push(`Budget suggestions get more reliable with 4+ full months — <a class="link" data-go="settings">import older history</a>.`);
-  // only worth a banner while history is thin
-  $("coverage").innerHTML = S.tx.length ? (fullMonths.length < 2 ? `<div class="note">${msg.join(" ")}</div>` : "") : `<div class="note">No data yet. <a class="link" data-go="settings">Link a bank</a> to get started.</div>`;
+  const loading = historyStatus().some(b => b.loading);
+  $("coverage").innerHTML = !S.tx.length && S.accts.length && !loading ? `<div class="note">No transactions yet. <a class="link" data-go="settings">Link a bank</a> or import a statement.</div>` : "";
   $("coverage").querySelectorAll("[data-go]").forEach(a => a.onclick = () => go(a.dataset.go));
 
   const rtx = rangeTx();
@@ -2239,10 +2247,6 @@ function drawNetWorth() {
   S.nwHead(null);
   const invTotal = S.accts.filter(a => a.type === "investment").reduce((s, a) => s + Number(a.current_balance || 0), 0);
   const evs = all.events || [], evAt = Object.fromEntries(evs.map(e => [e.date, e]));
-  $("netNote").textContent = !all.start ? "" : (evs.length ? evs.map(e => `${e.name} starts ${shortDate(e.date)} (${e.amount >= 0 ? "+" : "−"}${money(Math.abs(e.amount))}); before that its history isn't available, so it counts as $0. `).join("")
-      : hist < 180 ? `History starts ${shortDate(all.start)}; longer ranges unlock as it builds. ` : "") + (cashOnly
-    ? "Cash minus credit cards and loans, rebuilt from your transactions."
-    : `Investments (${money(invTotal)}) are held at today's value; Plaid has no past balances for them.`);
   const mark = labels.map(l => evAt[l] ? 5 : 0);
   chart("cNet", { type: "line", data: { labels: labels.map(shortDate), datasets: [{ label: "Net worth", data: vals, borderColor: "#0F766E", fill: S.nwFit ? "start" : "origin", backgroundColor: "rgba(13,148,136,.10)",
       pointRadius: mark, pointBackgroundColor: "#fff", pointBorderColor: "#0F766E", pointBorderWidth: 2, pointHoverRadius: 5, pointHoverBackgroundColor: "#0F766E", tension: labels.length > 200 ? 0 : .25, borderWidth: labels.length > 200 ? 2 : 2.5 }] },
@@ -2371,7 +2375,7 @@ function renderTrends() {
     rows.map(r => `<tr class="tap" data-m="${r.m}"><td>${monthLabel(r.m)}${cov.fullMonths.includes(r.m) ? "" : '<span class="pmark" title="Partial month">*</span>'}</td><td class="num pos">${money(r.inc)}</td><td class="num">${money(r.sp)}</td>
       <td class="num ${r.net < 0 ? "neg" : "pos"}">${money(r.net)}<span class="kp">${r.inc ? Math.round(r.net / r.inc * 100) + "%" : ""}</span></td></tr>`).join("");
   { let n = $("monthNote"); if (!n) { n = document.createElement("div"); n.id = "monthNote"; n.className = "mute"; $("monthTbl").parentElement.after(n); }
-    n.textContent = rows.some(r => !cov.fullMonths.includes(r.m)) ? "* partial month (still in progress, or before your history starts)" : ""; }
+    n.textContent = rows.some(r => !cov.fullMonths.includes(r.m)) ? "* partial month" : ""; }
   $("monthTbl").querySelectorAll("tr[data-m]").forEach(tr => tr.onclick = () => { setMonth(tr.dataset.m); go("overview"); });
   // phone: newest 6 months, the rest behind "See all"
   const mt = $("monthTbl"), mrows = [...mt.querySelectorAll("tr[data-m]")], oldBtn = mt.parentElement.parentElement.querySelector(".clampbtn"); if (oldBtn) oldBtn.remove();
@@ -2576,7 +2580,7 @@ function renderRecurring() {
   $("recHidden").innerHTML = hidden.length
     ? hidden.map(r => `<div class="rowline"><span>${esc(r.name)} <span class="mute">${r.amount ? money2(r.amount) : ""}</span></span>
         <button class="mini back" data-k="${esc(ignoredKeyFor(r))}">Put back</button></div>`).join("")
-    : `<div class="mute">Nothing removed. Anything you take off the list above shows up here so you can put it back.</div>`;
+    : `<div class="mute">Nothing removed.</div>`;
   $("recHidden").querySelectorAll(".back").forEach(b => b.onclick = () => dropRule(b.dataset.k));
 }
 function ignoredKeyFor(r) { const ign = new Set(S.rules.filter(x => x.status === "ignored").map(x => x.match_key)); return ign.has(r.mkey) ? r.mkey : r.key; }
@@ -2767,7 +2771,7 @@ function openForecast() {
     <p class="rnote mute" style="font-size:13px">Card purchases are counted as they happen, even though you pay the card later, and money you move to savings isn't included. Treat it as a heads-up, not an exact balance.</p>
     <h3 class="inch">Lowest point</h3><p class="rnote"><b class="${F.low.v < 0 ? "neg" : ""}">${money(F.low.v)}</b> around ${esc(F.low.d === todayISO() ? "today" : shortDate(F.low.d))}${F.nextPay ? ` · next payday ${esc(shortDate(F.nextPay.d))}` : ""}</p>
     <h3 class="inch">Expected in the next 30 days</h3>${rows.join("") || `<div class="mute">No paychecks or bills found.</div>`}
-    <p class="mute" style="font-size:13px;margin-top:12px">Get a notification if checking runs low: Settings → Notifications → Low balance.</p>`);
+`);
 }
 
 // ---------- set up my budget for me: budgets from what you actually spend ----------
@@ -2801,7 +2805,7 @@ function openBudgetSetup() {
     $("bsTot").innerHTML = `Total <b>${money(tot)}</b> a month${inc ? ` · ${inc - tot >= 0 ? `leaves <b class="pos">${money(inc - tot)}</b> of your ${money(inc)} income` : `<b class="neg">${money(tot - inc)}</b> more than your ${money(inc)} income`}` : ""}`;
   };
   openModal("Set up my budget", `From ${plan.basis}`, `
-    <p class="mute" style="margin:0 0 8px">Each amount is what you typically spend, rounded up. Change any of them, untick ones you don't want, then apply.${Object.keys(cur).length ? " Budgets you already have are replaced only where you tick them." : ""}</p>
+    <p class="mute" style="margin:0 0 8px">Based on what you usually spend. Edit or untick, then apply.${Object.keys(cur).length ? " Budgets you already have are replaced only where you tick them." : ""}</p>
     ${plan.rows.map((r, i) => `<label class="bsrow"><input type="checkbox" data-bi="${i}" checked><span>${catIcon(r.c, 26)}${esc(pretty(r.c))}<span class="mute">${cur[r.c] ? `now ${money(cur[r.c])}` : `usually ${money(r.typ)}`}</span></span>
       <input type="number" inputmode="numeric" min="0" step="5" data-ba="${i}" value="${r.amt}"></label>`).join("")}
     <div class="bstot" id="bsTot"></div>
@@ -2822,6 +2826,71 @@ function renderSetupCards() {
     el.innerHTML = `<div><b>✨ Set up my budget for me</b><div class="mute">Headroom can create budgets from ${esc(plan.basis)}. You can change every amount before anything is saved.</div></div><button class="primary">Set it up</button>`;
     el.querySelector("button").onclick = openBudgetSetup; };
   card("budSetupCard"); card("homeSetup");
+}
+
+// ---------- history: how far back each bank's activity goes, and what to upload for a full year ----------
+// Banks decide how much history they share through Plaid (some two years, some about 90 days), so this is measured, not assumed.
+const HIST_MONTHS = 12;
+const monY = m => new Date(m + "-15").toLocaleString("en-US", { month: "short", year: "numeric" });
+const monthsBetween = (a, b) => { const [ay, am] = a.split("-").map(Number), [by, bm] = b.split("-").map(Number); return (by - ay) * 12 + bm - am; };
+const histGoal = () => addMonths(todayISO().slice(0, 7), -HIST_MONTHS);
+const histLoading = i => !!i.status && i.status !== "HISTORICAL_UPDATE_COMPLETE" && !!i.linked && Date.now() - Date.parse(i.linked) < 2 * 864e5;
+function historyStatus() {
+  if (S._hs && S._hsV === S._ver && S._hsI === S.items) return S._hs;
+  const goal = histGoal(), done = S.settings.history_done || [], per = {};
+  S.tx.forEach(t => { const id = String(t.transaction_id), k = per[t.account_id] || (per[t.account_id] = { pl: null, imp: null, n: 0 });
+    if (id.startsWith("csv-")) { if (!k.imp || t.date < k.imp) k.imp = t.date; }
+    else if (!id.startsWith("man-")) { k.n++; if (!k.pl || t.date < k.pl) k.pl = t.date; } });
+  const out = Object.entries(S.items || {}).map(([item, info]) => {
+    const accts = S.accts.filter(a => a.item_id === item && ["depository", "credit"].includes(a.type));
+    if (!accts.length) return null;
+    const since = accts.map(a => (per[a.account_id] || {}).pl).filter(Boolean).sort()[0] || null, loading = histLoading(info);
+    const shared = since ? Math.max(1, Math.round((Date.now() - Date.parse(since)) / (30.44 * 864e5))) : 0;
+    // only accounts with real activity need older statements; a rarely used card or savings account doesn't
+    const gaps = loading ? [] : accts.filter(a => (per[a.account_id] || {}).n >= 10 && !done.includes(a.account_id)).map(a => {
+      const k = per[a.account_id], start = [k.pl, k.imp].filter(Boolean).sort()[0], to = start.slice(0, 7);
+      return { acct: a, start, from: goal, to, months: monthsBetween(goal, to) + 1 };
+    }).filter(g => g.start > g.from + "-07");
+    return { item, name: info.name, since, shared, loading, gaps };
+  }).filter(Boolean);
+  S._hs = out; S._hsV = S._ver; S._hsI = S.items; return out;
+}
+const acctLabel = a => (a.nickname || a.name) + (a.mask ? " ••" + a.mask : "");
+const gapRange = g => g.from === g.to ? monY(g.from) : `${monY(g.from)} – ${monY(g.to)}`;
+function renderHistory() {
+  const el = $("histList"); if (!el) return;
+  const banks = historyStatus();
+  el.innerHTML = banks.length ? banks.map(b => `<div class="hbank"><div class="hb1"><b>${esc(b.name)}</b><span class="mute">${b.loading ? "loading history…" : b.since ? `from ${esc(shortDate(b.since))} · ${b.shared} month${b.shared === 1 ? "" : "s"} shared` : "no activity yet"}</span>${!b.loading && b.since && !b.gaps.length ? `<span class="pos hok">✓</span>` : ""}</div>
+    ${b.gaps.map(g => `<div class="hgap"><span>${esc(acctLabel(g.acct))}<span class="mute hrng">missing ${esc(gapRange(g))}</span></span><span class="hbtns"><button class="mini primary" data-up="${esc(g.acct.account_id)}">Upload</button><button class="mini ghost" data-skip="${esc(g.acct.account_id)}" title="Nothing older to add">Skip</button></span></div>`).join("")}</div>`).join("")
+    : `<div class="mute">Link a bank to see how far back its history goes.</div>`;
+  el.querySelectorAll("[data-up]").forEach(b => b.onclick = () => { $("impAcct").value = b.dataset.up; S._impAuto = true; $("impFile").click(); });
+  el.querySelectorAll("[data-skip]").forEach(b => b.onclick = async () => {
+    if (await saveSetting("history_done", [...new Set([...(S.settings.history_done || []), b.dataset.skip])])) { S._hs = null; renderAll(); toast("Hidden"); } });
+}
+function renderHistCard() {
+  const el = $("histCard"); if (!el) return;
+  const banks = historyStatus(), loading = banks.filter(b => b.loading);
+  if (loading.length) { el.hidden = false; el.classList.add("loading");
+    el.innerHTML = `<div><b>⏳ Getting your history</b><div class="mute">${esc(loading.map(b => b.name).join(" and "))} ${loading.length > 1 ? "are" : "is"} still sending older activity. This usually takes a few minutes.</div></div>`; return; }
+  el.classList.remove("loading");
+  const gaps = banks.flatMap(b => b.gaps.filter(g => g.months >= 2).map(g => ({ ...g, bank: b.name }))), sig = gaps.map(g => g.acct.account_id).sort().join(",");
+  el.hidden = !gaps.length || !S.tx.length || store.get("hr_hist_hide") === sig; if (el.hidden) return;
+  const names = [...new Set(gaps.map(g => g.bank))], goal = gaps[0].from;
+  const who = names.length === 1 ? `Your ${esc(names[0])} history starts ${esc(monY(gaps.map(g => g.to).sort().pop()))}.`
+    : `${esc(names.slice(0, -1).join(", "))} and ${esc(names.slice(-1)[0])} start after ${esc(monY(goal))}.`;
+  el.innerHTML = `<div><b>📥 Add older history</b><div class="mute">${who} Add statements back to ${esc(monY(goal))} for a full year of trends.</div></div>
+    <div class="hcb"><button class="primary" id="hcAdd">Add</button><button class="mini ghost" id="hcX" aria-label="Dismiss">✕</button></div>`;
+  $("hcAdd").onclick = () => { go("settings"); setTimeout(() => { if (gaps.length === 1) $("impAcct").value = gaps[0].acct.account_id;
+    const c = $("impCard"); c.scrollIntoView({ behavior: "smooth", block: "start" }); c.classList.remove("flash"); void c.offsetWidth; c.classList.add("flash"); }, 200); };
+  $("hcX").onclick = () => { store.set("hr_hist_hide", sig); el.hidden = true; };
+}
+/** Right after linking, Plaid sends the last 30 days first and older history a few minutes later: keep collecting while the app is open. */
+function pollHistory() {
+  if (S._histT || (S._histN || 0) >= 8 || !Object.values(S.items || {}).some(histLoading)) return;
+  S._histT = setTimeout(async () => { S._histT = null; S._histN = (S._histN || 0) + 1;
+    try { const r = await fn({ action: "sync" }), n = (r.synced || []).reduce((s, x) => s + (x.added || 0), 0);
+      if (n) await load(); else { await loadItemInfo(); renderAll(); pollHistory(); } } catch (e) { /* the scheduled syncs will catch up */ }
+  }, 45000);
 }
 
 // ---------- monthly recap: how last month went (Home card for the first week of a month) ----------
@@ -2897,7 +2966,7 @@ function openLeft() {
     ${L.mode === "income" ? line("📅 Bills still due", "−" + money(L.billsDue)) : ""}
     ${L.mode === "income" && L.bills.length ? `<div class="lbills">${L.bills.map(e => `<div><span>${esc(e.name)} <span class="mute">· ${esc(shortDate(e.d))}</span></span><span>${money(e.amt)}</span></div>`).join("")}</div>` : ""}
     ${line("<b>Left to spend</b>", (L.left < 0 ? "−" : "") + money(Math.abs(L.left)), L.left < 0 ? "neg" : "pos")}
-    <p class="mute" style="font-size:13px;margin-top:12px">${L.mode === "income" ? "Bills come from your recurring list and upcoming paychecks from your pay pattern, so this is an estimate. Money you plan to move into savings isn't taken out here: this is what's left before saving." : "Once Headroom sees two paychecks, this switches to your actual income."}</p>`);
+    <p class="mute" style="font-size:13px;margin-top:12px">${L.mode === "income" ? "Before savings." : ""}</p>`);
   if ($("lInc")) $("lInc").onclick = () => openIncome();
   $("lSpent").onclick = () => { const cur = todayISO().slice(0, 7); closeModal(); setTimeout(() => drillTx("Spent this month", monthLong(cur), () => monthTx(cur).filter(isSpendish), "amt"), 220); };
 }
@@ -2923,7 +2992,7 @@ function openIncome() {
     ${mi.coming.length ? mi.coming.map(e => row("💰", e.name, `${esc(shortDate(e.d))}, ${inDays(e.d)}`, e.amt)).join("") : `<div class="mute">No more paychecks expected this month.</div>`}
     <h3 class="inch">Received</h3>
     ${mi.got.length ? mi.got.map(t => row("✓", tname(t), esc(shortDate(t.date)), -t.amount, `data-tx="${esc(t.transaction_id)}" style="cursor:pointer"`)).join("") : `<div class="mute">Nothing yet this month.</div>`}
-    <p class="mute" style="font-size:13px;margin-top:14px">Upcoming paychecks are estimated from your recent pay pattern.</p>
+
     <div class="btns"><button id="incBills">See upcoming bills</button></div>`);
   $("mBody").querySelectorAll("[data-tx]").forEach(r => r.onclick = () => editTx(r.dataset.tx));
   $("incBills").onclick = () => { closeModal(); setTimeout(() => $("week").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" }), 220); };
@@ -2995,7 +3064,7 @@ function renderBudSug() {
   const list = budgetSuggestions();
   $("budSug").innerHTML = list.length ? list.map((x, i) => `<div class="ins"><div class="ii ${x.cls}">${x.ic}</div><div class="it"><div class="t1">${esc(x.msg)}</div><div class="t2">${esc(x.sub)}</div>
       <div class="acts"><button class="mini primary" data-ap="${i}">${esc(x.btn)}</button><button class="mini ghost" data-dm="${i}">Dismiss</button></div></div></div>`).join("")
-    : `<div class="mute">Nothing to change right now. Suggestions show up after a budget has a full month of history, or when a category without a budget gets big.</div>`;
+    : `<div class="mute">Nothing to change right now.</div>`;
   $("budSug").querySelectorAll("[data-ap]").forEach(b => b.onclick = async () => { const x = list[b.dataset.ap];
     if (x.to) await saveBudget(x.c, x.to, true); else await deleteBudget(x.c, true);
     renderAll(); toast(x.to ? `${pretty(x.c)} budget set to ${money(x.to)}` : `${pretty(x.c)} budget removed`); });
@@ -3022,8 +3091,7 @@ function renderBudget() {
   const otherSpent = otherCats.reduce((s, c) => s + spent[c], 0);
   const allS = Object.entries(spent).filter(([c]) => !NOT_BUDGETED.includes(c)).reduce((s, [, v]) => s + v, 0);
   const monthlyB = Object.values(bud).reduce((a, b) => a + b, 0), totB = monthlyB * f;
-  $("budNote").textContent = (m ? `${monthLong(m)}. ` : `${rangeSub()} — budgets scaled to ${f.toFixed(1)} months. `) +
-    "Anything without its own budget counts toward Everything else.";
+  $("budNote").textContent = m ? "" : `${rangeSub()} · budgets × ${f.toFixed(1)} months`;
   countTo($("bTot"), totB); countTo($("bSp"), allS); countTo($("bLeft"), totB - allS);
   $("bLeft").className = "big " + (totB - allS < 0 ? "neg" : "pos");
   $("bTotSub").textContent = m ? "this month" : "for these dates";
@@ -3261,7 +3329,7 @@ function renderInvest() {
   $("invEmpty").innerHTML = !accts.length
     ? `<div class="note">No investment accounts linked yet. Use Settings → Link a brokerage.</div>`
     : !S.holdings.length
-      ? `<div class="note">Your brokerages are linked for transactions only, so Headroom cannot see what you hold. Go to <b>Settings → Link a brokerage (with holdings)</b> and connect Fidelity and Robinhood again to pull positions and cost basis. Remove the old connection afterwards so accounts are not listed twice.</div>`
+      ? `<div class="note">Positions aren't shared yet. Use <b>Settings → Link a brokerage</b>.</div>`
       : "";
   $("iAccts").innerHTML = accts.length ? accts.map(a => {
     const hs = S.holdings.filter(h => h.account_id === a.account_id);
@@ -3300,7 +3368,7 @@ function invAcctDetail(id) {
         return `<tr><td>${esc(h.ticker || h.security_name || "–")}</td><td class="num">${h.quantity != null ? Number(h.quantity).toLocaleString("en-US", { maximumFractionDigits: 4 }) : "–"}</td>
         <td class="num">${money2(Number(h.value || 0))}</td><td class="num mute">${h.cost_basis != null ? money2(Number(h.cost_basis)) : "–"}</td>
         <td class="num ${g == null ? "" : g < 0 ? "neg" : "pos"}">${g == null ? "–" : (g < 0 ? "" : "+") + money2(g)}</td></tr>`; }).join("")}</table></div>`
-      : `<div class="mute">No positions for this account yet. Re-link it from Settings with holdings enabled.</div>`}`);
+      : `<div class="mute">No positions shared for this account.</div>`}`);
 }
 function drawInvChart() {
   const accts = invAccts();
@@ -3446,7 +3514,7 @@ function renderSettings() {
   $("catList").querySelectorAll(".catrow").forEach(r => r.onclick = () => editCategory(r.dataset.c));
   const rules = Object.values(S.mrules).filter(r => r.category || r.rename || r.excluded);
   $("ruleList").innerHTML = rules.length ? rules.map(r => `<div class="rowline"><span>${esc(r.match)} → <b>${esc(r.rename || "")}</b>${r.rename && r.category ? " · " : ""}${r.category ? esc(pretty(r.category)) : ""}${r.excluded ? " · excluded" : ""}</span><button class="mini ghost rdel" data-m="${esc(r.match)}">Remove</button></div>`).join("")
-    : `<div class="mute">No rules yet.</div>`;
+    : `<div class="mute">None yet. Tick &ldquo;Always use this&rdquo; when editing a transaction.</div>`;
   $("ruleList").querySelectorAll(".rdel").forEach(b => b.onclick = async () => {
     const { error } = await db.from("merchant_rules").delete().eq("match", b.dataset.m); if (error) return toast(error.message, true);
     delete S.mrules[b.dataset.m]; renderAll(); toast("Rule removed");
@@ -3764,7 +3832,8 @@ function showImportPreview(rows, files) {
   draw(); box.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 // the "positive = spent" option only matters for CSV files
-$("impFile").addEventListener("change", () => { const fs = [...$("impFile").files]; $("impPosL").style.display = fs.length && fs.every(f => /\.pdf$/i.test(f.name)) ? "none" : ""; $("impPrev").innerHTML = ""; });
+$("impFile").addEventListener("change", () => { const fs = [...$("impFile").files]; $("impPosL").style.display = fs.length && fs.every(f => /\.pdf$/i.test(f.name)) ? "none" : ""; $("impPrev").innerHTML = "";
+  if (S._impAuto && fs.length && fs.every(f => /\.pdf$/i.test(f.name))) { S._impAuto = false; $("impBtn").click(); } });
 $("impBtn").onclick = async () => {
   const files = [...$("impFile").files], acct = $("impAcct").value, out = $("impOut");
   if (!files.length || !acct) { out.textContent = "Choose an account and a file."; return; }
