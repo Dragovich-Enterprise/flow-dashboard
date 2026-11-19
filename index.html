@@ -211,6 +211,12 @@ html,body,*{touch-action:manipulation}
 .trrow .tn{display:flex;flex-direction:column;min-width:0}.trrow .tn b{font-weight:600;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trrow .tn .mute{font-size:12px}
 .trrow .ta{font-weight:600;font-variant-numeric:tabular-nums}
 .trrow .tb{grid-column:2/4;height:4px;border-radius:2px;background:var(--line);overflow:hidden}.trrow .tb span{display:block;height:100%;border-radius:2px}
+.trrow .tbu{display:flex;position:relative;overflow:visible;height:6px;border-radius:3px;margin-top:2px}
+.trrow .tbu span{flex:0 0 auto;border-radius:3px 0 0 3px}.trrow .tbu span:only-of-type{border-radius:3px}
+.trrow .tbu .ov{background:var(--bad);border-radius:0 3px 3px 0}
+.trrow .tbu em{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;border-radius:1px;background:var(--text);opacity:.7}
+.trkey{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mute);margin:-2px 0 6px}
+.trkey .mk{width:2px;height:12px;border-radius:1px;background:var(--text);opacity:.7}.trkey .ovk{width:14px;height:6px;border-radius:3px;background:var(--bad);margin-left:8px}
 #monthTbl .pmark{color:var(--mute);margin-left:2px}#monthTbl .kp{display:block;font-size:11.5px;color:var(--mute);font-weight:400}
 #monthNote{font-size:12px;margin-top:8px}#monthNote:empty{display:none}
 @media (max-width:760px){ #cmCard:not(.open) #cmWrap{display:none} #cmCard h2 .hint{display:none} #cmToggle{white-space:nowrap} #cmCard .trhead{margin-bottom:0} #cmCard.open .trhead{margin-bottom:10px} }
@@ -2216,6 +2222,19 @@ function drawStack() {
         if (hit.length) { S.trSel = ms[hit[0].index]; drawStack(); } } } });
   drawTrendTop();
 }
+/** The first day that every account you still use has history for. */
+function fullSince() {
+  const first = {}, last = {}, recent = dstr(dnum(todayISO()) - 60);
+  S.tx.forEach(t => { const a = t.account_id; if (!a) return; if (!first[a] || t.date < first[a]) first[a] = t.date; if (!last[a] || t.date > last[a]) last[a] = t.date; });
+  return Object.keys(first).filter(a => last[a] >= recent).map(a => first[a]).sort().pop() || null;
+}
+const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
+/** This month against your usual: the line fills as you spend, the mark is your usual, anything past it is red. */
+function usualBar(v, u, col) {
+  if (u == null || u < 5) return `<span class="tb tbu"><span style="width:${v > .5 ? 40 : 0}%;background:${col}"></span></span>`;
+  const top = Math.max(v, u) / .82, pct = n => (n / top * 100).toFixed(1) + "%";
+  return `<span class="tb tbu"><span style="width:${pct(Math.min(v, u))};background:${col}"></span>${v > u ? `<span class="ov" style="width:${pct(v - u)}"></span>` : ""}<em style="left:${pct(u)}"></em></span>`;
+}
 /** Headline + list under the chart, for the selected month (and category, if one is picked). */
 function drawTrendTop() {
   const c = S.trCtx; if (!c) return; const { ms, by, g } = c, m = S.trSel, f = S.trFocus;
@@ -2224,17 +2243,27 @@ function drawTrendTop() {
   const partial = m === todayISO().slice(0, 7);
   $("trHero").innerHTML = `<div class="l">${f ? esc(g.name(f)) + " in " : "Spent in "}${monthLong(m)}${partial ? " (so far)" : ""}</div>
     <div class="v">${money(cur)}</div><div class="s">${money(avg)}/mo average · <span class="${dv > .05 ? "neg" : dv < -.05 ? "pos" : ""}">${Math.abs(dv) < .005 ? "right on average" : (dv > 0 ? "▲ " : "▼ ") + Math.round(Math.abs(dv) * 100) + "% vs average"}</span></div>`;
-  const avgOf = k => ms.reduce((s, mm) => s + (by[k + "|" + mm] || 0), 0) / ms.length;
   const row = (dot, name, amt, frac, sub, attrs) => `<div class="trrow" ${attrs}><i style="background:${dot}"></i><span class="tn"><b>${esc(name)}</b><span class="mute">${sub}</span></span>
       <span class="ta">${money(amt)}</span><span class="tb"><span style="width:${Math.max(2, Math.round(frac * 100))}%;background:${dot}"></span></span></div>`;
   let html;
   if (!f || f === REST) {
     // the month's categories, biggest first (only the smaller ones when "N smaller" is picked)
     const list = (f === REST ? g.rest : c.cats).map(k => ({ k, v: Math.max(0, by[k + "|" + m] || 0) })).filter(x => x.v > .5).sort((a, b) => b.v - a.v);
-    const max = list.length ? list[0].v : 1;
-    html = `<div class="trlh"><b>${monthLong(m)}</b><span class="mute">${list.length} categor${list.length === 1 ? "y" : "ies"} · tap one to see transactions</span></div>` +
-      `<div id="trRows">${list.map(x => { const a = avgOf(x.k), d = a ? (x.v - a) / a : 0;
-        return row(g.col[x.k] || REST_COLOR, pretty(x.k), x.v, x.v / max, Math.abs(d) < .1 ? "about usual" : `${d > 0 ? "▲" : "▼"} ${Math.round(Math.abs(d) * 100)}% vs ${money(a)} avg`, `data-c="${esc(x.k)}" data-m="${m}"`); }).join("")}</div>`;
+    // "usual" = the other finished months in view. For the month in progress, usual means by this day of the month,
+    // so bills that land early (rent on the 1st) don't look like overspending and a half-month doesn't look like savings.
+    const thisM = todayISO().slice(0, 7), partial = m === thisM, day = +todayISO().slice(8);
+    // only compare against months where every account you still use has history (a bank linked later would make "usual" look too low)
+    const since = fullSince(), done = ms.filter(mm => mm !== m && mm !== thisM), solid = done.filter(mm => !since || mm + "-01" >= since);
+    const base = solid.length >= 2 ? solid : done, upto = {};
+    if (partial) base.forEach(mm => monthTx(mm).forEach(t => { if (isSpendish(t) && +t.date.slice(8) <= day) upto[eff(t)] = (upto[eff(t)] || 0) + t.amount; }));
+    const usual = k => !base.length ? null : Math.max(0, partial ? (upto[k] || 0) / base.length : base.reduce((s, mm) => s + (by[k + "|" + mm] || 0), 0) / base.length);
+    const sub = (v, u) => u == null ? "" : u < 5 ? "usually little or nothing" : Math.abs(v - u) / u < .1 ? `about usual${partial ? " for this point" : ""}`
+      : `${v > u ? "▲" : "▼"} ${Math.round(Math.abs(v - u) / u * 100)}% vs ${money(u)} usual${partial ? " by now" : ""}`;
+    html = `<div class="trlh"><b>${monthLong(m)}${partial ? " so far" : ""}</b><span class="mute">${list.length} categor${list.length === 1 ? "y" : "ies"} · tap one to see transactions</span></div>` +
+      (base.length ? `<div class="trkey"><span class="mk"></span>your usual ${partial ? `by the ${ordinal(day)}` : "month"}<span class="ovk"></span>over usual</div>` : "") +
+      `<div id="trRows">${list.map(x => { const u = usual(x.k), col = g.col[x.k] || REST_COLOR;
+        return `<div class="trrow" data-c="${esc(x.k)}" data-m="${m}"><i style="background:${col}"></i><span class="tn"><b>${esc(pretty(x.k))}</b><span class="mute">${sub(x.v, u)}</span></span>
+          <span class="ta">${money(x.v)}</span>${usualBar(x.v, u, col)}</div>`; }).join("")}</div>`;
   } else {
     // one category picked: every month for it, newest first
     const list = [...ms].reverse().map(mm => ({ mm, v: Math.max(0, by[f + "|" + mm] || 0) })), max = Math.max(1, ...list.map(x => x.v));
