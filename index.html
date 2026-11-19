@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F7F8FA">
+<script>(function () { try { var t = JSON.parse(localStorage.getItem("hr_theme")) || "auto";
+  var d = t === "dark" || (t === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+  if (d) { document.documentElement.classList.add("dark"); document.querySelector('meta[name="theme-color"]').content = "#0E1513"; } } catch (e) {} })();</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
@@ -270,8 +273,39 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
 .welcome{border:1px solid var(--accent);background:linear-gradient(180deg,var(--mint),var(--card) 70%)}
 .welcome h2{font-size:20px;margin:0 0 6px;text-transform:none;letter-spacing:-.01em;color:var(--text);font-weight:700}.welcome p{margin:0 0 12px;line-height:1.5}
 .danger{color:var(--bad);border-color:#FECACA}
+.fccard{cursor:pointer}.fchead{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}.fchead div{display:flex;flex-direction:column}
+.fchead .mute{font-size:12px}.fchead b{font-size:19px;letter-spacing:-.01em}.warnc{color:var(--warn)}
+.fcbox{height:150px;position:relative}.fcfoot{font-size:13.5px;color:var(--mute);margin-top:8px;line-height:1.45}
+.setupcard[hidden],.leftcard[hidden],.recapcard[hidden],.fccard[hidden]{display:none!important}
+.setupcard{display:flex;gap:12px;align-items:center;justify-content:space-between;border:1px solid var(--accent);background:linear-gradient(180deg,var(--mint),var(--card) 80%)}
+.setupcard b{font-size:15.5px}.setupcard .mute{font-size:13.5px;margin-top:3px;line-height:1.4}.setupcard button{flex:0 0 auto}
+.bsrow{display:grid;grid-template-columns:22px minmax(0,1fr) 92px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);cursor:pointer}
+.bsrow>span{display:flex;align-items:center;gap:0;min-width:0;flex-wrap:wrap}.bsrow>span .mute{font-size:12.5px;width:100%;margin-left:34px;margin-top:-2px}
+.bsrow input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent-d)}.bsrow input[type=number]{width:100%;text-align:right}
+.bstot{margin-top:10px;font-size:14px;color:var(--mute)}.bstot b{color:var(--text)}
+.recapcard{cursor:pointer;border:1px solid var(--accent)}.recapcard .rh{display:flex;justify-content:space-between;align-items:center;font-weight:600}
+.recapcard .rl{font-size:14px;color:var(--mute);margin-top:4px}.recapcard .rl b{font-weight:600}.recapcard .go{font-size:14px;font-weight:600;color:var(--accent-d);margin-top:6px}
+.rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 10px}.rgrid div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:2px}
+.rgrid .mute{font-size:12px}.rgrid b{font-size:18px;letter-spacing:-.01em}.rnote{margin:6px 0;line-height:1.5}
+.leftcard{position:relative;cursor:pointer;padding:14px 16px}
+.leftcard .lt{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-right:18px}.leftcard .lt b{font-size:24px;letter-spacing:-.02em}
+.leftcard .ls{font-size:13.5px;color:var(--mute);margin-top:2px;padding-right:18px}.leftcard .ls b{color:var(--text);font-weight:600}
+.leftcard .go{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:20px}
+.sprow{display:grid;grid-template-columns:minmax(0,1fr) 110px 34px;gap:8px;align-items:center;margin-bottom:8px}.sprow select,.sprow input{width:100%}
+.sprow input[readonly]{background:var(--card2);color:var(--mute)}
+.sptot{margin-top:10px;font-size:14px;color:var(--mute)}.sptot.neg{color:var(--bad)}
+.lbills{margin:-4px 0 6px 28px;font-size:13px;color:var(--mute)}.lbills div{display:flex;justify-content:space-between;padding:3px 0}
 .incsum{padding:4px 0 6px}.incsum .big{font-size:30px;font-weight:700;letter-spacing:-.02em}.incsum .mute{font-size:13.5px;margin-top:2px}
 .inch{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin:16px 0 4px;font-weight:600}
+.catrow{cursor:pointer}.catrow.hid{opacity:.55}.catrow .go{color:var(--mute);font-size:18px;margin-left:8px}
+.cpre{display:flex;align-items:center;gap:12px;margin:2px 0 6px}.cpre b{font-size:18px}.cpre .cicon{display:grid;place-items:center;border-radius:14px}
+#ceName,#ceEmoIn{width:100%}
+.flabel{display:block;font-size:12.5px;font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px}
+.egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px;max-height:190px;overflow-y:auto;padding:2px}
+.egrid button{font-size:22px;padding:6px 0;border-radius:10px;background:var(--card2);border:1px solid transparent;line-height:1.2}
+.egrid button.on{border-color:var(--accent);background:var(--mint)}
+.cgrid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}.cgrid button{aspect-ratio:1;border-radius:50%;border:3px solid transparent;padding:0;min-height:0}
+.cgrid button.on{border-color:var(--card);box-shadow:0 0 0 2px var(--text)}
 .segfull{display:flex;width:100%;margin-bottom:6px}.segfull button{flex:1;padding:10px}
 .amtbig{display:flex;align-items:baseline;justify-content:center;gap:2px;padding:14px 0 18px;color:var(--text);cursor:text}
 .amtbig span{font-size:30px;font-weight:600;color:var(--mute)}.amtbig.in span,.amtbig.in input{color:var(--accent-d)}
@@ -475,6 +509,28 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
 @keyframes up{from{transform:translateY(100%)}to{transform:none}}
 @keyframes down{to{transform:translateY(100%)}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ---------- dark mode ---------- */
+html.dark{color-scheme:dark;--bg:#0E1513;--card:#161E1C;--card2:#1B2421;--line:#27312E;--line2:#3A4642;--text:#E8EEEC;--mute:#98A4A0;--soft:#1F2826;
+  --accent:#2DD4BF;--accent-d:#2DD4BF;--brand:#0F3D38;--brand2:#115E59;--mint:#123A35;--warn:#FBBF24;--bad:#F87171;--blue:#5EEAD4;
+  --shadow:0 1px 2px rgba(0,0,0,.35)}
+html.dark input,html.dark select,html.dark textarea,html.dark .seg,html.dark .day,html.dark #bulk{background:var(--card);color:var(--text)}
+html.dark button.primary,html.dark .fab{background:#0F766E;border-color:#0F766E;color:#fff}html.dark button.primary:hover{background:#115E59}
+html.dark .pill.ok,html.dark .seg button.on,html.dark .chip.on{color:#5EEAD4}html.dark .arow .ic{color:#5EEAD4}
+html.dark .day.today,html.dark .install,html.dark .pgrid button.on{background:var(--mint)}html.dark .install{border-color:#1F5F57}
+html.dark .pill.warn,html.dark .ins .ii.warn{background:#3A2E12;color:#FCD34D}html.dark .pill.bad,html.dark .ins .ii.bad{background:#3B1A1A;color:#FCA5A5}
+html.dark .pill.blue,html.dark .ins .ii.info{background:#0E2A3A;color:#7DD3FC}
+html.dark .flagbox{background:#2E2610;border-color:#5C4A15}html.dark .msg.err{background:#3B1A1A;border-color:#7F1D1D;color:#FCA5A5}
+html.dark button.danger,html.dark .danger{border-color:#7F1D1D}html.dark #msg{background:#27312E}
+html.dark #bnav{background:rgba(22,30,28,.94)}html.dark .sk::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)}
+html.dark .nick:focus{background:var(--card)!important}html.dark .hero .st,html.dark .asub span:first-child{color:var(--mute)}
+html.dark .aicard .try{color:#99F6E4}html.dark .welcome{background:linear-gradient(180deg,#123A35,var(--card) 70%)}
+html.dark .cgrid button.on{border-color:var(--bg);box-shadow:0 0 0 2px var(--text)}
+html.dark .sprow input[readonly]{background:var(--card2)}
+html.dark .dots button{background:#3A4642}html.dark .dots button.on{background:var(--accent)}
+html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goalcard.ed .g-tog{background:#0F766E;border-color:#0F766E}
+/* hide amounts */
+.mask{letter-spacing:.06em;opacity:.8}
 </style>
 </head>
 <body>
@@ -542,6 +598,9 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
     <div id="installHint"></div>
     <div id="coverage"></div>
     <div class="card welcome" id="welcome" hidden></div>
+    <div class="card leftcard" id="leftCard" hidden></div>
+    <div class="card recapcard" id="recapCard" hidden></div>
+    <div class="card setupcard" id="homeSetup" hidden></div>
     <div id="mobTop"><div class="swipe" id="swipe"></div><div class="dots" id="swipeDots"></div><div class="card acsum" id="acSum"></div></div>
     <div class="card aicard" id="aiCard"></div>
     <div class="strip" id="strip"></div>
@@ -566,6 +625,7 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
       <div class="card"><h2>Insights <span class="hint">&mdash; what Headroom noticed</span></h2><div id="insights"></div></div>
       <div class="card"><h2>Coming up <span class="hint" id="payHint"></span></h2><div class="week" id="week"></div><div id="upList" style="margin-top:10px"></div></div>
     </div>
+    <div class="card fccard" id="fcCard" hidden><h2>Cash forecast <span class="hint">&mdash; checking, next 30 days</span></h2><div class="fchead" id="fcHead"></div><div class="fcbox"><canvas id="cFc"></canvas></div><div class="fcfoot" id="fcFoot"></div></div>
     <div class="two">
       <div class="card"><h2>Spending by category <span class="hint">&mdash; vs. the same point last period</span></h2>
         <div class="donutwrap"><div class="chartbox donut"><canvas id="cDonut"></canvas></div><div id="catBreak"></div></div></div>
@@ -605,6 +665,7 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
 
   <!-- BUDGET -->
   <div class="pane" id="p-budget">
+    <div class="card setupcard" id="budSetupCard" hidden></div>
     <div class="grid">
       <div class="card kpi"><div class="mute">Budgeted</div><div class="big" id="bTot">&ndash;</div><div class="sub" id="bTotSub"></div></div>
       <div class="card kpi"><div class="mute">Spent</div><div class="big" id="bSp">&ndash;</div><div class="sub" id="bSpSub"></div></div>
@@ -618,6 +679,7 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
       <div class="mute" id="budNote" style="margin:8px 0 6px"></div>
       <div class="bsum" id="bSum"></div>
       <div id="budList"></div>
+      <div class="btns" style="margin-top:10px"><button class="mini ghost" id="budSetup">✨ Suggest a full budget from my spending</button></div>
     </div>
     <div class="card" id="sugCard"><h2>Suggestions <span class="hint">&mdash; Headroom watches how your budget is working</span></h2><div id="budSug"></div></div>
   </div>
@@ -692,6 +754,12 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
     <div class="card" id="peopleSet" hidden><h2>People &amp; invites</h2><div id="peopleBody" class="mute">Loading…</div></div>
     <div class="card" id="aiSet"><h2>AI assistant</h2><div id="aiSetBody" class="mute">Checking…</div></div>
     <div class="card" id="acctSet"><h2>Your account</h2><div id="acctBody"></div></div>
+    <div class="card" id="lookSet"><h2>Appearance</h2>
+      <div class="optrow" style="border-top:0"><div><div class="t">Theme</div><div class="d">Auto follows your phone's light or dark setting.</div></div>
+        <div class="seg" id="themeSeg"><button data-th="auto">Auto</button><button data-th="light">Light</button><button data-th="dark">Dark</button></div></div>
+      <div class="optrow"><div><div class="t">Hide amounts</div><div class="d">Shows $••• instead of numbers, for using Headroom in public. Also in the More menu.</div></div>
+        <label class="sw"><input type="checkbox" id="hideAmt"><span></span></label></div>
+    </div>
     <div class="card"><h2>How money is counted</h2>
       <div class="optrow" style="border-top:0"><div><div class="t">Count money from outside as income</div>
         <div class="d">Zelle, Venmo, and transfers from other banks count as income. Moves between your own linked accounts never do.</div></div>
@@ -700,7 +768,7 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
       <div class="optrow"><div><div class="t">What was left out</div><div class="d">See every transfer, card payment and excluded item in the selected dates.</div></div><button class="mini" id="showOut">View</button></div>
     </div>
     <div class="card"><h2>Categories</h2>
-      <div class="mute" style="margin-bottom:10px">Add your own categories. They show up everywhere you pick a category.</div>
+      <div class="mute" style="margin-bottom:10px">Tap a category to change its emoji, color or name, or to hide it. Add your own below.</div>
       <div id="catList"></div>
       <div class="btns" style="margin-top:10px"><input id="newCat" placeholder="New category name" style="flex:1;min-width:160px"><button id="addCat" class="primary">Add</button></div>
     </div>
@@ -729,6 +797,8 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
         <div class="optrow"><div><div class="t">Bills due tomorrow</div><div class="d">From your recurring charges</div></div><label class="sw"><input type="checkbox" data-np="bills"><span></span></label></div>
         <div class="optrow"><div><div class="t">Payday</div><div class="d">The morning a paycheck is expected</div></div><label class="sw"><input type="checkbox" data-np="payday"><span></span></label></div>
         <div class="optrow"><div><div class="t">Weekly summary</div><div class="d">Sunday morning: what you spent and what's left this month</div></div><label class="sw"><input type="checkbox" data-np="weekly"><span></span></label></div>
+        <div class="optrow"><div><div class="t">Low balance</div><div class="d">When checking drops under <input id="npLow" type="number" min="0" step="50" inputmode="numeric" style="width:84px;padding:3px 6px">, or is about to within a week</div></div><label class="sw"><input type="checkbox" data-np="lowbal"><span></span></label></div>
+        <div class="optrow"><div><div class="t">Monthly recap</div><div class="d">On the 1st: how last month went</div></div><label class="sw"><input type="checkbox" data-np="monthly"><span></span></label></div>
       </div>
       <div class="mute" style="margin-top:10px">Alerts go out around 8 AM and 6 PM, right after your banks sync.</div>
     </div>
@@ -783,8 +853,12 @@ const $ = id => document.getElementById(id);
 const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const isMobile = () => innerWidth <= 760;
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const money = n => (n < 0 ? "-" : "") + "$" + Math.abs(Math.round(n)).toLocaleString("en-US");
-const money2 = n => (n < 0 ? "-" : "") + "$" + Math.abs(n).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const rawMoney = n => (n < 0 ? "-" : "") + "$" + Math.abs(Math.round(n)).toLocaleString("en-US");
+const rawMoney2 = n => (n < 0 ? "-" : "") + "$" + Math.abs(n).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+/** With "Hide amounts" on, every amount on screen shows as $•••; the numbers underneath don't change. */
+const MASK = "$•••";
+const money = n => S.hide ? MASK : rawMoney(n);
+const money2 = n => S.hide ? MASK : rawMoney2(n);
 const pad = n => String(n).padStart(2, "0");
 const COLORS = ["#0D9488","#F59E0B","#6366F1","#E11D48","#0EA5E9","#84CC16","#A855F7","#F97316","#0F766E","#EC4899","#78716C","#14B8A6","#EAB308"];
 const CATS = ["GROCERIES","FOOD_AND_DRINK","GENERAL_MERCHANDISE","GENERAL_SERVICES","TRANSPORTATION","TRAVEL","RENT_AND_UTILITIES","HOME_IMPROVEMENT","MEDICAL","PERSONAL_CARE","ENTERTAINMENT","LOAN_PAYMENTS","BANK_FEES","GOVERNMENT_AND_NON_PROFIT","INCOME","TRANSFER_IN","TRANSFER_OUT","OTHER"];
@@ -794,10 +868,13 @@ const LABELS = { GROCERIES: "Groceries", FOOD_AND_DRINK: "Dining & Drinks", GENE
   TRANSPORTATION: "Auto & Transport", TRAVEL: "Travel", RENT_AND_UTILITIES: "Home & Utilities", HOME_IMPROVEMENT: "Home Improvement", MEDICAL: "Health & Medical",
   PERSONAL_CARE: "Personal Care", ENTERTAINMENT: "Entertainment & Rec", LOAN_PAYMENTS: "Loan Payments", BANK_FEES: "Fees", GOVERNMENT_AND_NON_PROFIT: "Taxes & Giving",
   INCOME: "Income", TRANSFER_IN: "Transfer In", TRANSFER_OUT: "Transfer Out", OTHER: "Other", __OTHER: "Everything else" };
-const pretty = c => !c ? "Uncategorized" : LABELS[c] || (customCats().includes(c) ? c
+/** Your own look for a category (emoji, color, name, hidden), saved per person. */
+const catLook = c => ((S.settings && S.settings.cat_look) || {})[c] || {};
+const NOT_SPENDING = ["INCOME", "TRANSFER_IN", "TRANSFER_OUT"];
+const pretty = c => !c ? "Uncategorized" : catLook(c).name || LABELS[c] || (customCats().includes(c) ? c
   : c.toLowerCase().split("_").map(w => w ? w[0].toUpperCase() + w.slice(1) : w).join(" ").replace(" And ", " & "));
-function catColor(c) { const all = allCats(); const i = all.indexOf(c); return COLORS[(i < 0 ? [...c].reduce((s, ch) => s + ch.charCodeAt(0), 0) : i) % COLORS.length]; }
-function catIcon(c, sz) { const e = EMOJI[c] || (c || "?").trim()[0].toUpperCase(); const col = catColor(c);
+function catColor(c) { if (catLook(c).color) return catLook(c).color; const all = allCats(); const i = all.indexOf(c); return COLORS[(i < 0 ? [...c].reduce((s, ch) => s + ch.charCodeAt(0), 0) : i) % COLORS.length]; }
+function catIcon(c, sz) { const e = catLook(c).emoji || EMOJI[c] || [...(pretty(c) || "?").trim()][0].toUpperCase(); const col = catColor(c);
   const size = sz ? `width:${sz}px;height:${sz}px;font-size:${Math.round(sz * .48)}px;display:inline-grid;vertical-align:middle;margin-right:8px;` : "";
   return `<div class="cicon" style="${size}background:${col}22;color:${col}">${esc(e)}</div>`; }
 const monthLabel = m => new Date(m + "-15").toLocaleString("en-US", { month: "short", year: "2-digit" });
@@ -946,17 +1023,20 @@ function learn() {
   S.learn = {};
   for (const [k, o] of Object.entries(cnt)) { const tot = Object.values(o).reduce((a, b) => a + b, 0), [c, n] = Object.entries(o).sort((a, b) => b[1] - a[1])[0]; if (n >= 2 && n / tot >= .6) S.learn[k] = c; }
 }
-function classify() { learn(); matchInternal(); S.tx.forEach(t => t._k = kindOf(t)); }
+// a transaction that's been split is counted through its parts, never itself
+function classify() { learn(); matchInternal(); const parents = new Set(S.tx.map(t => t.split_of).filter(Boolean));
+  S.tx.forEach(t => t._k = parents.has(t.transaction_id) ? "split" : kindOf(t)); }
 const isSpendish = t => t._k === "spend" || t._k === "refund";
 const isIncome = t => t._k === "income";
 const netSpend = list => list.reduce((s, t) => s + (isSpendish(t) ? t.amount : 0), 0);
 const incomeOf = list => list.reduce((s, t) => s + (isIncome(t) ? -t.amount : 0), 0);
-const KIND_LABEL = { income: "Income", spend: "Spending", refund: "Refund — reduces spending", transfer: "Transfer — not counted", excluded: "Excluded — not counted" };
+const KIND_LABEL = { split: "Split — counted in its parts", income: "Income", spend: "Spending", refund: "Refund — reduces spending", transfer: "Transfer — not counted", excluded: "Excluded — not counted" };
 function allCats() {
   const used = new Set(S.tx.map(t => t.user_category).filter(Boolean));
   return [...new Set([...CATS.filter(c => c !== "OTHER"), ...customCats(), ...used, "OTHER"])];
 }
-const catOptions = sel => allCats().map(c => `<option value="${esc(c)}" ${c === sel ? "selected" : ""}>${esc(pretty(c))}</option>`).join("");
+const pickCats = sel => allCats().filter(c => !catLook(c).hidden || c === sel);
+const catOptions = sel => pickCats(sel).map(c => `<option value="${esc(c)}" ${c === sel ? "selected" : ""}>${esc(pretty(c))}</option>`).join("");
 
 // ---------- auth ----------
 const inviteCode = () => (new URLSearchParams(location.search).get("invite") || "").trim().toLowerCase();
@@ -1036,12 +1116,12 @@ function clampList(box, n, noun) {
 }
 const MORE = [["ask", "Ask Headroom", "✨"], ["recurring", "Recurring", "🔁"], ["accts", "Accounts", "🏦"], ["invest", "Investments", "📈"], ["goals", "Goals", "🎯"], ["settings", "Settings", "⚙️"]];
 function go(t) {
-  if (t === "more") { openModal("More", "", `<div class="pgrid">${MORE.filter(([k]) => k !== "ask" || !document.body.classList.contains("no-ai")).map(([k, l, e]) => `<button data-go="${k}" class="${S.tab === k ? "on" : ""}">${e}&nbsp; ${l}</button>`).join("")}</div>
+  if (t === "more") { openModal("More", "", `<div class="pgrid">${MORE.filter(([k]) => k !== "ask" || !document.body.classList.contains("no-ai")).map(([k, l, e]) => `<button data-go="${k}" class="${S.tab === k ? "on" : ""}">${e}&nbsp; ${l}</button>`).join("")}<button data-go="__hide">${S.hide ? "👁&nbsp; Show amounts" : "🙈&nbsp; Hide amounts"}</button></div>
       <div class="morefoot"><span class="mute">${esc(S.user && S.user.email ? "Signed in as " + S.user.email : "")}</span><button class="danger" id="moreOut">Sign out</button></div>`);
     $("moreOut").onclick = () => { closeModal(); signOut(); };
     if (!S.user) db.auth.getSession().then(({ data }) => { S.user = data && data.session ? data.session.user : null;
       const el = document.querySelector(".morefoot .mute"); if (el && S.user && S.user.email) el.textContent = "Signed in as " + S.user.email; });
-    $("mBody").querySelectorAll("[data-go]").forEach(b => b.onclick = () => { closeModal(); b.dataset.go === "ask" ? openChat() : go(b.dataset.go); }); return; }
+    $("mBody").querySelectorAll("[data-go]").forEach(b => b.onclick = () => { closeModal(); b.dataset.go === "ask" ? openChat() : b.dataset.go === "__hide" ? setHide(!S.hide) : go(b.dataset.go); }); return; }
   S.tab = t;
   $("pTitle").textContent = TITLES[t] || "";
   $("app").classList.toggle("titled", !!TITLES[t]);
@@ -1172,7 +1252,7 @@ async function load() {
   renderAll();
   if (!S._aiLoaded) { S._aiLoaded = true; loadAi(); }
   const h = location.hash.slice(1); if (h && h !== S.tab && document.querySelector(`.pane#p-${h}`)) go(h);
-  if (h === "review") goReview(); fabs();
+  if (h === "review") goReview(); if (h === "recap") { history.replaceState(null, "", location.pathname + location.search); setTimeout(() => openRecap(), 400); } fabs();
   moveInk();
 }
 function timeAgo(iso) { const s = (Date.now() - Date.parse(iso)) / 1000; if (s < 90) return "just now"; if (s < 3600) return Math.round(s / 60) + " min ago"; if (s < 86400) return Math.round(s / 3600) + " h ago"; return Math.round(s / 86400) + " d ago"; }
@@ -1193,7 +1273,7 @@ function renderAll() {
   classify(); S._ver = (S._ver || 0) + 1; S.flags = computeFlags();
   $("rangeLbl").textContent = rangeLabel(); $("rangeBtn").title = rangeSub();
   renderOverview(); renderStrip(); renderTrends(); renderRecurring(); renderBudget();
-  renderTxns(); renderAccts(); renderAcSum(); renderInvest(); renderGoals(); renderSettings(); renderPush(); renderInstallHint(); saveSchedule(); saveDigest(); renderAiCard(); renderAiSettings(); renderWelcome();
+  renderTxns(); renderAccts(); renderAcSum(); renderInvest(); renderGoals(); renderSettings(); renderPush(); renderInstallHint(); saveSchedule(); saveDigest(); renderAiCard(); renderAiSettings(); renderWelcome(); renderLeft(); renderRecap(); renderSetupCards(); renderForecast();
   if (S.drill) refreshDrill();
 }
 
@@ -1203,7 +1283,7 @@ function txRowHTML(t, opts = {}) {
   const amtCls = k === "income" || k === "refund" ? "in" : k === "excluded" ? "dim" : k === "transfer" ? "tr" : "";
   const sign = t.amount < 0 ? "+" : "−";
   const tags = [t.pending ? '<span class="pill">pending</span>' : "", k === "transfer" ? '<span class="pill blue">transfer</span>' : "", k === "excluded" ? '<span class="pill">excluded</span>' : "",
-    k === "refund" ? '<span class="pill ok">refund</span>' : "", t.manual ? '<span class="pill">added</span>' : "", S.flags[t.transaction_id] ? '<span class="pill warn">⚠ unusual</span>' : ""].join(" ");
+    k === "refund" ? '<span class="pill ok">refund</span>' : "", t.manual ? '<span class="pill">added</span>' : "", t.split_of ? '<span class="pill">split</span>' : "", S.flags[t.transaction_id] ? '<span class="pill warn">⚠ unusual</span>' : ""].join(" ");
   const sub = [opts.date ? shortDate(t.date) : "", pretty(c), acctName(t.account_id), t.notes ? "📝 " + t.notes : ""].filter(Boolean).map(esc).join(" · ");
   return `<div class="txrow ${S.sel.has(t.transaction_id) ? "sel" : ""}" data-tx="${esc(t.transaction_id)}">
     <input type="checkbox" class="txcheck" ${S.sel.has(t.transaction_id) ? "checked" : ""} tabindex="-1" aria-label="Select">
@@ -1222,7 +1302,7 @@ function bindRows(root) {
 function drillTx(title, sub, rowsFn, sort = "date") { S.drill = { title, sub, rowsFn, sort }; refreshDrill(true); }
 function refreshDrill(open) {
   const d = S.drill; if (!d) return;
-  const list = [...d.rowsFn()].sort(d.sort === "amt" ? (a, b) => Math.abs(b.amount) - Math.abs(a.amount) : (a, b) => a.date < b.date ? 1 : -1);
+  const list = [...d.rowsFn()].filter(t => t._k !== "split").sort(d.sort === "amt" ? (a, b) => Math.abs(b.amount) - Math.abs(a.amount) : (a, b) => a.date < b.date ? 1 : -1);
   const inc = incomeOf(list), sp = netSpend(list);
   const tot = [inc ? `in <b class="pos">${money2(inc)}</b>` : "", sp || !inc ? `spent <b style="color:var(--text)">${money2(sp)}</b>` : ""].filter(Boolean).join(" · ");
   const body = `<div class="filters" style="justify-content:space-between"><span class="mute">${list.length} transaction${list.length === 1 ? "" : "s"} · ${tot}</span>
@@ -1262,13 +1342,14 @@ function editTx(id) {
     </div>
     <div class="btns" style="margin-top:16px;justify-content:space-between">
       <div class="btns"><button class="primary" id="eSave">Save</button><button id="eCancel">Cancel</button></div>
-      <div class="btns"><button class="ghost mini" id="eAllM">All from this merchant</button>${canDel ? `<button class="danger mini" id="eDel">Delete</button>` : ""}</div>
+      <div class="btns">${t.pending ? "" : `<button class="mini" id="eSplit">${t.split_of ? "Edit split" : "Split"}</button>`}<button class="ghost mini" id="eAllM">All from this merchant</button>${canDel ? `<button class="danger mini" id="eDel">Delete</button>` : ""}</div>
     </div>`);
   $("eCat").onchange = async () => { if ($("eCat").value !== "__new") return;
     const n = (prompt("Name for the new category") || "").trim(); if (!n) { $("eCat").value = eff(t); return; }
     if (!customCats().includes(n)) await saveSetting("custom_categories", [...customCats(), n]);
     $("eCat").innerHTML = catOptions(n) + `<option value="__new">+ New category…</option>`; };
   $("eCancel").onclick = () => closeLayer("sheet");
+  if ($("eSplit")) $("eSplit").onclick = () => openSplit(t.split_of || t.transaction_id);
   if ($("eOk")) $("eOk").onclick = async () => { await markReviewed([t.transaction_id]); closeLayer("sheet"); renderAll(); toast("Marked as fine"); };
   $("eAllM").onclick = () => { closeLayer("sheet"); const key = mk(t); drillTx(t.merchant_name || t.name, "Every transaction from this merchant", () => S.tx.filter(x => mk(x) === key)); };
   if ($("eDel")) $("eDel").onclick = async () => {
@@ -1507,7 +1588,7 @@ const AI_TOOLS = {
     const c = category ? resolveCat(category) : null; if (category && !c) return { error: `No category called "${category}".` };
     const words = String(query || "").toLowerCase().split(/\s+/).filter(Boolean);
     const kindOk = t => kind === "all" ? true : kind === "income" ? isIncome(t) : kind === "transfer" ? t._k === "transfer" : kind === "excluded" ? t._k === "excluded" : isSpendish(t);
-    let list = S.tx.filter(t => kindOk(t)
+    let list = S.tx.filter(t => t._k !== "split" && kindOk(t)
       && (!start || t.date >= start) && (!end || t.date <= end) && (!c || eff(t) === c)
       && (min_amount == null || Math.abs(t.amount) >= min_amount) && (max_amount == null || Math.abs(t.amount) <= max_amount)
       && (!words.length || words.every(w => (tname(t) + " " + (t.name || "") + " " + (t.notes || "")).toLowerCase().includes(w))));
@@ -1628,9 +1709,9 @@ function chatContext() {
   const firstByBank = {}; S.tx.forEach(t => { const a = S.accts.find(x => x.account_id === t.account_id); const b = a ? ((S.inst || {})[a.item_id] || "Bank") : "Manual"; if (!firstByBank[b] || t.date < firstByBank[b]) firstByBank[b] = t.date; });
   return [
     `Categories: ${allCats().filter(c => !["INCOME", "TRANSFER_IN", "TRANSFER_OUT"].includes(c)).map(pretty).join(", ")}. Spending in a category with no budget counts toward "Everything else".`,
-    `Monthly budgets: ${Object.entries(bud).map(([c, v]) => `${pretty(c)} ${money(v)}`).join(", ") || "none set"}.`,
+    `Monthly budgets: ${Object.entries(bud).map(([c, v]) => `${pretty(c)} ${rawMoney(v)}`).join(", ") || "none set"}.`,
     `Accounts: ${shownAccts().map(a => `${a.nickname || a.name} (${SUB[a.subtype] || a.type})`).join(", ")}.`,
-    `Regular income: ${inc.map(x => `${x.name} about ${money(x.amount)} every ${x.gap} days`).join("; ") || "not detected"}.`,
+    `Regular income: ${inc.map(x => `${x.name} about ${rawMoney(x.amount)} every ${x.gap} days`).join("; ") || "not detected"}.`,
     `History starts: ${Object.entries(firstByBank).map(([b, d]) => `${b} ${d}`).join(", ")}. Months before a bank's start date are missing that bank's activity.`,
     proposalStatus(),
   ].filter(Boolean).join("\n");
@@ -1659,8 +1740,8 @@ function buildDigest() {
       .map(c => ({ category: pretty(c), spent: r0(sp[c] || 0), budget: bud[c] ? r0(bud[c]) : null, usual_month: usual[c] ? r0(usual[c]) : null })).filter(x => x.spent || x.budget).sort((a, b) => b.spent - a.spent).slice(0, 14),
     last_7_days: { spent: r0(netSpend(wk)), previous_7_days: r0(netSpend(pwk)), biggest: wk.filter(t => isSpendish(t) && t.amount > 0).sort((a, b) => b.amount - a.amount).slice(0, 8).map(txRow) },
     flagged: Object.entries(S.flags || {}).map(([id, f]) => f.msg).slice(0, 6),
-    price_increases: priceChanges().map(p => `${p.name}: ${money2(p.from)} → ${money2(p.to)}`),
-    next_14_days: upcoming(14).map(e => `${e.d} ${e.kind === "pay" ? "payday" : "bill"} ${e.name} ${money(e.amt)}`).slice(0, 12),
+    price_increases: priceChanges().map(p => `${p.name}: ${rawMoney2(p.from)} → ${rawMoney2(p.to)}`),
+    next_14_days: upcoming(14).map(e => `${e.d} ${e.kind === "pay" ? "payday" : "bill"} ${e.name} ${rawMoney(e.amt)}`).slice(0, 12),
     net_worth: { now: r0(nw.net), change_30_days: nwChange(30) },
   };
 }
@@ -1992,7 +2073,8 @@ function chart(id, cfg) {
   const old = S.charts[id];
   if (old && old.config.type === cfg.type && old.canvas === $(id)) { old.data = cfg.data; old.options = options; old.update("none"); return old; }
   if (old) { old.destroy(); const cv = $(id); cv.width = 0; cv.height = 0; }
-  Chart.defaults.color = "#78716C"; Chart.defaults.borderColor = "#EFEDEB";
+  const dk = document.documentElement.classList.contains("dark");
+  Chart.defaults.color = dk ? "#98A4A0" : "#78716C"; Chart.defaults.borderColor = dk ? "#27312E" : "#EFEDEB";
   Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
   Chart.defaults.animation = false; Chart.defaults.transitions.active.animation.duration = 0;
   Chart.defaults.plugins.tooltip.animation = false; Chart.defaults.plugins.tooltip.caretPadding = 8; Chart.defaults.plugins.tooltip.boxPadding = 4;
@@ -2016,7 +2098,7 @@ document.querySelectorAll("[data-nw]").forEach(b => b.onclick = () => {
   drawNetWorth();
 });
 const SLIM = { categoryPercentage: .42, barPercentage: .75, maxBarThickness: 16 };
-const moneyTick = v => "$" + (Math.abs(v) >= 1000 ? (v / 1000).toFixed(Math.abs(v) >= 10000 ? 0 : 1) + "k" : v);
+const moneyTick = v => S.hide ? "" : "$" + (Math.abs(v) >= 1000 ? (v / 1000).toFixed(Math.abs(v) >= 10000 ? 0 : 1) + "k" : v);
 
 /** Months to show in month-based charts: the months in the range, or the 6 up to its end. */
 function chartMonths() {
@@ -2529,7 +2611,7 @@ function expectedIncome() {
 function computeFlags() {
   const F = {}, reviewed = new Set(S.settings.reviewed_flags || []);
   const start = S.tx.length ? S.tx[S.tx.length - 1].date : todayISO(), since = dstr(dnum(todayISO()) - 60);
-  const byM = {}; S.tx.filter(t => t._k === "spend").forEach(t => (byM[mk(t)] = byM[mk(t)] || []).push(t));
+  const byM = {}; S.tx.filter(t => t._k === "spend" && !t.split_of).forEach(t => (byM[mk(t)] = byM[mk(t)] || []).push(t));
   for (const arr of Object.values(byM)) arr.forEach(t => {
     if (t.date < since || reviewed.has(t.transaction_id) || t.pending) return;
     const prior = arr.filter(x => x.date < t.date);
@@ -2585,6 +2667,241 @@ function renderComingUp() {
   const bills7 = ev.filter(e => e.kind === "bill" && dnum(e.d) - dnum(today) < 7).reduce((s, e) => s + e.amt, 0);
   if (bills7) $("upList").insertAdjacentHTML("afterbegin", `<div class="mute" style="margin-bottom:4px">${money(bills7)} in bills due this week</div>`);
 }
+// ---------- split a transaction into parts ----------
+/** The original charge is kept (and left out of totals); each part becomes its own row with its own category. */
+function openSplit(parentId) {
+  const p = S.tx.find(t => t.transaction_id === parentId); if (!p) return toast("Couldn't find the original transaction", true);
+  if (p.pending) return toast("Wait until it posts, then split it", true);
+  const sign = p.amount < 0 ? -1 : 1, total = Math.round(Math.abs(p.amount) * 100) / 100;
+  const kids = S.tx.filter(t => t.split_of === parentId).sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
+  let parts = kids.length ? kids.map(k => ({ cat: eff(k), amt: Math.abs(k.amount) })) : [{ cat: eff(p), amt: total }, { cat: "", amt: 0 }];
+  const r2c = n => Math.round(n * 100) / 100;
+  closeLayer("sheet");
+  const draw = () => {
+    const rest = r2c(total - parts.slice(1).reduce((s, x) => s + (Number(x.amt) || 0), 0)); parts[0].amt = rest;
+    const ok = rest > 0 && parts.slice(1).every(x => Number(x.amt) > 0 && x.cat) && parts[0].cat;
+    openModal("Split transaction", `${tname(p)} · ${shortDate(p.date)} · ${money2(total)}`, `
+      <div class="mute" style="margin-bottom:8px">Give each part its own category. The first part adjusts so the parts always add up to ${money2(total)}.</div>
+      <div id="spRows">${parts.map((x, i) => `<div class="sprow">
+        <select data-sc="${i}"><option value="">Pick a category</option>${catOptions(x.cat)}</select>
+        <input data-sa="${i}" type="number" inputmode="decimal" step="0.01" min="0" value="${x.amt ? Number(x.amt).toFixed(2) : ""}" ${i === 0 ? "readonly" : ""} placeholder="0.00">
+        ${i > 1 ? `<button class="mini ghost" data-sx="${i}" aria-label="Remove part">×</button>` : `<span></span>`}</div>`).join("")}</div>
+      <div class="btns" style="margin-top:8px"><button class="mini" id="spAdd">+ Add a part</button></div>
+      <div class="sptot ${rest < 0 ? "neg" : ""}">${rest < 0 ? `The parts are ${money2(-rest)} more than the total` : !ok ? "Fill in each part's amount and category" : `${parts.length} parts add up to ${money2(total)} ✓`}</div>
+      <div class="btns" style="margin-top:12px"><button class="primary" id="spSave" ${ok ? "" : "disabled"}>Save split</button>${kids.length ? `<button class="danger" id="spUndo">Undo split</button>` : ""}</div>`);
+    $("spRows").querySelectorAll("[data-sc]").forEach(el => el.onchange = () => { parts[+el.dataset.sc].cat = el.value; draw(); });
+    $("spRows").querySelectorAll("[data-sa]").forEach(el => { if (+el.dataset.sa === 0) return;
+      el.onchange = () => { parts[+el.dataset.sa].amt = Math.max(0, Number(el.value) || 0); draw(); }; });
+    $("spRows").querySelectorAll("[data-sx]").forEach(el => el.onclick = () => { parts.splice(+el.dataset.sx, 1); draw(); });
+    $("spAdd").onclick = () => { parts.push({ cat: "", amt: 0 }); draw(); };
+    $("spSave").onclick = () => saveSplit(p, sign, parts.map(x => ({ cat: x.cat, amt: r2c(Number(x.amt)) })), kids);
+    if ($("spUndo")) $("spUndo").onclick = () => undoSplit(p, kids);
+  };
+  draw();
+}
+async function saveSplit(p, sign, parts, oldKids) {
+  const rows = parts.map(x => ({ transaction_id: "man-split-" + (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)),
+    account_id: p.account_id || null, date: p.date, name: p.name, merchant_name: p.merchant_name || null, amount: sign * x.amt,
+    category: p.category || null, category_detailed: p.category_detailed || null, user_category: x.cat, user_name: p.user_name || null,
+    pending: false, manual: false, split_of: p.transaction_id }));
+  $("spSave").disabled = true;
+  const { data, error } = await db.from("transactions").insert(rows).select();
+  if (error) { $("spSave").disabled = false; return toast(error.message, true); }
+  if (oldKids.length) { const { error: e2 } = await db.from("transactions").delete().in("transaction_id", oldKids.map(k => k.transaction_id)); if (e2) toast(e2.message, true); }
+  if (!p.excluded) { const { error: e3 } = await db.from("transactions").update({ excluded: true }).eq("transaction_id", p.transaction_id); if (e3) return toast(e3.message, true); p.excluded = true; }
+  const gone = new Set(oldKids.map(k => k.transaction_id));
+  S.tx = [...S.tx.filter(t => !gone.has(t.transaction_id)), ...(data || rows)].sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+  closeModal(); renderAll(); toast(`Split into ${rows.length} parts`);
+}
+async function undoSplit(p, kids) {
+  if (!confirm("Put this back as one transaction?")) return;
+  const { error } = await db.from("transactions").delete().in("transaction_id", kids.map(k => k.transaction_id)); if (error) return toast(error.message, true);
+  const { error: e2 } = await db.from("transactions").update({ excluded: false }).eq("transaction_id", p.transaction_id); if (e2) return toast(e2.message, true);
+  p.excluded = false; const gone = new Set(kids.map(k => k.transaction_id)); S.tx = S.tx.filter(t => !gone.has(t.transaction_id));
+  closeModal(); renderAll(); toast("Back to one transaction");
+}
+
+// ---------- cash forecast: where checking is headed over the next 30 days ----------
+/** Today's checking balance, plus expected paychecks, minus bills, minus your usual everyday spending (spread evenly). */
+function cashForecast(days = 30) {
+  const hidden = new Set(S.settings.hidden_accounts || []);
+  const chk = S.accts.filter(a => a.type === "depository" && (a.subtype === "checking" || !a.subtype) && !hidden.has(a.account_id));
+  if (!chk.length) return null;
+  const today = todayISO(), start = chk.reduce((s, a) => s + Number(a.current_balance || 0), 0), ev = upcoming(days + 1);
+  const since = fullSince(), full = coverage().fullMonths, solid = full.filter(m => !since || m + "-01" >= since), months = (solid.length >= 2 ? solid : full).slice(0, 3);
+  const avgSp = months.length ? months.reduce((s, m) => s + monthStats(m).sp, 0) / months.length : 0;
+  const recMonthly = recurringList().live.reduce((s, r) => s + (Number(r.cadence) === 30 ? r.amount : r.amount * 30.44 / (Number(r.cadence) || 30)), 0);
+  const daily = Math.max(0, (avgSp - recMonthly) / 30.44);
+  let bal = start; const pts = []; let low = null;
+  for (let i = 0; i <= days; i++) {
+    const d = dstr(dnum(today) + i); if (i > 0) bal -= daily;
+    ev.filter(e => e.d === d).forEach(e => bal += e.kind === "pay" ? e.amt : -e.amt);
+    pts.push({ d, v: bal }); if (!low || bal < low.v) low = { d, v: bal };
+  }
+  const nextPay = ev.find(e => e.kind === "pay");
+  return { start, pts, low, end: bal, daily, ev: ev.filter(e => e.d <= dstr(dnum(today) + days)), accts: chk, nextPay, months: months.length };
+}
+const lowLimit = () => Number((S.settings.notify || {}).lowAmt) || 500;
+function renderForecast() {
+  const el = $("fcCard"), F = cashForecast(); el.hidden = !F; if (!F) return;
+  const lim = lowLimit(), dip = F.low.v < lim && F.low.d !== todayISO(), neg = F.low.v < 0;
+  $("fcHead").innerHTML = `<div><span class="mute">Lowest point</span><b class="${neg ? "neg" : dip ? "warnc" : ""}">${money(F.low.v)}</b><span class="mute">${F.low.d === todayISO() ? "today" : shortDate(F.low.d)}</span></div>
+    <div><span class="mute">Checking now</span><b>${money(F.start)}</b></div><div><span class="mute">In 30 days</span><b>${money(F.end)}</b></div>`;
+  $("fcFoot").innerHTML = neg ? `⚠ Checking could go below zero around ${esc(shortDate(F.low.d))}${F.nextPay && F.nextPay.d > F.low.d ? `, before your ${esc(shortDate(F.nextPay.d))} payday` : ""}. <a class="link" id="fcMore">Why?</a>`
+    : dip ? `Checking could dip under ${money(lim)} around ${esc(shortDate(F.low.d))}${F.nextPay && F.nextPay.d > F.low.d ? `, before payday` : ""}. <a class="link" id="fcMore">Why?</a>`
+    : `Checking stays above ${money(lim)} for the next 30 days. <a class="link" id="fcMore">How this works</a>`;
+  $("fcMore").onclick = e => { e.stopPropagation(); openForecast(); };
+  el.onclick = openForecast;
+  const dk = document.documentElement.classList.contains("dark"), line = dk ? "#2DD4BF" : "#0D9488";
+  chart("cFc", { type: "line", data: { labels: F.pts.map(p => shortDate(p.d)), datasets: [
+      { data: F.pts.map(p => Math.round(p.v)), borderColor: line, backgroundColor: fadeHex(line, .12), fill: true, borderWidth: 2, pointRadius: F.pts.map(p => p.d === F.low.d ? 4 : 0), pointBackgroundColor: neg || dip ? "#DC2626" : line, tension: .25 },
+      { data: F.pts.map(() => lim), borderColor: "#DC2626", borderDash: [4, 4], borderWidth: 1, pointRadius: 0, fill: false } ] },
+    options: { plugins: { legend: { display: false }, tooltip: { filter: i => i.datasetIndex === 0, callbacks: { label: c => " " + money(c.raw) } } },
+      scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 5, maxRotation: 0 } }, y: { ticks: { callback: moneyTick, maxTicksLimit: 4 } } }, interaction: { mode: "index", intersect: false } } });
+}
+function openForecast() {
+  const F = cashForecast(); if (!F) return; let bal = F.start;
+  const rows = []; F.ev.forEach(e => { rows.push(`<div class="rowline"><span>${e.kind === "pay" ? "💰" : "📅"} ${esc(e.name)} <span class="mute" style="white-space:nowrap">· ${esc(shortDate(e.d))}</span></span><span class="${e.kind === "pay" ? "pos" : ""}" style="font-weight:600">${e.kind === "pay" ? "+" : "−"}${money(e.amt)}</span></div>`); });
+  openModal("Cash forecast", "Checking, next 30 days", `
+    <p class="rnote">Starts with what's in ${F.accts.length === 1 ? esc(F.accts[0].nickname || F.accts[0].name) : `your ${F.accts.length} checking accounts`} today (${money(F.start)}), adds expected paychecks, subtracts your recurring bills on their dates, and subtracts everyday spending of about <b>${money(F.daily)} a day</b>${F.months ? ` (your usual from the last ${F.months === 1 ? "month" : F.months + " months"}, minus bills)` : ""}.</p>
+    <p class="rnote mute" style="font-size:13px">Card purchases are counted as they happen, even though you pay the card later, and money you move to savings isn't included. Treat it as a heads-up, not an exact balance.</p>
+    <h3 class="inch">Lowest point</h3><p class="rnote"><b class="${F.low.v < 0 ? "neg" : ""}">${money(F.low.v)}</b> around ${esc(F.low.d === todayISO() ? "today" : shortDate(F.low.d))}${F.nextPay ? ` · next payday ${esc(shortDate(F.nextPay.d))}` : ""}</p>
+    <h3 class="inch">Expected in the next 30 days</h3>${rows.join("") || `<div class="mute">No paychecks or bills found.</div>`}
+    <p class="mute" style="font-size:13px;margin-top:12px">Get a notification if checking runs low: Settings → Notifications → Low balance.</p>`);
+}
+
+// ---------- set up my budget for me: budgets from what you actually spend ----------
+function budgetPlan() {
+  const since = fullSince(), full = coverage().fullMonths, solid = full.filter(m => !since || m + "-01" >= since);
+  const months = (solid.length >= 2 ? solid : full).slice(0, 3);   // newest first
+  const per = {};   // category -> [total per month]
+  let basis;
+  if (months.length) {
+    months.forEach((m, i) => monthTx(m).filter(isSpendish).forEach(t => { const c = eff(t); (per[c] = per[c] || Array(months.length).fill(0))[i] += t.amount; }));
+    basis = `your last ${months.length === 1 ? "full month" : months.length + " full months"}`;
+  } else {   // a new account without a full month yet: scale up the last 30 days if there's enough history
+    const start = coverage().min; if (!start || dnum(todayISO()) - dnum(start) < 21) return null;
+    const from = dstr(Math.max(dnum(start), dnum(todayISO()) - 30)), days = dnum(todayISO()) - dnum(from) + 1;
+    S.tx.filter(t => t.date >= from && isSpendish(t)).forEach(t => { const c = eff(t); (per[c] = per[c] || [0])[0] += t.amount * 30.44 / days; });
+    basis = "your spending so far";
+  }
+  const up = n => { const step = n < 200 ? 10 : n < 1000 ? 25 : 50; return Math.ceil(n / step) * step; };
+  const rows = [], small = [];
+  Object.entries(per).filter(([c]) => !NOT_BUDGETED.includes(c)).forEach(([c, arr]) => { const typ = median(arr);
+    if (typ >= 25) rows.push({ c, amt: up(typ), typ }); else if (typ > 0) small.push(typ); });
+  rows.sort((a, b) => b.typ - a.typ);
+  const rest = small.reduce((s, x) => s + x, 0); if (rest >= 5) rows.push({ c: "__OTHER", amt: up(rest), typ: rest });
+  return rows.length ? { rows, basis } : null;
+}
+function openBudgetSetup() {
+  const plan = budgetPlan(); if (!plan) return toast("Headroom needs about a month of transactions to suggest budgets", true);
+  const cur = budgetMap(), inc = expectedIncome();
+  const draw = () => {
+    const tot = plan.rows.filter(r => r.on !== false).reduce((s, r) => s + (Number(r.amt) || 0), 0);
+    $("bsTot").innerHTML = `Total <b>${money(tot)}</b> a month${inc ? ` · ${inc - tot >= 0 ? `leaves <b class="pos">${money(inc - tot)}</b> of your ${money(inc)} income` : `<b class="neg">${money(tot - inc)}</b> more than your ${money(inc)} income`}` : ""}`;
+  };
+  openModal("Set up my budget", `From ${plan.basis}`, `
+    <p class="mute" style="margin:0 0 8px">Each amount is what you typically spend, rounded up. Change any of them, untick ones you don't want, then apply.${Object.keys(cur).length ? " Budgets you already have are replaced only where you tick them." : ""}</p>
+    ${plan.rows.map((r, i) => `<label class="bsrow"><input type="checkbox" data-bi="${i}" checked><span>${catIcon(r.c, 26)}${esc(pretty(r.c))}<span class="mute">${cur[r.c] ? `now ${money(cur[r.c])}` : `usually ${money(r.typ)}`}</span></span>
+      <input type="number" inputmode="numeric" min="0" step="5" data-ba="${i}" value="${r.amt}"></label>`).join("")}
+    <div class="bstot" id="bsTot"></div>
+    <div class="btns" style="margin-top:12px"><button class="primary" id="bsApply">Apply budgets</button></div>`);
+  $("mBody").querySelectorAll("[data-bi]").forEach(el => el.onchange = () => { plan.rows[+el.dataset.bi].on = el.checked; draw(); });
+  $("mBody").querySelectorAll("[data-ba]").forEach(el => el.oninput = () => { plan.rows[+el.dataset.ba].amt = Math.max(0, Math.round(Number(el.value) || 0)); draw(); });
+  draw();
+  $("bsApply").onclick = async () => {
+    const pick = plan.rows.filter(r => r.on !== false && r.amt > 0); if (!pick.length) return toast("Nothing ticked");
+    $("bsApply").disabled = true; $("bsApply").textContent = "Applying…";
+    for (const r of pick) await saveBudget(r.c, r.amt, true);
+    closeModal(); renderAll(); toast(`${pick.length} budget${pick.length === 1 ? "" : "s"} set`);
+  };
+}
+function renderSetupCards() {
+  const few = S.budgets.filter(b => Number(b.monthly_amount) > 0).length < 3, plan = few ? budgetPlan() : null;
+  const card = id => { const el = $(id); el.hidden = !plan; if (!plan) return;
+    el.innerHTML = `<div><b>✨ Set up my budget for me</b><div class="mute">Headroom can create budgets from ${esc(plan.basis)}. You can change every amount before anything is saved.</div></div><button class="primary">Set it up</button>`;
+    el.querySelector("button").onclick = openBudgetSetup; };
+  card("budSetupCard"); card("homeSetup");
+}
+
+// ---------- monthly recap: how last month went (Home card for the first week of a month) ----------
+function recapData(m) {
+  const st = monthStats(m), prev = [1, 2, 3].map(k => addMonths(m, -k)).filter(x => S.months.includes(x) && coverage().fullMonths.includes(x));
+  const avgSp = prev.length ? prev.reduce((s, x) => s + monthStats(x).sp, 0) / prev.length : null;
+  const sp = sumBy(monthTx(m).filter(isSpendish), eff, t => t.amount), usual = {};
+  prev.forEach(x => monthTx(x).filter(isSpendish).forEach(t => usual[eff(t)] = (usual[eff(t)] || 0) + t.amount / prev.length));
+  const changes = Object.keys({ ...sp, ...usual }).filter(c => !NOT_BUDGETED.includes(c)).map(c => ({ c, v: sp[c] || 0, u: usual[c] || 0, d: (sp[c] || 0) - (usual[c] || 0) }))
+    .filter(x => Math.abs(x.d) >= 50 && (x.u >= 50 || x.v >= 50));
+  const ups = changes.filter(x => x.d > 0).sort((a, b) => b.d - a.d).slice(0, 3), downs = changes.filter(x => x.d < 0).sort((a, b) => a.d - b.d).slice(0, 3);
+  const bud = S.budgets.filter(b => !NOT_BUDGETED.includes(b.category) && Number(b.monthly_amount) > 0);
+  const within = bud.filter(b => (sp[b.category] || 0) <= Number(b.monthly_amount) + .5);
+  const bills = new Set(recurringList().live.map(x => String(x.name).toLowerCase()));   // rent and other bills aren't "purchases"
+  const biggest = monthTx(m).filter(t => t._k === "spend" && !["RENT_AND_UTILITIES", "LOAN_PAYMENTS"].includes(eff(t)) && !bills.has(tname(t).toLowerCase()))
+    .sort((a, b) => b.amount - a.amount)[0] || null;
+  let nw = null; try { const s2 = nwSeries(false), i0 = s2.labels.findIndex(d => d >= m + "-01"), i1 = s2.labels.map(d => d <= endOfMonth(m)).lastIndexOf(true);
+    if (i0 > 0 && i1 >= i0 && s2.labels[i0 - 1] >= s2.start) nw = s2.vals[i1] - s2.vals[i0 - 1]; } catch (e) {}
+  return { m, st, avgSp, ups, downs, bud, within, biggest, nw, rate: st.inc > 0 ? st.net / st.inc : null };
+}
+function renderRecap() {
+  const el = $("recapCard"), today = todayISO(), m = addMonths(today.slice(0, 7), -1);
+  const show = +today.slice(8) <= 7 && S.months.includes(m) && store.get("hr_recap_seen") !== m && monthTx(m).length > 0;
+  el.hidden = !show; if (!show) return;
+  const r = recapData(m);
+  el.innerHTML = `<div class="rh"><span>📅 ${esc(monthLong(m).split(" ")[0])} in review</span><button class="mini ghost" id="recapX" aria-label="Dismiss">×</button></div>
+    <div class="rl">${r.st.net >= 0 ? `You kept <b class="pos">${money(r.st.net)}</b>${r.rate != null ? ` (${Math.round(r.rate * 100)}% of what came in)` : ""}` : `You spent <b class="neg">${money(-r.st.net)}</b> more than came in`}${r.bud.length ? ` · ${r.within.length} of ${r.bud.length} budgets on track` : ""}</div>
+    <div class="go">See the recap ›</div>`;
+  el.onclick = e => { if (e.target.id === "recapX") { e.stopPropagation(); store.set("hr_recap_seen", m); el.hidden = true; return; } openRecap(m); };
+}
+function openRecap(m) {
+  m = m || addMonths(todayISO().slice(0, 7), -1); const r = recapData(m), name = monthLong(m).split(" ")[0];
+  const li = (x, up) => `<div class="rowline" data-c="${esc(x.c)}" style="cursor:pointer"><span>${catIcon(x.c, 24)}${esc(pretty(x.c))} <span class="mute">· usually ${money(x.u)}</span></span><span class="${up ? "neg" : "pos"}" style="font-weight:600">${up ? "▲" : "▼"} ${money(Math.abs(x.d))}</span></div>`;
+  openModal(`${name} in review`, monthLong(m), `
+    <div class="rgrid"><div><span class="mute">Earned</span><b class="pos">${money(r.st.inc)}</b></div><div><span class="mute">Spent</span><b>${money(r.st.sp)}</b></div>
+      <div><span class="mute">Kept</span><b class="${r.st.net < 0 ? "neg" : "pos"}">${money(r.st.net)}</b>${r.rate != null ? `<span class="mute">${Math.round(r.rate * 100)}%</span>` : ""}</div></div>
+    ${r.avgSp ? `<p class="rnote">${Math.abs(r.st.sp - r.avgSp) / r.avgSp < .05 ? "Spending was about the same as your usual month." : `Spending was <b>${money(Math.abs(r.st.sp - r.avgSp))} ${r.st.sp > r.avgSp ? "more" : "less"}</b> than your usual ${money(r.avgSp)}.`}${r.nw != null ? ` Net worth ${r.nw >= 0 ? "grew" : "fell"} ${money(Math.abs(r.nw))}.` : ""}</p>` : ""}
+    ${r.ups.length ? `<h3 class="inch">Spent more on</h3>${r.ups.map(x => li(x, true)).join("")}` : ""}
+    ${r.downs.length ? `<h3 class="inch">Spent less on</h3>${r.downs.map(x => li(x, false)).join("")}` : ""}
+    ${r.bud.length ? `<h3 class="inch">Budgets</h3><p class="rnote">${r.within.length === r.bud.length ? `Every budget stayed on track. 🎉` : `${r.within.length} of ${r.bud.length} budgets stayed on track. Over: ${r.bud.filter(b => !r.within.includes(b)).map(b => esc(pretty(b.category))).join(", ")}.`}</p>` : ""}
+    ${r.biggest ? `<h3 class="inch">Biggest one-off purchase</h3><div class="rowline" data-tx="${esc(r.biggest.transaction_id)}" style="cursor:pointer"><span>${esc(tname(r.biggest))} <span class="mute">· ${esc(shortDate(r.biggest.date))}</span></span><b>${money2(r.biggest.amount)}</b></div>` : ""}`);
+  $("mBody").querySelectorAll("[data-c]").forEach(x => x.onclick = () => drillTx(pretty(x.dataset.c), monthLong(m), () => monthTx(m).filter(t => isSpendish(t) && eff(t) === x.dataset.c), "amt"));
+  $("mBody").querySelectorAll("[data-tx]").forEach(x => x.onclick = () => editTx(x.dataset.tx));
+  store.set("hr_recap_seen", m); $("recapCard").hidden = true;
+}
+
+/** Left to spend this month: expected income − what's spent − bills still to come. Falls back to the budget with no paychecks. */
+function leftToSpend() {
+  const today = todayISO(), cur = today.slice(0, 7), end = endOfMonth(cur), daysLeft = dnum(end) - dnum(today) + 1;
+  const mi = monthIncome(), spent = monthStats(cur).sp;
+  const bills = upcoming(daysLeft).filter(e => e.kind === "bill" && e.d <= end), billsDue = bills.reduce((s, e) => s + e.amt, 0);
+  const budget = S.budgets.reduce((s, b) => s + Number(b.monthly_amount || 0), 0);
+  if (mi.total > 0) { const left = mi.total - spent - billsDue; return { mode: "income", mi, spent, bills, billsDue, left, daysLeft, perDay: left / daysLeft }; }
+  if (budget > 0) { const left = budget - spent; return { mode: "budget", budget, spent, bills, billsDue, left, daysLeft, perDay: left / daysLeft }; }
+  return null;
+}
+function renderLeft() {
+  const el = $("leftCard"), L = leftToSpend(); el.hidden = !L; if (!L) return;
+  const over = L.left < 0;
+  el.innerHTML = `<div class="lt"><span class="mute">Left to spend this month</span><b class="${over ? "neg" : "pos"}">${over ? "−" : ""}${money(Math.abs(L.left))}</b></div>
+    <div class="ls">${over ? `Spending is ahead of ${L.mode === "income" ? "income" : "your budget"} this month` : `about <b>${money(L.perDay)}</b> a day · ${L.daysLeft} day${L.daysLeft === 1 ? "" : "s"} left`}${L.mode === "income" && L.billsDue ? ` · ${money(L.billsDue)} in bills still due` : ""}</div><span class="go">›</span>`;
+  el.onclick = openLeft;
+}
+function openLeft() {
+  const L = leftToSpend(); if (!L) return;
+  const line = (label, amt, cls, attrs = "") => `<div class="rowline" ${attrs}><span>${label}</span><span class="${cls || ""}" style="font-weight:600">${amt}</span></div>`;
+  openModal("Left to spend", `${monthLong(todayISO().slice(0, 7))} · ${L.daysLeft} day${L.daysLeft === 1 ? "" : "s"} left`, `
+    <div class="incsum"><div class="big ${L.left < 0 ? "neg" : "pos"}">${L.left < 0 ? "−" : ""}${money(Math.abs(L.left))}</div>
+      <div class="mute">${L.left < 0 ? "Over for the month so far" : `About ${money(L.perDay)} a day until the month ends`}</div></div>
+    ${L.mode === "income" ? line(`💰 Income this month <span class="mute">· ${money(L.mi.received)} in, ${money(L.mi.expected)} expected</span>`, "+" + money(L.mi.total), "pos", `id="lInc" style="cursor:pointer"`)
+      : line(`🎯 Monthly budget <span class="mute">· no regular paychecks found yet</span>`, money(L.budget))}
+    ${line("🧾 Spent so far", "−" + money(L.spent), "", `id="lSpent" style="cursor:pointer"`)}
+    ${L.mode === "income" ? line("📅 Bills still due", "−" + money(L.billsDue)) : ""}
+    ${L.mode === "income" && L.bills.length ? `<div class="lbills">${L.bills.map(e => `<div><span>${esc(e.name)} <span class="mute">· ${esc(shortDate(e.d))}</span></span><span>${money(e.amt)}</span></div>`).join("")}</div>` : ""}
+    ${line("<b>Left to spend</b>", (L.left < 0 ? "−" : "") + money(Math.abs(L.left)), L.left < 0 ? "neg" : "pos")}
+    <p class="mute" style="font-size:13px;margin-top:12px">${L.mode === "income" ? "Bills come from your recurring list and upcoming paychecks from your pay pattern, so this is an estimate. Money you plan to move into savings isn't taken out here: this is what's left before saving." : "Once Headroom sees two paychecks, this switches to your actual income."}</p>`);
+  if ($("lInc")) $("lInc").onclick = () => openIncome();
+  $("lSpent").onclick = () => { const cur = todayISO().slice(0, 7); closeModal(); setTimeout(() => drillTx("Spent this month", monthLong(cur), () => monthTx(cur).filter(isSpendish), "amt"), 220); };
+}
+
 /** This month's income: what's already in, plus the paychecks still expected before the month ends. */
 function monthIncome() {
   const cur = todayISO().slice(0, 7), today = todayISO(), end = endOfMonth(cur);
@@ -2786,7 +3103,7 @@ $("applyAll").onclick = async () => {
 };
 $("addBud").onclick = () => {
   const have = new Set(S.budgets.map(b => b.category));
-  const opts = allCats().filter(c => !have.has(c) && !["INCOME", "TRANSFER_IN", "TRANSFER_OUT", "OTHER"].includes(c));
+  const opts = pickCats().filter(c => !have.has(c) && !["INCOME", "TRANSFER_IN", "TRANSFER_OUT", "OTHER"].includes(c));
   openLayer("sheet", "Add a budget category", "Pick an existing category or create a new one", `<div class="fields">
       <div><label class="lbl" for="abCat">Category</label><select id="abCat">${opts.map(c => `<option value="${esc(c)}">${esc(pretty(c))}</option>`).join("")}<option value="__new">+ New category…</option></select></div>
       <div id="abNewW" class="hidden"><label class="lbl" for="abNew">New category name</label><input id="abNew" placeholder="e.g. Golf, Kids, Gifts"></div>
@@ -2828,7 +3145,7 @@ $("fKind").querySelectorAll(".chip").forEach(b => b.onclick = () => { S.kind = b
 function filteredTx() {
   const q = $("fSearch").value.trim().toLowerCase(), c = $("fCat").value, a = $("fAcct").value, k = S.kind;
   const qn = q.replace(/[$,]/g, "");
-  let list = rangeTx().filter(t => (!c || eff(t) === c) && (!a || t.account_id === a) && (!k || (k === "flagged" ? !!S.flags[t.transaction_id] : t._k === k))
+  let list = rangeTx().filter(t => t._k !== "split" && (!c || eff(t) === c) && (!a || t.account_id === a) && (!k || (k === "flagged" ? !!S.flags[t.transaction_id] : t._k === k))
     && (!q || tname(t).toLowerCase().includes(q) || (t.name || "").toLowerCase().includes(q) || (t.notes || "").toLowerCase().includes(q)
       || pretty(eff(t)).toLowerCase().includes(q) || acctName(t.account_id).toLowerCase().includes(q) || (qn && /^[\d.]+$/.test(qn) && Math.abs(t.amount).toFixed(2).includes(qn))));
   const s = $("fSort").value;
@@ -3123,14 +3440,10 @@ function renderSettings() {
   const sel = $("impAcct"), cur = sel.value;
   sel.innerHTML = S.accts.filter(a => ["depository", "credit"].includes(a.type)).map(a => `<option value="${esc(a.account_id)}">${esc(a.nickname || a.name)} ••${esc(a.mask || "")}</option>`).join("");
   if (cur) sel.value = cur;
-  $("catList").innerHTML = customCats().length ? customCats().map(c => `<div class="rowline"><span>${catIcon(c, 28)}${esc(c)} <span class="mute">${S.tx.filter(t => eff(t) === c).length} transactions</span></span><button class="mini ghost cdel" data-c="${esc(c)}">Remove</button></div>`).join("")
-    : `<div class="mute">No custom categories yet.</div>`;
-  $("catList").querySelectorAll(".cdel").forEach(b => b.onclick = async () => {
-    const c = b.dataset.c, used = S.tx.filter(t => t.user_category === c).length;
-    if (used && !confirm(`${used} transactions use "${c}". They'll go back to their bank category. Remove it?`)) return;
-    if (used) { const { error } = await db.from("transactions").update({ user_category: null }).eq("user_category", c); if (error) return toast(error.message, true); S.tx.forEach(t => { if (t.user_category === c) t.user_category = null; }); }
-    if (await saveSetting("custom_categories", customCats().filter(x => x !== c))) { S.filterSig = null; renderAll(); toast("Category removed"); }
-  });
+  const counts = sumBy(S.tx, eff, () => 1), list = allCats().filter(c => !NOT_SPENDING.includes(c));
+  $("catList").innerHTML = list.map(c => `<div class="rowline catrow ${catLook(c).hidden ? "hid" : ""}" data-c="${esc(c)}"><span>${catIcon(c, 28)}${esc(pretty(c))}
+      <span class="mute">${counts[c] || 0}${catLook(c).hidden ? " · hidden" : ""}${customCats().includes(c) ? " · yours" : ""}</span></span><span class="go">›</span></div>`).join("");
+  $("catList").querySelectorAll(".catrow").forEach(r => r.onclick = () => editCategory(r.dataset.c));
   const rules = Object.values(S.mrules).filter(r => r.category || r.rename || r.excluded);
   $("ruleList").innerHTML = rules.length ? rules.map(r => `<div class="rowline"><span>${esc(r.match)} → <b>${esc(r.rename || "")}</b>${r.rename && r.category ? " · " : ""}${r.category ? esc(pretty(r.category)) : ""}${r.excluded ? " · excluded" : ""}</span><button class="mini ghost rdel" data-m="${esc(r.match)}">Remove</button></div>`).join("")
     : `<div class="mute">No rules yet.</div>`;
@@ -3146,6 +3459,70 @@ function renderSettings() {
     if (error) return toast(error.message, true); await load(); toast("Imported rows removed");
   });
 }
+// ---------- appearance: theme and hide amounts (saved on this device) ----------
+S.hide = !!store.get("hr_hide");
+const darkNow = t => t === "dark" || (t === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+function redrawCharts() { Object.values(S.charts || {}).forEach(c => { try { c.destroy(); } catch (e) {} }); S.charts = {}; if (S.loaded) renderAll(); }
+function applyTheme() {
+  const t = store.get("hr_theme") || "auto", d = darkNow(t), was = document.documentElement.classList.contains("dark");
+  document.documentElement.classList.toggle("dark", d);
+  document.querySelector('meta[name="theme-color"]').content = d ? "#0E1513" : "#F7F8FA";
+  document.querySelectorAll("#themeSeg button").forEach(b => b.classList.toggle("on", b.dataset.th === t));
+  if (was !== d) redrawCharts();
+}
+function setHide(on) { S.hide = on; store.set("hr_hide", on); $("hideAmt").checked = on; redrawCharts(); toast(on ? "Amounts hidden" : "Amounts showing"); }
+document.querySelectorAll("#themeSeg button").forEach(b => b.onclick = () => { store.set("hr_theme", b.dataset.th); applyTheme(); });
+$("hideAmt").checked = S.hide; $("hideAmt").onchange = e => setHide(e.target.checked);
+try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme); } catch (e) {}
+applyTheme();
+
+// ---------- category editor: emoji, color, name, hide ----------
+const CAT_EMOJIS = "🛒🍔🍕🌮☕🍺🍷🥡🍩🛍️👕👟💄💈🧴🏠🔑💡🔥💧📶📱💻🎮🎬🎵📚🎓🧸👶🐶🐱🌿🧹🔨🛠️🚗⛽🅿️🚌🚆✈️🏨🏖️🧳🩺💊🦷👓🏋️⚽⛳🎾🎁💝⛪🙏🏛️🧾💳🏦💰📈🐷💼📦🎉❤️⭐🧘🚲🍼💐".match(/\p{Extended_Pictographic}(\uFE0F)?/gu);
+const CAT_COLORS = ["#0D9488", "#14B8A6", "#0EA5E9", "#2563EB", "#6366F1", "#A855F7", "#EC4899", "#E11D48", "#F97316", "#F59E0B", "#EAB308", "#84CC16", "#16A34A", "#0F766E", "#78716C", "#A8A29E"];
+function editCategory(c) {
+  const lk = catLook(c), custom = customCats().includes(c), def = { name: custom ? c : (LABELS[c] || pretty(c)), emoji: EMOJI[c] || "" };
+  const st = { name: pretty(c), emoji: lk.emoji || def.emoji, color: catColor(c), hidden: !!lk.hidden };
+  const used = S.tx.filter(t => eff(t) === c).length, budgeted = S.budgets.some(b => b.category === c);
+  openModal("Edit category", custom ? "Your category" : `Built-in · originally “${def.name}”`, `
+    <div class="cpre" id="cePre"></div>
+    <label class="flabel">Name</label><input id="ceName" maxlength="32" value="${esc(st.name)}">
+    <label class="flabel">Emoji</label>
+    <div class="egrid" id="ceEmo">${CAT_EMOJIS.map(e => `<button data-e="${e}">${e}</button>`).join("")}</div>
+    <input id="ceEmoIn" maxlength="8" placeholder="…or type any emoji" style="margin-top:8px">
+    <label class="flabel">Color</label>
+    <div class="cgrid" id="ceCol">${CAT_COLORS.map(k => `<button data-k="${k}" style="background:${k}" aria-label="color"></button>`).join("")}</div>
+    ${NOT_SPENDING.includes(c) ? "" : `<div class="optrow"><div><div class="t">Hide from pickers</div><div class="d">${budgeted ? "It has a budget, which stays. " : ""}Its ${used} transaction${used === 1 ? "" : "s"} keep this category; it just won't be offered when you pick one.</div></div><label class="sw"><input type="checkbox" id="ceHide" ${st.hidden ? "checked" : ""}><span></span></label></div>`}
+    <div class="btns" style="margin-top:14px"><button class="primary" id="ceSave">Save</button>${custom ? `<button class="danger" id="ceDel">Remove category</button>` : `<button id="ceReset">Back to original</button>`}</div>`);
+  const paint = () => {
+    $("cePre").innerHTML = `<div class="cicon" style="width:52px;height:52px;font-size:26px;background:${st.color}22;color:${st.color}">${esc(st.emoji || [...(st.name || "?")][0].toUpperCase())}</div><b>${esc(st.name || "Untitled")}</b>`;
+    $("ceEmo").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.e === st.emoji));
+    $("ceCol").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.k.toLowerCase() === String(st.color).toLowerCase()));
+  };
+  $("ceName").oninput = e => { st.name = e.target.value; paint(); };
+  $("ceEmo").querySelectorAll("button").forEach(b => b.onclick = () => { st.emoji = b.dataset.e; $("ceEmoIn").value = ""; paint(); });
+  $("ceEmoIn").oninput = e => { const m = e.target.value.match(/\p{Extended_Pictographic}(\uFE0F|\u200D\p{Extended_Pictographic})*/u); if (m) { st.emoji = m[0]; paint(); } };
+  $("ceCol").querySelectorAll("button").forEach(b => b.onclick = () => { st.color = b.dataset.k; paint(); });
+  if ($("ceHide")) $("ceHide").onchange = e => st.hidden = e.target.checked;
+  paint();
+  const saveLook = async next => { const all = { ...(S.settings.cat_look || {}) }; if (next) all[c] = next; else delete all[c];
+    if (await saveSetting("cat_look", all)) { S.filterSig = null; closeModal(); renderAll(); toast("Category updated"); } };
+  $("ceSave").onclick = () => {
+    const name = st.name.trim(); if (!name) return toast("Give it a name", true);
+    if (allCats().some(x => x !== c && pretty(x).toLowerCase() === name.toLowerCase())) return toast("Another category already has that name", true);
+    const next = {}; if (name !== def.name) next.name = name; if (st.emoji && st.emoji !== def.emoji) next.emoji = st.emoji;
+    if (lk.color || st.color !== catColor(c)) next.color = st.color; if (st.hidden) next.hidden = true;
+    saveLook(Object.keys(next).length ? next : null);
+  };
+  if ($("ceReset")) $("ceReset").onclick = () => saveLook(null);
+  if ($("ceDel")) $("ceDel").onclick = async () => {
+    const n = S.tx.filter(t => t.user_category === c).length;
+    if (!confirm(n ? `${n} transactions use “${pretty(c)}”. They'll go back to their bank category. Remove it?` : `Remove “${pretty(c)}”?`)) return;
+    if (n) { const { error } = await db.from("transactions").update({ user_category: null }).eq("user_category", c); if (error) return toast(error.message, true); S.tx.forEach(t => { if (t.user_category === c) t.user_category = null; }); }
+    const all = { ...(S.settings.cat_look || {}) }; delete all[c]; await saveSetting("cat_look", all);
+    if (await saveSetting("custom_categories", customCats().filter(x => x !== c))) { S.filterSig = null; closeModal(); renderAll(); toast("Category removed"); }
+  };
+}
+$("budSetup").onclick = openBudgetSetup;
 $("optInTr").onchange = async () => { if (await saveSetting("income_transfers", $("optInTr").checked)) { renderAll(); toast($("optInTr").checked ? "Outside money now counts as income" : "Only paychecks count as income"); } };
 $("addCat").onclick = async () => { const n = $("newCat").value.trim(); if (!n) return; if (allCats().some(c => pretty(c).toLowerCase() === n.toLowerCase())) return toast("That category already exists", true);
   if (await saveSetting("custom_categories", [...customCats(), n])) { $("newCat").value = ""; S.filterSig = null; renderAll(); toast("Category added"); } };
@@ -3411,9 +3788,9 @@ const pushSupported = () => "serviceWorker" in navigator && "PushManager" in win
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
   // tapping a notification while the app is open jumps to the right tab
-  navigator.serviceWorker.addEventListener("message", e => { const t = e.data && e.data.go; if (t === "review") goReview(); else if (t && document.getElementById("p-" + t)) go(t); });
+  navigator.serviceWorker.addEventListener("message", e => { const t = e.data && e.data.go; if (t === "recap") openRecap(); else if (t === "review") goReview(); else if (t && document.getElementById("p-" + t)) go(t); });
 }
-addEventListener("hashchange", () => { const t = location.hash.slice(1); if (t === "review") return goReview(); if (t && t !== S.tab && document.getElementById("p-" + t)) go(t); });
+addEventListener("hashchange", () => { const t = location.hash.slice(1); if (t === "recap") { history.replaceState(null, "", location.pathname + location.search); return openRecap(); } if (t === "review") return goReview(); if (t && t !== S.tab && document.getElementById("p-" + t)) go(t); });
 async function fnNotify(body) {
   const { data: { session } } = await db.auth.getSession();
   const r = await fetch(`${SUPABASE_URL}/functions/v1/notify`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token, apikey: SUPABASE_KEY }, body: JSON.stringify(body) });
@@ -3423,10 +3800,14 @@ const b64ToBytes = s => { const p = "=".repeat((4 - s.length % 4) % 4), b = atob
 async function currentSub() { if (!pushSupported()) return null; const reg = await navigator.serviceWorker.ready; return reg.pushManager.getSubscription(); }
 async function renderPush() {
   const st = $("pushStatus"); if (!st) return;
-  const prefs = { big: true, bigAmt: 200, dup: true, budget: true, bills: true, payday: true, weekly: true, ...(S.settings.notify || {}) };
-  document.querySelectorAll("[data-np]").forEach(i => i.checked = !!prefs[i.dataset.np]); $("npAmt").value = prefs.bigAmt;
+  const prefs = { big: true, bigAmt: 200, dup: true, budget: true, bills: true, payday: true, weekly: true, monthly: true, lowbal: false, lowAmt: 500, ...(S.settings.notify || {}) };
+  document.querySelectorAll("[data-np]").forEach(i => i.checked = !!prefs[i.dataset.np]); $("npAmt").value = prefs.bigAmt; $("npLow").value = prefs.lowAmt;
   let sub = null; try { sub = await currentSub(); } catch {}
   const on = !!sub && Notification.permission === "granted";
+  // iPhone can quietly swap this device's push address (after an update or a reinstall); re-save it each time the app
+  // opens so the server always sends to the address this device is actually listening on
+  if (on && S._pushSynced !== sub.endpoint) { S._pushSynced = sub.endpoint; const j = sub.toJSON();
+    db.from("push_subscriptions").upsert({ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, user_agent: navigator.userAgent }, { onConflict: "user_id,endpoint" }).then(() => {}, () => {}); }
   $("pushOn").classList.toggle("hidden", on); $("pushTest").classList.toggle("hidden", !on); $("pushOff").classList.toggle("hidden", !on);
   if (on) st.innerHTML = `<span class="pill ok">On</span> This device will get alerts.`;
   else if (isIOS && !standalone()) { st.innerHTML = `On iPhone, notifications only work from the Home Screen app: in Safari tap <b>Share</b> → <b>Add to Home Screen</b>, open Headroom from your Home Screen, then come back here.`; $("pushOn").classList.add("hidden"); }
@@ -3453,16 +3834,17 @@ $("pushOff").onclick = async () => {
   const sub = await currentSub(); if (sub) { await db.from("push_subscriptions").delete().eq("endpoint", sub.endpoint); await sub.unsubscribe(); }
   renderPush(); toast("Notifications off on this device");
 };
-const savePrefs = async () => { const p = { ...(S.settings.notify || {}) }; document.querySelectorAll("[data-np]").forEach(i => p[i.dataset.np] = i.checked); p.bigAmt = Math.max(1, Number($("npAmt").value) || 200);
+const savePrefs = async () => { const p = { ...(S.settings.notify || {}) }; document.querySelectorAll("[data-np]").forEach(i => p[i.dataset.np] = i.checked); p.bigAmt = Math.max(1, Number($("npAmt").value) || 200); p.lowAmt = Math.max(0, Number($("npLow").value) || 0);
   if (await saveSetting("notify", p)) toast("Notification settings saved"); };
-document.querySelectorAll("[data-np]").forEach(i => i.onchange = savePrefs); $("npAmt").onchange = savePrefs;
+document.querySelectorAll("[data-np]").forEach(i => i.onchange = savePrefs); $("npAmt").onchange = savePrefs; $("npLow").onchange = () => { savePrefs(); renderForecast(); };
 
 /** The server sends "bill due tomorrow" and "payday" alerts from this schedule, so keep it current whenever the app opens. */
 function saveSchedule() {
   if (!S.loaded) return;
   const events = upcoming(35).map(e => ({ d: e.d, name: e.name, amt: Math.round(e.amt * 100) / 100, kind: e.kind }));
-  const prev = S.settings.upcoming && S.settings.upcoming.events;
-  if (JSON.stringify(prev) !== JSON.stringify(events)) saveSetting("upcoming", { events, at: new Date().toISOString() });
+  const F = cashForecast(), forecast = F ? { low: Math.round(F.low.v), d: F.low.d } : null;
+  const prev = S.settings.upcoming || {};
+  if (JSON.stringify(prev.events) !== JSON.stringify(events) || JSON.stringify(prev.forecast || null) !== JSON.stringify(forecast)) saveSetting("upcoming", { events, forecast, at: new Date().toISOString() });
 }
 function renderInstallHint() {
   const el = $("installHint"); if (!el) return;
