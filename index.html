@@ -73,8 +73,8 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
 .group{margin-bottom:6px}.group h3{margin:14px 0 4px;font-size:15px;display:flex;justify-content:space-between}
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
 .filters input[type=search]{flex:1;min-width:180px}
-#login{max-width:340px;margin:12vh auto;text-align:center;padding:0 16px;animation:rise .5s var(--ease)}#login input{width:100%;margin-bottom:10px;padding:12px}
-#login button{width:100%;padding:12px}#err{color:var(--bad);margin-top:10px;min-height:20px;font-size:14px}
+#login,#signup{max-width:340px;margin:12vh auto;text-align:center;padding:0 16px;animation:rise .5s var(--ease)}#login input,#signup input{width:100%;margin-bottom:10px;padding:12px}
+#login button,#signup button{width:100%;padding:12px}#err,#suErr{color:var(--bad);margin-top:10px;min-height:20px;font-size:14px}
 .hidden{display:none!important}
 #msg{position:fixed;bottom:calc(20px + var(--safe-b));left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#1C1917;color:#fff;padding:11px 16px;border-radius:12px;z-index:200;transition:transform .3s var(--ease),opacity .3s;box-shadow:0 10px 30px rgba(0,0,0,.2);max-width:92vw;font-size:14px;display:flex;gap:12px;align-items:center}
 #msg.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}#msg.err{background:#7F1D1D}
@@ -259,6 +259,11 @@ html,body,*{touch-action:manipulation}
 @media (min-width:761px){.chatin{border-radius:0 0 18px 18px}}
 .chatin textarea{flex:1;resize:none;max-height:120px;min-height:44px;padding:11px 12px;border-radius:14px;font-size:16px;line-height:1.35}
 .chatin button{width:44px;height:44px;border-radius:50%;padding:0;font-size:20px;flex:0 0 auto}
+body.is-empty #p-overview > :not(#welcome):not(#installHint){display:none!important}
+body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!important}
+.welcome{border:1px solid var(--accent);background:linear-gradient(180deg,var(--mint),var(--card) 70%)}
+.welcome h2{font-size:20px;margin:0 0 6px;text-transform:none;letter-spacing:-.01em;color:var(--text);font-weight:700}.welcome p{margin:0 0 12px;line-height:1.5}
+.danger{color:var(--bad);border-color:#FECACA}
 .segfull{display:flex;width:100%;margin-bottom:6px}.segfull button{flex:1;padding:10px}
 .amtbig{display:flex;align-items:baseline;justify-content:center;gap:2px;padding:14px 0 18px;color:var(--text);cursor:text}
 .amtbig span{font-size:30px;font-weight:600;color:var(--mute)}.amtbig.in span,.amtbig.in input{color:var(--accent-d)}
@@ -477,6 +482,17 @@ html,body,*{touch-action:manipulation}
   <div style="margin-top:12px"><a class="link mute" id="forgot">Forgot password?</a></div>
   <div id="err"></div>
 </div>
+<div id="signup" class="hidden">
+  <div class="logo"><span>Head</span>room</div>
+  <p class="mute" id="suIntro">You've been invited. Create your account to start budgeting.</p>
+  <input id="suEmail" type="email" placeholder="Email" autocomplete="username">
+  <input id="suPw" type="password" placeholder="Password (8+ characters)" autocomplete="new-password">
+  <input id="suPw2" type="password" placeholder="Confirm password" autocomplete="new-password">
+  <button class="primary" id="suBtn">Create account</button>
+  <div class="mute" style="margin-top:12px;font-size:13px;line-height:1.45">Your budget is private: nobody else using Headroom can see your accounts or transactions.</div>
+  <div style="margin-top:12px"><a class="link mute" id="suHave">Already have an account? Sign in</a></div>
+  <div id="suErr" class="err"></div>
+</div>
 
 <div id="lock" class="hidden"><div class="lockbox">
   <img src="icons/icon-180.png" alt="" width="72" height="72" style="border-radius:18px">
@@ -517,6 +533,7 @@ html,body,*{touch-action:manipulation}
   <div class="pane on" id="p-overview">
     <div id="installHint"></div>
     <div id="coverage"></div>
+    <div class="card welcome" id="welcome" hidden></div>
     <div id="mobTop"><div class="swipe" id="swipe"></div><div class="dots" id="swipeDots"></div><div class="card acsum" id="acSum"></div></div>
     <div class="card aicard" id="aiCard"></div>
     <div class="strip" id="strip"></div>
@@ -664,7 +681,9 @@ html,body,*{touch-action:manipulation}
 
   <!-- SETTINGS -->
   <div class="pane" id="p-settings">
+    <div class="card" id="peopleSet" hidden><h2>People &amp; invites</h2><div id="peopleBody" class="mute">Loading…</div></div>
     <div class="card" id="aiSet"><h2>AI assistant</h2><div id="aiSetBody" class="mute">Checking…</div></div>
+    <div class="card" id="acctSet"><h2>Your account</h2><div id="acctBody"></div></div>
     <div class="card"><h2>How money is counted</h2>
       <div class="optrow" style="border-top:0"><div><div class="t">Count money from outside as income</div>
         <div class="d">Zelle, Venmo, and transfers from other banks count as income. Moves between your own linked accounts never do.</div></div>
@@ -795,7 +814,7 @@ function toast(t, err, action) {
   m.classList.toggle("err", !!err); m.classList.add("show"); clearTimeout(S.toastT);
   S.toastT = setTimeout(() => m.classList.remove("show"), action ? 9000 : err ? 6000 : 3200);
 }
-const acctName = id => { const a = S.accts.find(x => x.account_id === id); return a ? (a.nickname || a.name) : (String(id || "").startsWith("cash") ? "Cash" : ""); };
+const acctName = id => { const a = S.accts.find(x => x.account_id === id); return a ? (a.nickname || a.name) : (!id || String(id).startsWith("cash") ? "Cash" : ""); };
 
 /** Count a number up from its last shown value. */
 function countTo(el, v, fmt = money) {
@@ -932,9 +951,36 @@ function allCats() {
 const catOptions = sel => allCats().map(c => `<option value="${esc(c)}" ${c === sel ? "selected" : ""}>${esc(pretty(c))}</option>`).join("");
 
 // ---------- auth ----------
+const inviteCode = () => (new URLSearchParams(location.search).get("invite") || "").trim().toLowerCase();
+const clearInvite = () => { const u = new URL(location.href); u.searchParams.delete("invite"); history.replaceState(null, "", u.pathname + u.search + u.hash); };
+async function signupCall(body) {
+  try { const r = await fetch(`${SUPABASE_URL}/functions/v1/signup`, { method: "POST", headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY }, body: JSON.stringify(body) });
+    return await r.json(); } catch (e) { return { error: "Couldn't reach Headroom. Check your connection and try again." }; }
+}
+/** Opened from an invite link: show the create-account form instead of sign-in. */
+async function showSignup() {
+  $("login").classList.add("hidden"); $("signup").classList.remove("hidden");
+  const j = await signupCall({ action: "check", code: inviteCode() });
+  if (!j.valid) { $("suIntro").textContent = "This invite link has expired or was already used. Ask the person who sent it for a new one."; ["suEmail", "suPw", "suPw2", "suBtn"].forEach(id => $(id).classList.add("hidden")); }
+}
+$("suHave").onclick = () => { clearInvite(); $("signup").classList.add("hidden"); $("login").classList.remove("hidden"); };
+$("suBtn").onclick = async () => {
+  const email = $("suEmail").value.trim(), pw = $("suPw").value; $("suErr").textContent = "";
+  if (pw !== $("suPw2").value) { $("suErr").textContent = "The passwords don't match."; return; }
+  $("suBtn").disabled = true; $("suBtn").textContent = "Creating…";
+  const j = await signupCall({ action: "create", code: inviteCode(), email, password: pw });
+  if (!j.ok) { $("suErr").textContent = j.error || "Couldn't create the account."; $("suBtn").disabled = false; $("suBtn").textContent = "Create account"; return; }
+  const { data: li, error } = await db.auth.signInWithPassword({ email, password: pw });
+  if (error) { $("suErr").textContent = error.message; $("suBtn").disabled = false; $("suBtn").textContent = "Create account"; return; }
+  clearInvite(); S.user = li.user; S.welcome = true; $("signup").classList.add("hidden"); show(true); await load(); offerFaceId();
+};
+$("suPw2").addEventListener("keydown", e => { if (e.key === "Enter") $("suBtn").click(); });
+
 async function boot() {
   const { data: { session } } = await db.auth.getSession();
   S.user = session ? session.user : null;
+  if (!session && inviteCode()) { show(false); return showSignup(); }
+  if (session && inviteCode()) clearInvite(); // already signed in: the invite isn't needed
   show(!!session);
   if (session && lockOn()) showLock();
   if (session) { await load(); resumeOAuth(); }
@@ -954,7 +1000,14 @@ $("forgot").onclick = async () => {
   const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
   $("err").textContent = error ? error.message : "Check your email for a reset link.";
 };
-const signOut = async () => { await db.auth.signOut(); show(false); };
+/** Sign out and leave nothing of this person's behind on the device (the next person may share the phone). */
+const PERSONAL_KEYS = ["hr_chat", "plaid_link_token", "hr_lock", "hr_pk_offered", "hr_slide"];
+function forgetLocal() { PERSONAL_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} }); }
+const signOut = async () => {
+  try { const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); const sub = reg && reg.pushManager && await reg.pushManager.getSubscription();
+    if (sub) await db.from("push_subscriptions").delete().eq("endpoint", sub.endpoint); } catch (e) {}
+  forgetLocal(); await db.auth.signOut(); location.replace(location.pathname);
+};
 $("outBtn").onclick = signOut; $("outBtn2").onclick = signOut;
 db.auth.onAuthStateChange(async ev => {
   if (ev === "SIGNED_OUT") show(false);
@@ -975,7 +1028,7 @@ function clampList(box, n, noun) {
 }
 const MORE = [["ask", "Ask Headroom", "✨"], ["recurring", "Recurring", "🔁"], ["accts", "Accounts", "🏦"], ["invest", "Investments", "📈"], ["goals", "Goals", "🎯"], ["settings", "Settings", "⚙️"]];
 function go(t) {
-  if (t === "more") { openModal("More", "", `<div class="pgrid">${MORE.map(([k, l, e]) => `<button data-go="${k}" class="${S.tab === k ? "on" : ""}">${e}&nbsp; ${l}</button>`).join("")}</div>
+  if (t === "more") { openModal("More", "", `<div class="pgrid">${MORE.filter(([k]) => k !== "ask" || !document.body.classList.contains("no-ai")).map(([k, l, e]) => `<button data-go="${k}" class="${S.tab === k ? "on" : ""}">${e}&nbsp; ${l}</button>`).join("")}</div>
       <div class="morefoot"><span class="mute">${esc(S.user && S.user.email ? "Signed in as " + S.user.email : "")}</span><button class="danger" id="moreOut">Sign out</button></div>`);
     $("moreOut").onclick = () => { closeModal(); signOut(); };
     if (!S.user) db.auth.getSession().then(({ data }) => { S.user = data && data.session ? data.session.user : null;
@@ -1078,6 +1131,7 @@ async function fetchAll(table, order) {
   return all;
 }
 async function load() {
+  if (!S.user) { try { const { data } = await db.auth.getUser(); S.user = data.user; } catch (e) {} } // e.g. after Face ID sign-in
   const [tx, ac, bu, go_, sn, ru, ho, it, mr, st] = await Promise.all([
     fetchAll("transactions", "date"),
     db.from("accounts").select("*").order("name"),
@@ -1091,6 +1145,11 @@ async function load() {
     db.from("app_settings").select("*"),
   ]);
   try { const { data: nm } = await db.rpc("item_names"); S.inst = Object.fromEntries((nm || []).map(r => [r.item_id, r.institution_name])); } catch (e) { S.inst = {}; }
+  try { const { data: adm } = await db.rpc("is_admin"); S.isAdmin = adm === true; } catch (e) { S.isAdmin = false; }
+  // things saved on this device belong to whoever was signed in; a different person starts clean
+  const uid = S.user && S.user.id, prev = store.get("hr_owner");
+  if (uid && prev && prev !== uid) { forgetLocal(); S.chat = { msgs: [], applied: {} }; }
+  if (uid && prev !== uid) store.set("hr_owner", uid);
   S.tx = tx.sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
   S.accts = ac.data || []; S.budgets = bu.data || []; S.goals = go_.data || []; S.snaps = sn.data || [];
   S.rules = ru.data || []; S.holdings = ho.data || []; S.invtx = it.data || [];
@@ -1110,7 +1169,7 @@ async function load() {
 }
 function timeAgo(iso) { const s = (Date.now() - Date.parse(iso)) / 1000; if (s < 90) return "just now"; if (s < 3600) return Math.round(s / 60) + " min ago"; if (s < 86400) return Math.round(s / 3600) + " h ago"; return Math.round(s / 86400) + " d ago"; }
 async function saveSetting(key, value) {
-  const { error } = await db.from("app_settings").upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+  const { error } = await db.from("app_settings").upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "user_id,key" });
   if (error) { toast(error.message, true); return false; } S.settings[key] = value; return true;
 }
 
@@ -1126,7 +1185,7 @@ function renderAll() {
   classify(); S._ver = (S._ver || 0) + 1; S.flags = computeFlags();
   $("rangeLbl").textContent = rangeLabel(); $("rangeBtn").title = rangeSub();
   renderOverview(); renderStrip(); renderTrends(); renderRecurring(); renderBudget();
-  renderTxns(); renderAccts(); renderAcSum(); renderInvest(); renderGoals(); renderSettings(); renderPush(); renderInstallHint(); saveSchedule(); saveDigest(); renderAiCard(); renderAiSettings();
+  renderTxns(); renderAccts(); renderAcSum(); renderInvest(); renderGoals(); renderSettings(); renderPush(); renderInstallHint(); saveSchedule(); saveDigest(); renderAiCard(); renderAiSettings(); renderWelcome();
   if (S.drill) refreshDrill();
 }
 
@@ -1218,7 +1277,7 @@ function editTx(id) {
     $("eSave").disabled = true;
     if (always) {
       const rr = { match: key, category: cat === t.category ? null : cat, rename: name && name !== orig ? name : null, updated_at: new Date().toISOString() };
-      const { error } = await db.from("merchant_rules").upsert(rr, { onConflict: "match" });
+      const { error } = await db.from("merchant_rules").upsert(rr, { onConflict: "user_id,match" });
       if (error) { $("eSave").disabled = false; return toast(error.message, true); }
       S.mrules[key] = { ...(S.mrules[key] || {}), ...rr };
       // the rule now governs every transaction from this merchant, so clear one-off overrides
@@ -1244,7 +1303,7 @@ function editTx(id) {
 
 async function makeRule(t, cat) {
   const key = mk(t);
-  const { error } = await db.from("merchant_rules").upsert({ match: key, category: cat, updated_at: new Date().toISOString() }, { onConflict: "match" });
+  const { error } = await db.from("merchant_rules").upsert({ match: key, category: cat, updated_at: new Date().toISOString() }, { onConflict: "user_id,match" });
   if (error) return toast(error.message, true);
   S.mrules[key] = { ...(S.mrules[key] || {}), match: key, category: cat };
   const ids = S.tx.filter(x => mk(x) === key && x.user_category).map(x => x.transaction_id);
@@ -1277,7 +1336,7 @@ function addTx() {
   setTimeout(() => $("nAmt") && !isMobile() && $("nAmt").focus(), 250);
   $("nSave").onclick = async () => {
     const a = Number($("nAmt").value); if (!a) return toast("Enter an amount", true);
-    const row = { transaction_id: "man-" + (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)), account_id: $("nAcct").value, date: $("nDate").value || todayISO(),
+    const row = { transaction_id: "man-" + (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)), account_id: $("nAcct").value === "cash" ? null : $("nAcct").value, date: $("nDate").value || todayISO(),
       name: $("nName").value.trim() || "Manual entry", merchant_name: null, amount: ty === "in" ? -a : a, category: $("nCat").value, category_detailed: null,
       pending: false, manual: true, notes: $("nNote").value.trim() || null };
     const { error } = await db.from("transactions").insert(row);
@@ -1528,7 +1587,7 @@ async function applyTxPlan(plan, picked) {
         const t0 = it.txs.find(t => mk(t) === key), prev = S.mrules[key] ? { ...S.mrules[key] } : null;
         const rr = { match: key, category: catFor(t0) || (prev && prev.category) || null, rename: it.rename || (prev && prev.rename) || null,
           excluded: it.counted === "excluded" ? true : it.counted === "normal" ? false : !!(prev && prev.excluded), updated_at: new Date().toISOString() };
-        const { error } = await db.from("merchant_rules").upsert(rr, { onConflict: "match" }); if (error) throw error;
+        const { error } = await db.from("merchant_rules").upsert(rr, { onConflict: "user_id,match" }); if (error) throw error;
         undo.rules.push({ key, prev }); S.mrules[key] = { ...(prev || {}), ...rr };
         // the rule now decides for this merchant, so one-off overrides are cleared (and remembered for undo)
         S.tx.filter(x => mk(x) === key && (x.user_category || x.user_name || (it.counted && x.excluded !== (it.counted === "excluded")))).forEach(x => { keep(x);
@@ -1548,7 +1607,7 @@ async function undoTxPlan(u) {
   const byId = Object.fromEntries(S.tx.map(t => [t.transaction_id, t]));
   await patchTxs(u.tx.filter(x => byId[x.id]).map(x => [byId[x.id], { user_category: x.user_category, user_name: x.user_name, excluded: x.excluded }]));
   for (const r of u.rules.reverse()) {
-    if (r.prev) { const { match, category, rename, excluded } = r.prev; const { error } = await db.from("merchant_rules").upsert({ match, category: category || null, rename: rename || null, excluded: !!excluded, updated_at: new Date().toISOString() }, { onConflict: "match" }); if (error) throw error; S.mrules[r.key] = r.prev; }
+    if (r.prev) { const { match, category, rename, excluded } = r.prev; const { error } = await db.from("merchant_rules").upsert({ match, category: category || null, rename: rename || null, excluded: !!excluded, updated_at: new Date().toISOString() }, { onConflict: "user_id,match" }); if (error) throw error; S.mrules[r.key] = r.prev; }
     else { const { error } = await db.from("merchant_rules").delete().eq("match", r.key); if (error) throw error; delete S.mrules[r.key]; }
   }
   const stillUsed = c => S.tx.some(t => t.user_category === c) || Object.values(S.mrules).some(r => r.category === c) || S.budgets.some(b => b.category === c);
@@ -1600,7 +1659,7 @@ function buildDigest() {
 function saveDigest() {
   if (!S.loaded) return; const d = buildDigest(), sig = JSON.stringify({ ...d, as_of: 0 });
   if (S._digSig === sig) return; S._digSig = sig;
-  db.from("app_settings").upsert({ key: "ai_digest", value: d, updated_at: new Date().toISOString() }, { onConflict: "key" }).then(() => {}, () => {});
+  db.from("app_settings").upsert({ key: "ai_digest", value: d, updated_at: new Date().toISOString() }, { onConflict: "user_id,key" }).then(() => {}, () => {});
 }
 
 // ---------- weekly review card ----------
@@ -1618,8 +1677,10 @@ async function loadAi() {
 }
 function renderAiCard() {
   const el = $("aiCard"), st = S.aiStatus, r = S.aiReview; if (!el) return;
+  document.body.classList.toggle("no-ai", !!st && !st.configured && !S.isAdmin);
   if (!st) { el.innerHTML = ""; el.hidden = true; return; } el.hidden = false;
   const head = sub => `<div class="aih"><h2>${SPARK} Weekly review</h2><span class="mute">${sub || ""}</span></div>`;
+  if (!st.configured && !S.isAdmin) { el.innerHTML = ""; el.hidden = true; return; }
   if (!st.configured) { el.innerHTML = head() + `<div class="mute">Get a short written review of your week, and ask questions about your money. <a href="#" id="aiSetup">Set it up</a></div>`;
     $("aiSetup").onclick = e => { e.preventDefault(); go("settings"); setTimeout(() => $("aiSet").scrollIntoView({ behavior: "smooth" }), 150); }; return; }
   if (!r) { el.innerHTML = head() + `<div class="mute">A short take on your week: what changed, what needs attention, one thing to try. One arrives every Sunday morning.</div>
@@ -1633,13 +1694,21 @@ function renderAiCard() {
     if ($("aiMore")) $("aiMore").onclick = () => { S._aiOpen = !S._aiOpen; renderAiCard(); }; }
   $("aiAsk2").onclick = () => openChat(r ? `About my weekly review ("${(r.body || {}).headline || ""}"): ` : "");
   $("aiWrite").onclick = async () => { const b = $("aiWrite"); b.disabled = true; b.textContent = "Writing…"; saveDigest(); S._digSig = null; await new Promise(ok => setTimeout(ok, 50));
-    await db.from("app_settings").upsert({ key: "ai_digest", value: buildDigest(), updated_at: new Date().toISOString() }, { onConflict: "key" });
+    await db.from("app_settings").upsert({ key: "ai_digest", value: buildDigest(), updated_at: new Date().toISOString() }, { onConflict: "user_id,key" });
     const j = await ai({ action: "review" }); if (j.error) { toast(j.error, true); b.disabled = false; b.textContent = "Try again"; return; }
     S.aiReview = j.review; S._aiOpen = false; renderAiCard(); toast("Review ready"); refreshAiUsage(); };
 }
 async function refreshAiUsage() { const st = await ai({ action: "status" }); if (st && !st.error) { S.aiStatus = st; renderAiSettings(); } }
 function renderAiSettings() {
   const el = $("aiSetBody"), st = S.aiStatus; if (!el || !st) return;
+  if (!S.isAdmin) { // invited people: no keys or costs, just their switch and how much is left today
+    if (!st.configured) { el.textContent = "The assistant isn't available right now."; return; }
+    const on = (S.settings.ai || {}).weekly !== false;
+    el.innerHTML = `<div class="optrow" style="border-top:0"><div><div class="t">Sunday review</div><div class="d">A short written review of your week, sent Sunday morning with your weekly notification.</div></div><label class="sw"><input type="checkbox" id="aiWeekly" ${on ? "checked" : ""}><span></span></label></div>
+      <div class="optrow"><div><div class="t">Today</div><div class="d">${st.today || 0} of ${st.cap} assistant requests used. Resets at midnight.</div></div></div>
+      <div class="optrow"><div><div class="t">What it sees</div><div class="d">Totals, categories, store names and amounts from your Headroom. Never account numbers or bank logins.</div></div></div>`;
+    $("aiWeekly").onchange = e => saveSetting("ai", { ...(S.settings.ai || {}), weekly: e.target.checked }); return;
+  }
   if (!st.configured) { el.innerHTML = `<div style="line-height:1.5">To turn it on, add an Anthropic API key to Supabase. It stays on the server; the app never sees it.
       <ol style="margin:8px 0 0;padding-left:20px"><li>Create a key at <b>console.anthropic.com</b> → API Keys (add a few dollars of credit and a monthly spend limit there).</li>
       <li>In Supabase: <b>Isaac's Budget Project → Edge Functions → Secrets → Add new secret</b>. Name: <code>ANTHROPIC_API_KEY</code>, value: your key.</li>
@@ -1762,6 +1831,18 @@ $("chatForm").onsubmit = e => { e.preventDefault(); sendChat($("chatText").value
 $("chatText").addEventListener("input", autoGrow);
 $("chatText").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !isMobile()) { e.preventDefault(); sendChat($("chatText").value); } });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("chat").classList.contains("hidden")) closeChat(); });
+
+/** New account with nothing linked yet: one clear first step instead of empty charts. */
+function renderWelcome() {
+  const el = $("welcome"); if (!el) return;
+  const empty = !S.accts.length && !S.tx.length; el.hidden = !empty; document.body.classList.toggle("is-empty", empty); if (!empty) return;
+  el.innerHTML = `<h2>Welcome to Headroom 👋</h2>
+    <p>Link your bank to see where your money goes. Headroom reads your balances and transactions; it can't move money.</p>
+    <div class="btns"><button class="primary" id="wLink">Link a bank</button><button id="wLinkInv">Link a brokerage</button></div>
+    <p class="mute" style="font-size:13px;margin-top:12px">Your data is private to your login. Prefer not to link a bank? <a class="link" href="#" id="wImp">Add transactions by hand</a>.</p>`;
+  $("wLink").onclick = () => startLink(false); $("wLinkInv").onclick = () => startLink(true);
+  $("wImp").onclick = e => { e.preventDefault(); go("txns"); setTimeout(() => $("fab").click(), 300); };
+}
 
 function renderStrip() {
   const ms = [...S.months].slice(0, 12).reverse(), stats = ms.map(monthStats), max = Math.max(1, ...stats.map(s => Math.max(s.inc, s.sp)));
@@ -2306,7 +2387,7 @@ function recurringList() {
   return res;
 }
 async function saveRule(row) {
-  const { error } = await db.from("recurring_rules").upsert({ ...row, updated_at: new Date().toISOString() }, { onConflict: "match_key" });
+  const { error } = await db.from("recurring_rules").upsert({ ...row, updated_at: new Date().toISOString() }, { onConflict: "user_id,match_key" });
   if (error) return toast(error.message, true);
   const i = S.rules.findIndex(r => r.match_key === row.match_key);
   if (i >= 0) S.rules[i] = { ...S.rules[i], ...row }; else S.rules.push(row);
@@ -2602,7 +2683,7 @@ function renderBudget() {
 }
 async function saveBudget(cat, amt, quiet) {
   if (!amt) return deleteBudget(cat, quiet);
-  const { error } = await db.from("budgets").upsert({ category: cat, monthly_amount: amt, updated_at: new Date().toISOString() }, { onConflict: "category" });
+  const { error } = await db.from("budgets").upsert({ category: cat, monthly_amount: amt, updated_at: new Date().toISOString() }, { onConflict: "user_id,category" });
   if (error) return toast(error.message, true);
   const b = S.budgets.find(x => x.category === cat), now = new Date().toISOString();
   if (b) { b.monthly_amount = amt; b.updated_at = now; } else S.budgets.push({ category: cat, monthly_amount: amt, updated_at: now });
@@ -2930,7 +3011,53 @@ $("addGoal").onclick = async () => {
 };
 
 // ---------- settings + Plaid ----------
+// ---------- people & invites (the app's owner only) ----------
+const fmtDay = d => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "never";
+async function renderPeople() {
+  const card = $("peopleSet"); if (!card) return; card.hidden = !S.isAdmin; if (!S.isAdmin) return;
+  const [ov, inv] = await Promise.all([db.rpc("admin_overview"), db.from("invites").select("*").order("created_at", { ascending: false })]);
+  const o = ov.data || {}, people = o.people || [], open = (inv.data || []).filter(i => !i.used_at && new Date(i.expires_at) > new Date());
+  const used = o.bank_links_ever || 0, left = Math.max(0, 10 - used);
+  $("peopleBody").innerHTML = `
+    <div class="optrow" style="border-top:0"><div><div class="t">Bank connections</div><div class="d">${o.bank_links_now || 0} linked now. Plaid's free plan allows 10 ever made: ${used} used, <b>${left} left</b>. Removing a bank doesn't give one back.</div></div></div>
+    ${people.map(p => `<div class="optrow"><div><div class="t">${esc(p.email || "")}${p.me ? " (you)" : ""}</div><div class="d">Joined ${fmtDay(p.joined)} · last here ${fmtDay(p.last_seen)} · ${p.banks} bank${p.banks === 1 ? "" : "s"}</div></div></div>`).join("")}
+    <div class="btns" style="margin-top:12px"><button class="primary" id="invNew">Create invite link</button></div>
+    <div id="invOut"></div>
+    ${open.length ? `<div class="mute" style="margin-top:14px;font-size:13px">Open invites (each works once, for 14 days)</div>${open.map(i => `<div class="optrow"><div><div class="t">${esc(i.note || "Invite")}</div><div class="d">Expires ${fmtDay(i.expires_at)}</div></div>
+      <div class="btns"><button class="mini" data-invcopy="${esc(i.code)}">Share</button><button class="mini" data-invdel="${esc(i.code)}">Cancel</button></div></div>`).join("")}` : ""}`;
+  $("invNew").onclick = async () => {
+    const note = (prompt("Who is this invite for? (just a note for you)", "") || "").trim().slice(0, 60);
+    const { data, error } = await db.from("invites").insert({ note: note || null }).select().single();
+    if (error) return toast(error.message, true);
+    await renderPeople(); shareInvite(data.code, note);
+  };
+  $("peopleBody").querySelectorAll("[data-invcopy]").forEach(b => b.onclick = () => shareInvite(b.dataset.invcopy));
+  $("peopleBody").querySelectorAll("[data-invdel]").forEach(b => b.onclick = async () => {
+    const { error } = await db.from("invites").delete().eq("code", b.dataset.invdel); if (error) return toast(error.message, true); toast("Invite cancelled"); renderPeople(); });
+}
+async function shareInvite(code, note) {
+  const url = location.origin + location.pathname + "?invite=" + code, text = "Here's your invite to Headroom, the budget app I use. It works once:";
+  $("invOut").innerHTML = `<div class="note" style="margin-top:12px;word-break:break-all"><b>${note ? esc(note) + "'s" : "Invite"} link</b><br>${esc(url)}</div>`;
+  if (navigator.share) { try { await navigator.share({ title: "Headroom invite", text, url }); return; } catch (e) { if (e && e.name === "AbortError") return; } }
+  try { await navigator.clipboard.writeText(url); toast("Link copied"); } catch (e) { toast("Copy the link above"); }
+}
+
+// ---------- your account ----------
+function renderAccount() {
+  const el = $("acctBody"); if (!el) return;
+  el.innerHTML = `<div class="optrow" style="border-top:0"><div><div class="t">Signed in as</div><div class="d">${esc((S.user && S.user.email) || "")}</div></div><button class="mini" id="acctOut">Sign out</button></div>
+    ${S.isAdmin ? "" : `<div class="optrow"><div><div class="t">Delete my account</div><div class="d">Disconnects your banks and permanently erases everything you've added to Headroom.</div></div><button class="mini danger" id="acctDel">Delete</button></div>`}`;
+  $("acctOut").onclick = signOut;
+  if ($("acctDel")) $("acctDel").onclick = async () => {
+    if (!confirm("Delete your Headroom account? Your banks are disconnected and all your data is erased. This can't be undone.")) return;
+    if ((prompt('Type DELETE to confirm') || "").trim() !== "DELETE") return toast("Not deleted");
+    try { await fn({ action: "delete_account", confirm: "DELETE" }); forgetLocal(); toast("Account deleted"); setTimeout(() => location.replace(location.pathname), 800); }
+    catch (e) { toast(e.message, true); }
+  };
+}
+
 function renderSettings() {
+  renderAccount(); if (!S._peopleShown) { S._peopleShown = true; renderPeople(); }
   const { min } = coverage();
   $("setInfo").textContent = `${S.accts.length} accounts linked · ${S.tx.length} transactions` + (min ? ` · history from ${shortDate(min)}` : "");
   $("optInTr").checked = S.settings.income_transfers !== false;
@@ -2984,7 +3111,7 @@ async function fn(body) {
   const { data: { session } } = await db.auth.getSession();
   const r = await fetch(`${SUPABASE_URL}/functions/v1/plaid`, { method: "POST",
     headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token, apikey: SUPABASE_KEY }, body: JSON.stringify(body) });
-  const j = await r.json(); if (!r.ok) throw new Error(j.error || r.statusText); return j;
+  const j = await r.json().catch(() => ({})); if (!r.ok || j.error) throw new Error(j.error || r.statusText); return j;
 }
 const REDIRECT = location.origin + location.pathname;
 function openLink(token, receivedRedirectUri) {
@@ -3256,7 +3383,7 @@ $("pushOn").onclick = async () => {
     const reg = await navigator.serviceWorker.ready;
     const sub = (await reg.pushManager.getSubscription()) || (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(VAPID) }));
     const j = sub.toJSON();
-    const { error } = await db.from("push_subscriptions").upsert({ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, user_agent: navigator.userAgent }, { onConflict: "endpoint" });
+    const { error } = await db.from("push_subscriptions").upsert({ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, user_agent: navigator.userAgent }, { onConflict: "user_id,endpoint" });
     if (error) throw error;
     await renderPush(); toast("Notifications on — sending a test…");
     await fnNotify({ action: "test" });
@@ -3305,7 +3432,7 @@ $("unlockBtn").onclick = async () => {
   try { const { error } = await db.auth.signInWithPasskey(); if (error) throw error; hideLock(); if (!S.loaded) await load(); }
   catch (e) { $("lockErr").textContent = pkErr(e); }
 };
-$("lockPw").onclick = async () => { hideLock(); await db.auth.signOut(); show(false); };
+$("lockPw").onclick = async () => { hideLock(); await signOut(); };
 /** After a password sign-in on a device without Face ID set up, offer it once. */
 function offerFaceId() {
   if (!pkSupported() || store.get("hr_pk_offered")) return; store.set("hr_pk_offered", true);
