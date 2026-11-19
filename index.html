@@ -270,6 +270,8 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
 .welcome{border:1px solid var(--accent);background:linear-gradient(180deg,var(--mint),var(--card) 70%)}
 .welcome h2{font-size:20px;margin:0 0 6px;text-transform:none;letter-spacing:-.01em;color:var(--text);font-weight:700}.welcome p{margin:0 0 12px;line-height:1.5}
 .danger{color:var(--bad);border-color:#FECACA}
+.incsum{padding:4px 0 6px}.incsum .big{font-size:30px;font-weight:700;letter-spacing:-.02em}.incsum .mute{font-size:13.5px;margin-top:2px}
+.inch{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin:16px 0 4px;font-weight:600}
 .segfull{display:flex;width:100%;margin-bottom:6px}.segfull button{flex:1;padding:10px}
 .amtbig{display:flex;align-items:baseline;justify-content:center;gap:2px;padding:14px 0 18px;color:var(--text);cursor:text}
 .amtbig span{font-size:30px;font-weight:600;color:var(--mute)}.amtbig.in span,.amtbig.in input{color:var(--accent-d)}
@@ -1431,7 +1433,7 @@ function renderAcSum() {
   $("acSum").querySelectorAll(".asub [data-id]").forEach(d => d.onclick = () => acctDetail(d.dataset.id));
   $("acSync").onclick = doSync; $("acAdd").onclick = () => go("accts");
 }
-$("paceFoot").onclick = () => $("week").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" });
+$("paceFoot").onclick = () => openIncome();
 
 // ---------- phone: filter panel, budget edit mode, (i) explainers ----------
 $("fToggle").onclick = () => { const on = $("txCard").classList.toggle("showF"); $("fToggle").setAttribute("aria-expanded", on); };
@@ -2568,8 +2570,9 @@ function renderComingUp() {
   const today = todayISO(), ev = upcoming(14);
   const pay = ev.find(e => e.kind === "pay");
   $("payHint").textContent = pay ? `— next payday ${inDays(pay.d)}` : "";
-  const pf = $("paceFoot"); pf.hidden = !pay;
-  if (pay) pf.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></svg><span>Payday ${inDays(pay.d)}</span><span class="go">›</span>`;
+  const pf = $("paceFoot"), mi = monthIncome(); pf.hidden = !pay && !mi.total;
+  if (!pf.hidden) pf.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></svg>
+    <span>${pay ? `Payday ${inDays(pay.d)} · ` : ""}<b class="pos">${money(mi.total)}</b> expected this month</span><span class="go">›</span>`;
   $("week").innerHTML = Array.from({ length: 7 }, (_, i) => {
     const d = dstr(dnum(today) + i), dt = new Date(d + "T12:00:00"), bills = ev.filter(e => e.d === d && e.kind === "bill"), p = ev.some(e => e.d === d && e.kind === "pay");
     const tot = bills.reduce((s, e) => s + e.amt, 0);
@@ -2582,6 +2585,33 @@ function renderComingUp() {
   const bills7 = ev.filter(e => e.kind === "bill" && dnum(e.d) - dnum(today) < 7).reduce((s, e) => s + e.amt, 0);
   if (bills7) $("upList").insertAdjacentHTML("afterbegin", `<div class="mute" style="margin-bottom:4px">${money(bills7)} in bills due this week</div>`);
 }
+/** This month's income: what's already in, plus the paychecks still expected before the month ends. */
+function monthIncome() {
+  const cur = todayISO().slice(0, 7), today = todayISO(), end = endOfMonth(cur);
+  const got = monthTx(cur).filter(isIncome).sort((a, b) => a.date < b.date ? 1 : -1), received = incomeOf(got);
+  const coming = []; incomeStreams().forEach(x => occurrences(x.next, x.gap, end).forEach(d => { if (d >= today) coming.push({ d, name: x.name, amt: x.amount }); }));
+  coming.sort((a, b) => a.d < b.d ? -1 : 1);
+  const expected = coming.reduce((s, e) => s + e.amt, 0);
+  return { cur, got, received, coming, expected, total: received + expected };
+}
+function openIncome() {
+  const mi = monthIncome(), usual = expectedIncome(), pm = addMonths(mi.cur, -1), last = S.months.includes(pm) ? incomeOf(monthTx(pm)) : 0;
+  const cmp = usual ? (Math.abs(mi.total - usual) / usual < .05 ? "about your usual month" : `${mi.total > usual ? "more" : "less"} than your usual ${money(usual)}`) : "";
+  const row = (icon, name, sub, amt, attrs = "") => `<div class="rowline" ${attrs}><span>${icon} ${esc(name)} <span class="mute" style="white-space:nowrap">· ${sub}</span></span><span class="pos" style="font-weight:600">+${money2(amt)}</span></div>`;
+  openModal("Income this month", monthLong(mi.cur), `
+    <div class="incsum"><div class="big pos">${money(mi.total)}</div>
+      <div class="mute">${money(mi.received)} received · ${money(mi.expected)} still expected${cmp ? ` · ${cmp}` : ""}</div>
+      ${last ? `<div class="mute">Last month: ${money(last)}</div>` : ""}</div>
+    <h3 class="inch">Still expected</h3>
+    ${mi.coming.length ? mi.coming.map(e => row("💰", e.name, `${esc(shortDate(e.d))}, ${inDays(e.d)}`, e.amt)).join("") : `<div class="mute">No more paychecks expected this month.</div>`}
+    <h3 class="inch">Received</h3>
+    ${mi.got.length ? mi.got.map(t => row("✓", tname(t), esc(shortDate(t.date)), -t.amount, `data-tx="${esc(t.transaction_id)}" style="cursor:pointer"`)).join("") : `<div class="mute">Nothing yet this month.</div>`}
+    <p class="mute" style="font-size:13px;margin-top:14px">Upcoming paychecks are estimated from your recent pay pattern.</p>
+    <div class="btns"><button id="incBills">See upcoming bills</button></div>`);
+  $("mBody").querySelectorAll("[data-tx]").forEach(r => r.onclick = () => editTx(r.dataset.tx));
+  $("incBills").onclick = () => { closeModal(); setTimeout(() => $("week").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" }), 220); };
+}
+
 function renderInsights() {
   const items = [], acts = [], act = (label, fn) => { acts.push(fn); return `<button class="mini" data-a="${acts.length - 1}">${esc(label)}</button>`; };
   const today = todayISO(), cur = today.slice(0, 7), day = Number(today.slice(8)), dim = Number(endOfMonth(cur).slice(8));
