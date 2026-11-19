@@ -1,5 +1,5 @@
 // Headroom service worker: opens instantly / offline from cache, and shows push notifications.
-const VERSION = "headroom-v8.2";
+const VERSION = "headroom-v11";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/badge-96.png"];
 const CDN = "https://cdn.jsdelivr.net/";
 
@@ -14,9 +14,10 @@ self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
-  // The app itself: always try the network first so updates show up right away; fall back to the saved copy offline.
+  // The app itself: always ask the server first (skipping the browser's short-term cache) so updates show up on the
+  // next open; fall back to the saved copy offline.
   if (url.origin === self.location.origin) {
-    e.respondWith(fetch(req).then(res => { if (res.ok) { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); } return res; })
+    e.respondWith(fetch(req, { cache: "no-cache" }).then(res => { if (res.ok) { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); } return res; })
       .catch(() => caches.match(req, { ignoreSearch: true }).then(r => r || caches.match("./index.html"))));
     return;
   }
