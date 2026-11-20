@@ -305,6 +305,18 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
 .ihrow{padding:9px 0;border-top:1px solid var(--line)}.ihrow:first-child{border-top:0;padding-top:2px}.ih1{display:flex;justify-content:space-between;gap:10px}.ih1>span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ih1 .mute{font-size:12.5px}
 .ih2{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:12.5px}.ih2 .bar{flex:1;height:4px}.ih2 .bar i{background:var(--accent)}
 .ivsrc{font-size:12.5px;line-height:1.45;margin:10px 0 0}.ivsrc:empty{display:none}
+.ivsw{display:none}
+@media (max-width:760px){
+  #p-invest .ivsw{display:flex;width:100%;margin-bottom:6px}#p-invest .ivsw button{flex:1}
+  #ivAcctCard h2,#ivHoldCard h2{display:none}
+  #p-invest.iv-hold #ivAcctCard,#p-invest.iv-accts #ivHoldCard{display:none}
+  .iarow{padding:9px 0}.iarow:first-child{padding-top:6px}
+  #ivHold .ihrow{display:flex;align-items:center;gap:10px;padding:8px 0}#ivHold .ihrow:first-child{padding-top:6px}
+  #ivHold .ih1{display:contents}#ivHold .ih1 .mute{display:none}#ivHold .ih1>span{order:1;flex:0 0 64px}
+  #ivHold .ih2{order:2;flex:1;margin:0;min-width:0}#ivHold .ih1>b{order:3;min-width:62px;text-align:right}
+  #ivHold .ih2 .pos,#ivHold .ih2 .neg{display:none}
+  .ivchart{height:170px}.ivgrid{margin-top:12px}
+}
 .pvform{display:flex;gap:6px;margin-top:10px}.pvform input{flex:1;min-width:0}.pvform input[type=date]{flex:1.2}
 #merchants .mamt{display:flex;flex-direction:column;align-items:flex-end;flex:0 0 auto;text-align:right}#merchants .mamt .mute{font-size:12px;margin-top:1px}.hgap .hrng{display:block;margin-top:1px}
 #impCard.flash{animation:flash 1.6s ease}@keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:none}}
@@ -766,8 +778,8 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
       <div class="ivgrid" id="ivGrid"></div>
     </div>
     <div class="two">
-      <div class="card" id="ivAcctCard" hidden><h2>Accounts</h2><div id="ivAccts"></div></div>
-      <div class="card" id="ivHoldCard" hidden><h2>Top holdings</h2><div id="ivHold"></div></div>
+      <div class="card" id="ivAcctCard" hidden><div class="seg ivsw"><button data-l="accts">Accounts</button><button data-l="hold">Holdings</button></div><h2>Accounts</h2><div id="ivAccts"></div></div>
+      <div class="card" id="ivHoldCard" hidden><div class="seg ivsw"><button data-l="accts">Accounts</button><button data-l="hold">Holdings</button></div><h2>Top holdings</h2><div id="ivHold"></div></div>
     </div>
     <div class="card" id="ivActCard" hidden><h2>Recent activity</h2><div id="ivAct"></div></div>
   </div>
@@ -3552,9 +3564,13 @@ function renderInvest() {
   $("ivHold").innerHTML = H.n ? H.html + (H.n > 5 ? `<div class="ivmore"><a class="link" id="ivHoldT">${S.invAllH ? "Show fewer" : `See all ${H.n} holdings`}</a></div>` : "")
     : `<div class="mute">No positions shared yet. Use <b>Settings → Link a brokerage</b> to include holdings.</div>`;
   if ($("ivHoldT")) $("ivHoldT").onclick = () => { S.invAllH = !S.invAllH; renderInvest(); };
+  // phones show accounts or holdings, one at a time
+  const list = S.invList || "accts";
+  $("p-invest").classList.toggle("iv-hold", list === "hold"); $("p-invest").classList.toggle("iv-accts", list !== "hold");
+  document.querySelectorAll(".ivsw [data-l]").forEach(b => { b.classList.toggle("on", b.dataset.l === list); b.onclick = () => { S.invList = b.dataset.l; renderInvest(); }; });
   // recent activity in plain words
-  const rows = invActRows(S.invtx, true);
-  $("ivAct").innerHTML = rows.length ? rows.slice(0, 8).join("") + (rows.length > 8 ? `<div class="ivmore"><a class="link" id="ivActAll">See all activity</a></div>` : "") : `<div class="mute">No activity yet.</div>`;
+  const rows = invActRows(S.invtx, true), nAct = isMobile() ? 5 : 8;
+  $("ivAct").innerHTML = rows.length ? rows.slice(0, nAct).join("") + (rows.length > nAct ? `<div class="ivmore"><a class="link" id="ivActAll">See all activity</a></div>` : "") : `<div class="mute">No activity yet.</div>`;
   if ($("ivActAll")) $("ivActAll").onclick = () => openModal("Investment activity", `${rows.length} items`, rows.join(""));
   if ($("p-invest").classList.contains("on")) drawInvChart();
 }
