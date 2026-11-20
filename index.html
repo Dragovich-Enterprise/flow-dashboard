@@ -282,6 +282,17 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
 .hb1{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.hb1 .mute{font-size:13px}.hok{font-size:13px;font-weight:600}
 .hgap{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:8px;font-size:14px}.hgap .mute{font-size:13px}
 .hgap .hbtns{display:flex;gap:6px;flex:0 0 auto}
+.fssafe{background:var(--soft);border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.45;margin-bottom:14px}.fssafe.warn{background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.fsrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.fslbl{font-weight:600}
+.fsval{display:flex;align-items:center;gap:6px}.fsval .mini{width:34px;height:34px;padding:0;font-size:18px;line-height:1;border:1px solid var(--line2);border-radius:10px;color:var(--text)}
+.fsin{display:flex;align-items:baseline;border:1px solid var(--line2);border-radius:10px;padding:4px 8px;background:var(--card)}.fsin span{font-weight:600;color:var(--mute)}
+.fsin input{width:64px;border:0;background:transparent;color:var(--text);font:inherit;font-size:20px;font-weight:700;text-align:right;padding:0;outline:none;-moz-appearance:textfield}
+.fsin input::-webkit-outer-spin-button,.fsin input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}.fsin:focus-within{border-color:var(--accent)}
+.fsrange{width:100%;margin:14px 0 8px;-webkit-appearance:none;appearance:none;height:6px;border-radius:99px;background:linear-gradient(to right,var(--accent) var(--p,50%),var(--line) var(--p,50%));outline:none}
+.fsrange::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--card);border:2px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:pointer}
+.fsrange::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--card);border:2px solid var(--accent);cursor:pointer}
+.fschips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.fschips .chip,#fsTChip .chip{border:1px solid var(--line2);background:var(--card);cursor:pointer}#fsTChip{display:contents}
+.fsmsg{font-size:14px;line-height:1.5;margin:10px 0 12px}.fsbtns{margin-bottom:6px}.fsbtns button[disabled]{opacity:1;cursor:default}
 #merchants .mamt{display:flex;flex-direction:column;align-items:flex-end;flex:0 0 auto;text-align:right}#merchants .mamt .mute{font-size:12px;margin-top:1px}.hgap .hrng{display:block;margin-top:1px}
 #impCard.flash{animation:flash 1.6s ease}@keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:none}}
 .setupcard{display:flex;gap:12px;align-items:center;justify-content:space-between;border:1px solid var(--accent);background:linear-gradient(180deg,var(--mint),var(--card) 80%)}
@@ -297,6 +308,7 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
 .leftcard{position:relative;cursor:pointer;padding:14px 16px}
 .leftcard .lt{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-right:18px}.leftcard .lt b{font-size:24px;letter-spacing:-.02em}
 .leftcard .ls{font-size:13.5px;color:var(--mute);margin-top:2px;padding-right:18px}.leftcard .ls b{color:var(--text);font-weight:600}
+.leftcard .lpace{margin-top:4px}.leftcard .lpace span{font-weight:600}
 .leftcard .go{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--mute);font-size:20px}
 .sprow{display:grid;grid-template-columns:minmax(0,1fr) 110px 34px;gap:8px;align-items:center;margin-bottom:8px}.sprow select,.sprow input{width:100%}
 .sprow input[readonly]{background:var(--card2);color:var(--mute)}
@@ -521,6 +533,7 @@ html.dark{color-scheme:dark;--bg:#0E1513;--card:#161E1C;--card2:#1B2421;--line:#
   --accent:#2DD4BF;--accent-d:#2DD4BF;--brand:#0F3D38;--brand2:#115E59;--mint:#123A35;--warn:#FBBF24;--bad:#F87171;--blue:#5EEAD4;
   --shadow:0 1px 2px rgba(0,0,0,.35)}
 html.dark input,html.dark select,html.dark textarea,html.dark .seg,html.dark .day,html.dark #bulk{background:var(--card);color:var(--text)}
+html.dark input.fsrange{background:linear-gradient(to right,var(--accent) var(--p,50%),var(--line2) var(--p,50%));border:0}html.dark .fsin input{background:transparent}
 html.dark button.primary,html.dark .fab{background:#0F766E;border-color:#0F766E;color:#fff}html.dark button.primary:hover{background:#115E59}
 html.dark .pill.ok,html.dark .seg button.on,html.dark .chip.on{color:#5EEAD4}html.dark .arow .ic{color:#5EEAD4}
 html.dark .day.today,html.dark .install,html.dark .pgrid button.on{background:var(--mint)}html.dark .install{border-color:#1F5F57}
@@ -1726,6 +1739,8 @@ function chatContext() {
     `Accounts: ${shownAccts().map(a => `${a.nickname || a.name} (${SUB[a.subtype] || a.type})`).join(", ")}.`,
     `Regular income: ${inc.map(x => `${x.name} about ${rawMoney(x.amount)} every ${x.gap} days`).join("; ") || "not detected"}.`,
     `History starts: ${Object.entries(firstByBank).map(([b, d]) => `${b} ${d}`).join(", ")}. Months before a bank's start date are missing that bank's activity.`,
+    (() => { const F = cashForecast(), P = monthPace(); if (!F) return "";
+      return `Everyday spending (everything except recurring bills): usual about ${rawMoney(F.usual)} a day; ${F.target != null ? `the person's target is ${rawMoney(F.target)} a day${P ? `, and so far this month it's ${rawMoney(P.perDay)} a day` : ""}` : "no daily target set (they can set one in the Cash forecast)"}. Checking could go as low as ${rawMoney(F.low.v)} around ${F.low.d}; the most they can spend per day and stay above ${rawMoney(F.lim)} for 30 days is ${F.safe >= 1 ? rawMoney(F.safe) : "nothing (bills alone take it under)"}.`; })(),
     proposalStatus(),
   ].filter(Boolean).join("\n");
 }
@@ -2730,7 +2745,12 @@ async function undoSplit(p, kids) {
 
 // ---------- cash forecast: where checking is headed over the next 30 days ----------
 /** Today's checking balance, plus expected paychecks, minus bills, minus your usual everyday spending (spread evenly). */
-function cashForecast(days = 30) {
+/** The person's saved everyday-spending target ($/day), or null when they use their usual. */
+const dailyTarget = () => { const v = S.settings.daily_target; return v == null || v === "" || !isFinite(Number(v)) ? null : Math.max(0, Number(v)); };
+/** Checking over the next `days`: paychecks in, recurring bills out on their dates, and everyday spending
+ *  (everything that isn't a recurring bill) out each day. Everyday spending is the saved target if there is one,
+ *  otherwise the usual from recent full months; `dailyOverride` tries another amount without saving it. */
+function cashForecast(days = 30, dailyOverride) {
   const hidden = new Set(S.settings.hidden_accounts || []);
   const chk = S.accts.filter(a => a.type === "depository" && (a.subtype === "checking" || !a.subtype) && !hidden.has(a.account_id));
   if (!chk.length) return null;
@@ -2738,15 +2758,20 @@ function cashForecast(days = 30) {
   const since = fullSince(), full = coverage().fullMonths, solid = full.filter(m => !since || m + "-01" >= since), months = (solid.length >= 2 ? solid : full).slice(0, 3);
   const avgSp = months.length ? months.reduce((s, m) => s + monthStats(m).sp, 0) / months.length : 0;
   const recMonthly = recurringList().live.reduce((s, r) => s + (Number(r.cadence) === 30 ? r.amount : r.amount * 30.44 / (Number(r.cadence) || 30)), 0);
-  const daily = Math.max(0, (avgSp - recMonthly) / 30.44);
-  let bal = start; const pts = []; let low = null;
-  for (let i = 0; i <= days; i++) {
-    const d = dstr(dnum(today) + i); if (i > 0) bal -= daily;
-    ev.filter(e => e.d === d).forEach(e => bal += e.kind === "pay" ? e.amt : -e.amt);
-    pts.push({ d, v: bal }); if (!low || bal < low.v) low = { d, v: bal };
-  }
-  const nextPay = ev.find(e => e.kind === "pay");
-  return { start, pts, low, end: bal, daily, ev: ev.filter(e => e.d <= dstr(dnum(today) + days)), accts: chk, nextPay, months: months.length };
+  const usual = Math.max(0, (avgSp - recMonthly) / 30.44), target = dailyTarget();
+  const daily = dailyOverride != null ? Math.max(0, dailyOverride) : target != null ? target : usual;
+  const dates = [], evDay = [];
+  for (let i = 0; i <= days; i++) { const d = dstr(dnum(today) + i); dates.push(d); evDay.push(ev.filter(e => e.d === d).reduce((s, e) => s + (e.kind === "pay" ? e.amt : -e.amt), 0)); }
+  const run = per => { let bal = start, low = null; const pts = [];
+    for (let i = 0; i <= days; i++) { if (i > 0) bal -= per; bal += evDay[i]; pts.push({ d: dates[i], v: bal }); if (!low || bal < low.v) low = { d: dates[i], v: bal }; }
+    return { pts, low, end: bal }; };
+  // safe daily limit: the most per day that keeps every day from tomorrow on at or above the low-balance line
+  const lim = lowLimit(); let cum = start + evDay[0], safe = Infinity, billsDip = null; const under = cum < lim;
+  for (let i = 1; i <= days; i++) { cum += evDay[i]; safe = Math.min(safe, (cum - lim) / i); if (!billsDip && cum < lim) billsDip = dates[i]; }
+  safe = Math.floor(safe);
+  const r = run(daily), nextPay = ev.find(e => e.kind === "pay");
+  return { start, pts: r.pts, low: r.low, end: r.end, daily, usual, target, safe, billsDip, under, lim, run,
+    ev: ev.filter(e => e.d <= dstr(dnum(today) + days)), accts: chk, nextPay, months: months.length };
 }
 const lowLimit = () => Number((S.settings.notify || {}).lowAmt) || 500;
 function renderForecast() {
@@ -2754,9 +2779,10 @@ function renderForecast() {
   const lim = lowLimit(), dip = F.low.v < lim && F.low.d !== todayISO(), neg = F.low.v < 0;
   $("fcHead").innerHTML = `<div><span class="mute">Lowest point</span><b class="${neg ? "neg" : dip ? "warnc" : ""}">${money(F.low.v)}</b><span class="mute">${F.low.d === todayISO() ? "today" : shortDate(F.low.d)}</span></div>
     <div><span class="mute">Checking now</span><b>${money(F.start)}</b></div><div><span class="mute">In 30 days</span><b>${money(F.end)}</b></div>`;
-  $("fcFoot").innerHTML = neg ? `⚠ Checking could go below zero around ${esc(shortDate(F.low.d))}${F.nextPay && F.nextPay.d > F.low.d ? `, before your ${esc(shortDate(F.nextPay.d))} payday` : ""}. <a class="link" id="fcMore">Why?</a>`
-    : dip ? `Checking could dip under ${money(lim)} around ${esc(shortDate(F.low.d))}${F.nextPay && F.nextPay.d > F.low.d ? `, before payday` : ""}. <a class="link" id="fcMore">Why?</a>`
-    : `Checking stays above ${money(lim)} for the next 30 days. <a class="link" id="fcMore">How this works</a>`;
+  const atT = F.target != null ? ` at your ${money(F.target)}/day target` : "";
+  $("fcFoot").innerHTML = neg ? `⚠ Checking could go below zero around ${esc(shortDate(F.low.d))}${F.nextPay && F.nextPay.d > F.low.d ? `, before your ${esc(shortDate(F.nextPay.d))} payday` : ""}${atT}. <a class="link" id="fcMore">Why?</a>`
+    : dip ? `Checking could dip under ${money(lim)} around ${esc(shortDate(F.low.d))}${F.nextPay && F.nextPay.d > F.low.d ? `, before payday` : ""}${atT}. <a class="link" id="fcMore">Why?</a>`
+    : `Checking stays above ${money(lim)} for the next 30 days${atT}. <a class="link" id="fcMore">${F.target != null ? "Adjust" : "Try a daily amount"}</a>`;
   $("fcMore").onclick = e => { e.stopPropagation(); openForecast(); };
   el.onclick = openForecast;
   const dk = document.documentElement.classList.contains("dark"), line = dk ? "#2DD4BF" : "#0D9488";
@@ -2767,14 +2793,67 @@ function renderForecast() {
       scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 5, maxRotation: 0 } }, y: { ticks: { callback: moneyTick, maxTicksLimit: 4 } } }, interaction: { mode: "index", intersect: false } } });
 }
 function openForecast() {
-  const F = cashForecast(); if (!F) return; let bal = F.start;
-  const rows = []; F.ev.forEach(e => { rows.push(`<div class="rowline"><span>${e.kind === "pay" ? "💰" : "📅"} ${esc(e.name)} <span class="mute" style="white-space:nowrap">· ${esc(shortDate(e.d))}</span></span><span class="${e.kind === "pay" ? "pos" : ""}" style="font-weight:600">${e.kind === "pay" ? "+" : "−"}${money(e.amt)}</span></div>`); });
+  const F = cashForecast(); if (!F) return;
+  const lim = F.lim, today = todayISO(), dk = document.documentElement.classList.contains("dark"), line = dk ? "#2DD4BF" : "#0D9488";
+  let saved = dailyTarget(), val = Math.round(F.daily);
+  const max = Math.max(50, Math.ceil(Math.max(F.usual * 2, F.safe > 0 ? F.safe * 1.25 : 0, saved != null ? saved * 1.5 : 0, val * 1.2) / 10) * 10);
+  const acct = F.accts.length === 1 ? esc(F.accts[0].nickname || F.accts[0].name) : `your ${F.accts.length} checking accounts`;
+  const safeLine = F.safe >= 1 ? `You can spend up to <b>${money(F.safe)} a day</b> on everyday things and keep checking above ${money(lim)} for the next 30 days.`
+    : F.under ? `Checking is already under ${money(lim)}, so there's no room for everyday spending until more money comes in.`
+    : `Even at $0 a day, bills alone take checking under ${money(lim)} around <b>${esc(shortDate(F.billsDip))}</b>.`;
+  const rows = F.ev.map(e => `<div class="rowline"><span>${e.kind === "pay" ? "💰" : "📅"} ${esc(e.name)} <span class="mute" style="white-space:nowrap">· ${esc(shortDate(e.d))}</span></span><span class="${e.kind === "pay" ? "pos" : ""}" style="font-weight:600">${e.kind === "pay" ? "+" : "−"}${money(e.amt)}</span></div>`);
   openModal("Cash forecast", "Checking, next 30 days", `
-    <p class="rnote">Starts with what's in ${F.accts.length === 1 ? esc(F.accts[0].nickname || F.accts[0].name) : `your ${F.accts.length} checking accounts`} today (${money(F.start)}), adds expected paychecks, subtracts your recurring bills on their dates, and subtracts everyday spending of about <b>${money(F.daily)} a day</b>${F.months ? ` (your usual from the last ${F.months === 1 ? "month" : F.months + " months"}, minus bills)` : ""}.</p>
-    <p class="rnote mute" style="font-size:13px">Card purchases are counted as they happen, even though you pay the card later, and money you move to savings isn't included. Treat it as a heads-up, not an exact balance.</p>
-    <h3 class="inch">Lowest point</h3><p class="rnote"><b class="${F.low.v < 0 ? "neg" : ""}">${money(F.low.v)}</b> around ${esc(F.low.d === todayISO() ? "today" : shortDate(F.low.d))}${F.nextPay ? ` · next payday ${esc(shortDate(F.nextPay.d))}` : ""}</p>
+    <div class="fssafe ${F.safe >= 1 ? "" : "warn"}">${safeLine}</div>
+    <div class="fsrow"><span class="fslbl">Everyday spending</span>
+      <div class="fsval"><button class="mini ghost" id="fsMinus" aria-label="$5 less">−</button><label class="fsin"><span>$</span><input id="fsVal" type="number" inputmode="numeric" min="0" max="99999" step="1" aria-label="Everyday spending per day"></label><span class="mute">/day</span><button class="mini ghost" id="fsPlus" aria-label="$5 more">+</button></div></div>
+    <input type="range" class="fsrange" id="fsRange" min="0" max="${max}" step="1" aria-label="Everyday spending per day">
+    <div class="fschips"><button class="chip" data-v="${Math.round(F.usual)}">Usual ${money(F.usual)}</button>${F.safe >= 1 ? `<button class="chip" data-v="${F.safe}">Safe limit ${money(F.safe)}</button>` : ""}<span id="fsTChip"></span></div>
+    <div class="fchead" id="fsHead"></div>
+    <div class="fcbox"><canvas id="cFcSim"></canvas></div>
+    <p class="fsmsg" id="fsMsg"></p>
+    <div class="btns fsbtns" id="fsBtns"></div>
+    <h3 class="inch">How this works</h3>
+    <p class="rnote">Starts with what's in ${acct} today (${money(F.start)}), adds expected paychecks, subtracts recurring bills on their dates, and subtracts everyday spending each day: everything that isn't a recurring bill, like groceries, gas and eating out.${F.months ? ` Your usual (${money(F.usual)} a day) comes from your last ${F.months === 1 ? "full month" : F.months + " full months"}.` : ""}</p>
+    <p class="rnote mute" style="font-size:13px">Card purchases count when they happen, and transfers to savings aren't included. Treat it as a heads-up, not an exact balance.</p>
     <h3 class="inch">Expected in the next 30 days</h3>${rows.join("") || `<div class="mute">No paychecks or bills found.</div>`}
-`);
+  `);
+  const btns = () => {
+    const isSaved = saved != null && Math.round(saved) === val;
+    $("fsBtns").innerHTML = `<button class="primary" id="fsSave" ${isSaved ? "disabled" : ""}>${isSaved ? "✓ Your daily target" : `Save ${money(val)}/day as my target`}</button>${saved != null ? `<button id="fsReset">Use my usual</button>` : ""}`;
+    $("fsTChip").innerHTML = saved != null ? `<button class="chip" data-v="${Math.round(saved)}">Target ${money(saved)}</button>` : "";
+    $("fsTChip").querySelectorAll("[data-v]").forEach(b => b.onclick = () => upd(b.dataset.v));
+    if (!isSaved) $("fsSave").onclick = async () => { if (await saveSetting("daily_target", val)) { saved = val; renderAll(); btns(); toast(`Target set: ${money(val)} a day`); } };
+    if ($("fsReset")) $("fsReset").onclick = async () => { if (await saveSetting("daily_target", null)) { saved = null; renderAll(); upd(F.usual); toast("Back to your usual"); } };
+  };
+  let raf = 0;
+  const upd = (v, from) => {
+    val = Math.max(0, Math.min(99999, Math.round(Number(v) || 0)));
+    if (from !== "in") $("fsVal").value = val;
+    if (from !== "range") $("fsRange").value = Math.min(val, max);
+    $("fsRange").style.setProperty("--p", (Math.min(val, max) / max * 100).toFixed(1) + "%");
+    cancelAnimationFrame(raf); raf = requestAnimationFrame(() => {
+      const Rn = F.run(val), neg = Rn.low.v < 0, dip = Rn.low.v < lim && Rn.low.d !== today, diff = (F.usual - val) * 30;
+      $("fsHead").innerHTML = `<div><span class="mute">Lowest point</span><b class="${neg ? "neg" : dip ? "warnc" : ""}">${money(Rn.low.v)}</b><span class="mute">${Rn.low.d === today ? "today" : esc(shortDate(Rn.low.d))}</span></div>
+        <div><span class="mute">In 30 days</span><b>${money(Rn.end)}</b></div>
+        <div><span class="mute">vs. your usual</span><b class="${Math.abs(diff) < 15 ? "" : diff > 0 ? "pos" : "neg"}">${Math.abs(diff) < 15 ? "same" : (diff > 0 ? "+" : "−") + money(Math.abs(diff))}</b><span class="mute">in 30 days</span></div>`;
+      $("fsMsg").innerHTML = Math.abs(val - F.usual) < 1 ? `That's about what you usually spend on everyday things.`
+        : `At ${money(val)} a day instead of your usual ${money(F.usual)}, you'd have <b>${money(Math.abs(diff))} ${diff > 0 ? "more" : "less"}</b> in checking after 30 days, about ${money(Math.abs(F.usual - val) * 365)} a year.`
+          + (dip || neg ? ` <span class="${neg ? "neg" : "warnc"}">Checking would dip under ${money(neg ? 0 : lim)} around ${esc(shortDate(Rn.low.d))}.</span>` : "");
+      chart("cFcSim", { type: "line", data: { labels: Rn.pts.map(p => shortDate(p.d)), datasets: [
+          { data: Rn.pts.map(p => Math.round(p.v)), borderColor: line, backgroundColor: fadeHex(line, .12), fill: true, borderWidth: 2, pointRadius: Rn.pts.map(p => p.d === Rn.low.d ? 4 : 0), pointBackgroundColor: neg || dip ? "#DC2626" : line, tension: .25 },
+          { data: Rn.pts.map(() => lim), borderColor: "#DC2626", borderDash: [4, 4], borderWidth: 1, pointRadius: 0, fill: false } ] },
+        options: { plugins: { legend: { display: false }, tooltip: { filter: i => i.datasetIndex === 0, callbacks: { label: c => " " + money(c.raw) } } },
+          scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 5, maxRotation: 0 } }, y: { ticks: { callback: moneyTick, maxTicksLimit: 4 } } }, interaction: { mode: "index", intersect: false } } });
+      btns();
+    });
+  };
+  $("fsVal").oninput = e => upd(e.target.value, "in");
+  $("fsVal").onblur = () => { $("fsVal").value = val; };
+  $("fsRange").oninput = e => upd(e.target.value, "range");
+  $("fsMinus").onclick = () => upd(Math.max(0, Math.ceil(val / 5) * 5 - 5));
+  $("fsPlus").onclick = () => upd(Math.floor(val / 5) * 5 + 5);
+  document.querySelectorAll(".fschips > [data-v]").forEach(b => b.onclick = () => upd(b.dataset.v));
+  upd(val);
 }
 
 // ---------- set up my budget for me: budgets from what you actually spend ----------
@@ -2950,11 +3029,22 @@ function leftToSpend() {
   if (budget > 0) { const left = budget - spent; return { mode: "budget", budget, spent, bills, billsDue, left, daysLeft, perDay: left / daysLeft }; }
   return null;
 }
+/** Everyday spending so far this month (spending minus recurring bills already charged) against the daily target.
+ *  Bills are matched the same way the Recurring list finds them: same store, about the same amount. */
+function monthPace() {
+  const tg = dailyTarget(); if (tg == null) return null;
+  const today = todayISO(), cur = today.slice(0, 7), dayN = Number(today.slice(8, 10)), dim = Number(endOfMonth(cur).slice(8, 10));
+  const keys = recurringList().live.map(r => ({ mk: r.mkey, amt: Number(r.amount) || 0 }));
+  const isBill = t => t._k === "spend" && keys.some(k => k.mk === mKey(t.merchant_name || t.name || "") && Math.abs(t.amount - k.amt) <= Math.max(1, k.amt * .25));
+  const bills = monthTx(cur).filter(isBill).reduce((s, t) => s + t.amount, 0);
+  const everyday = Math.max(0, monthStats(cur).sp - bills), perDay = everyday / dayN, daysLeft = dim - dayN, room = tg * dim - everyday;
+  return { target: tg, everyday, perDay, dayN, dim, daysLeft, bills, room, restPerDay: daysLeft > 0 ? Math.max(0, room) / daysLeft : 0, over: perDay > tg * 1.03 };
+}
 function renderLeft() {
   const el = $("leftCard"), L = leftToSpend(); el.hidden = !L; if (!L) return;
   const over = L.left < 0;
   el.innerHTML = `<div class="lt"><span class="mute">Left to spend this month</span><b class="${over ? "neg" : "pos"}">${over ? "−" : ""}${money(Math.abs(L.left))}</b></div>
-    <div class="ls">${over ? `Spending is ahead of ${L.mode === "income" ? "income" : "your budget"} this month` : `about <b>${money(L.perDay)}</b> a day · ${L.daysLeft} day${L.daysLeft === 1 ? "" : "s"} left`}${L.mode === "income" && L.billsDue ? ` · ${money(L.billsDue)} in bills still due` : ""}</div><span class="go">›</span>`;
+    <div class="ls">${over ? `Spending is ahead of ${L.mode === "income" ? "income" : "your budget"} this month` : `about <b>${money(L.perDay)}</b> a day · ${L.daysLeft} day${L.daysLeft === 1 ? "" : "s"} left`}${L.mode === "income" && L.billsDue ? ` · ${money(L.billsDue)} in bills still due` : ""}</div>${(() => { const P = monthPace(); return P ? `<div class="ls lpace"><span class="${P.over ? "warnc" : "pos"}">${P.over ? "▲ Over target" : "✓ On pace"}</span> · everyday spending <b>${money(P.perDay)}</b>/day vs. ${money(P.target)} target</div>` : ""; })()}<span class="go">›</span>`;
   el.onclick = openLeft;
 }
 function openLeft() {
@@ -2969,7 +3059,17 @@ function openLeft() {
     ${L.mode === "income" ? line("📅 Bills still due", "−" + money(L.billsDue)) : ""}
     ${L.mode === "income" && L.bills.length ? `<div class="lbills">${L.bills.map(e => `<div><span>${esc(e.name)} <span class="mute">· ${esc(shortDate(e.d))}</span></span><span>${money(e.amt)}</span></div>`).join("")}</div>` : ""}
     ${line("<b>Left to spend</b>", (L.left < 0 ? "−" : "") + money(Math.abs(L.left)), L.left < 0 ? "neg" : "pos")}
-    <p class="mute" style="font-size:13px;margin-top:12px">${L.mode === "income" ? "Before savings." : ""}</p>`);
+    <p class="mute" style="font-size:13px;margin-top:12px">${L.mode === "income" ? "Before savings." : ""}</p>
+    ${(() => { const P = monthPace(); if (!P) return `<p class="rnote" style="margin-top:14px"><a class="link" id="lTarget">Set a daily spending target</a></p>`;
+      return `<h3 class="inch">Daily target</h3>
+      ${line(`Everyday spending so far <span class="mute">· not counting recurring bills</span>`, money(P.everyday))}
+      ${line(`Per day, ${P.dayN} day${P.dayN === 1 ? "" : "s"} in`, `${money(P.perDay)}/day`, P.over ? "warnc" : "pos")}
+      ${line("Your target", `${money(P.target)}/day`)}
+      <p class="rnote">${P.daysLeft <= 0 ? (P.over ? `This month ended over your target by ${money(-P.room)}.` : `You finished the month on target.`)
+        : P.room <= 0 ? `This month's everyday target is used up (${money(-P.room)} over). Spending less than ${money(P.target)} a day from here gets you back toward it next month.`
+        : `To finish the month on target: <b>${money(P.restPerDay)} a day</b> for the next ${P.daysLeft} day${P.daysLeft === 1 ? "" : "s"}.`}
+        <a class="link" id="lTarget">Change target</a></p>`; })()}`);
+  if ($("lTarget")) $("lTarget").onclick = () => { closeModal(); setTimeout(openForecast, 220); };
   if ($("lInc")) $("lInc").onclick = () => openIncome();
   $("lSpent").onclick = () => { const cur = todayISO().slice(0, 7); closeModal(); setTimeout(() => drillTx("Spent this month", monthLong(cur), () => monthTx(cur).filter(isSpendish), "amt"), 220); };
 }
