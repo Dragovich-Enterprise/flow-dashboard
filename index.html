@@ -281,7 +281,8 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
 .hbank{padding:10px 0;border-top:1px solid var(--line)}.hbank:first-child{border-top:0;padding-top:0}
 .hb1{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.hb1 .mute{font-size:13px}.hok{font-size:13px;font-weight:600}
 .hgap{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:8px;font-size:14px}.hgap .mute{font-size:13px}
-.hgap .hbtns{display:flex;gap:6px;flex:0 0 auto}.hgap .hrng{display:block;margin-top:1px}
+.hgap .hbtns{display:flex;gap:6px;flex:0 0 auto}
+#merchants .mamt{display:flex;flex-direction:column;align-items:flex-end;flex:0 0 auto;text-align:right}#merchants .mamt .mute{font-size:12px;margin-top:1px}.hgap .hrng{display:block;margin-top:1px}
 #impCard.flash{animation:flash 1.6s ease}@keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:none}}
 .setupcard{display:flex;gap:12px;align-items:center;justify-content:space-between;border:1px solid var(--accent);background:linear-gradient(180deg,var(--mint),var(--card) 80%)}
 .setupcard b{font-size:15.5px}.setupcard .mute{font-size:13.5px;margin-top:3px;line-height:1.4}.setupcard button{flex:0 0 auto}
@@ -2022,12 +2023,10 @@ function renderOverview() {
 
   const merch = sumBy(rtx.filter(isSpendish), t => tname(t), t => t.amount), visits = sumBy(rtx.filter(t => t._k === "spend"), t => tname(t), () => 1);
   const top = Object.entries(merch).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 8);
-  const topMax = top.length ? top[0][1] : 1;
-  $("merchants").innerHTML = top.length ? top.map(([k, v]) =>
-    `<div class="rowline tap" data-m="${esc(k)}" style="display:block"><div style="display:flex;justify-content:space-between;gap:10px"><span>${esc(k)} <span class="mute">· ${visits[k] || 1} visit${(visits[k] || 1) === 1 ? "" : "s"}${(visits[k] || 1) > 1 ? `, avg ${money(v / visits[k])}` : ""}</span></span><b>${money(v)}</b></div>
-      <div class="bar" style="height:4px;margin-top:6px"><i data-w="${(v / topMax * 100).toFixed(1)}" style="background:#5EEAD4"></i></div></div>`).join("") : `<div class="empty">Nothing in these dates.</div>`;
+  // each row: who, how often, how much, and what share of all spending in these dates that is
+  $("merchants").innerHTML = top.length ? top.map(([k, v]) => { const n = visits[k] || 1, pc = spent > 0 ? Math.round(v / spent * 100) : 0;
+    return `<div class="rowline tap" data-m="${esc(k)}"><span>${esc(k)} <span class="mute">· ${n} visit${n === 1 ? "" : "s"}${n > 1 ? `, avg ${money(v / n)}` : ""}</span></span><span class="mamt"><b>${money(v)}</b>${spent > 0 ? `<span class="mute">${pc < 1 ? "<1" : pc}% of spending</span>` : ""}</span></div>`; }).join("") : `<div class="empty">Nothing in these dates.</div>`;
   clampList($("merchants"), 5, "merchants");
-  growBars($("merchants"));
   $("merchants").querySelectorAll("[data-m]").forEach(el => el.onclick = () =>
     drillTx(el.dataset.m, rangeSub(), () => rangeTx().filter(t => isSpendish(t) && tname(t) === el.dataset.m)));
 
