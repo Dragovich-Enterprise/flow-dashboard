@@ -293,6 +293,19 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
 .fsrange::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--card);border:2px solid var(--accent);cursor:pointer}
 .fschips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.fschips .chip,#fsTChip .chip{border:1px solid var(--line2);background:var(--card);cursor:pointer}#fsTChip{display:contents}
 .fsmsg{font-size:14px;line-height:1.5;margin:10px 0 12px}.fsbtns{margin-bottom:6px}.fsbtns button[disabled]{opacity:1;cursor:default}
+.ivtop{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}.ivv{font-size:30px;font-weight:700;letter-spacing:-.02em}.ivch{font-size:14px;font-weight:600}
+.ivchart{height:190px;margin-top:10px}.ivfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}.ivkey{font-size:12px;color:var(--mute);display:flex;align-items:center;gap:6px}
+.ivdash{display:inline-block;width:18px;border-top:2px dashed var(--line2)}
+.ivgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}.ivgrid:empty{display:none}.ivgrid div{background:var(--soft);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column}
+.ivgrid .mute{font-size:12px}.ivgrid b{font-size:16px;margin-top:1px}
+@media (min-width:900px){#ivGrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.iarow{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)}.iarow:first-child{border-top:0;padding-top:2px}.iarow>b{min-width:70px;text-align:right;font-variant-numeric:tabular-nums}
+.ian{flex:1;min-width:0;display:flex;flex-direction:column}.ian span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ian .mute{font-size:12.5px}
+.spark{width:64px;height:24px;flex:0 0 auto}.ivmore{margin-top:10px;font-size:13.5px}
+.ihrow{padding:9px 0;border-top:1px solid var(--line)}.ihrow:first-child{border-top:0;padding-top:2px}.ih1{display:flex;justify-content:space-between;gap:10px}.ih1>span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ih1 .mute{font-size:12.5px}
+.ih2{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:12.5px}.ih2 .bar{flex:1;height:4px}.ih2 .bar i{background:var(--accent)}
+.ivsrc{font-size:12.5px;line-height:1.45;margin:10px 0 0}.ivsrc:empty{display:none}
+.pvform{display:flex;gap:6px;margin-top:10px}.pvform input{flex:1;min-width:0}.pvform input[type=date]{flex:1.2}
 #merchants .mamt{display:flex;flex-direction:column;align-items:flex-end;flex:0 0 auto;text-align:right}#merchants .mamt .mute{font-size:12px;margin-top:1px}.hgap .hrng{display:block;margin-top:1px}
 #impCard.flash{animation:flash 1.6s ease}@keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:none}}
 .setupcard{display:flex;gap:12px;align-items:center;justify-content:space-between;border:1px solid var(--accent);background:linear-gradient(180deg,var(--mint),var(--card) 80%)}
@@ -745,17 +758,18 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
 
   <!-- INVESTMENTS -->
   <div class="pane" id="p-invest">
-    <div class="grid">
-      <div class="card kpi"><div class="mute">Value</div><div class="big" id="iValue">&ndash;</div></div>
-      <div class="card kpi"><div class="mute">Cost basis</div><div class="big" id="iCost">&ndash;</div><div class="sub">what you put in</div></div>
-      <div class="card kpi"><div class="mute">Gain / loss</div><div class="big" id="iGain">&ndash;</div><div class="sub" id="iGainPct"></div></div>
-    </div>
     <div id="invEmpty"></div>
-    <div class="btns" style="margin-bottom:16px"><button id="refreshInv">Refresh holdings &amp; activity</button></div>
-    <div class="card"><h2>Accounts</h2><div id="iAccts"></div></div>
-    <div class="card"><h2>Value over time</h2><div class="chartbox"><canvas id="cInv"></canvas></div><div class="mute" id="invNote"></div></div>
-    <div class="card"><h2>Positions</h2><div class="scroll"><table id="invHoldings"></table></div></div>
-    <div class="card"><h2>Recent activity</h2><div class="scroll"><table id="invTx"></table></div></div>
+    <div class="card ivhero" id="ivHero" hidden>
+      <div class="ivtop"><div><div class="mute">Invested</div><div class="ivv" id="ivVal">&ndash;</div></div><div class="ivch" id="ivCh"></div></div>
+      <div class="chartbox ivchart"><canvas id="cInv"></canvas></div>
+      <div class="ivfoot"><div class="seg" id="ivRange"><button data-r="1m">1M</button><button data-r="3m">3M</button><button data-r="1y">1Y</button><button data-r="all">All</button></div><span class="ivkey" id="ivKey"></span></div>
+      <div class="ivgrid" id="ivGrid"></div>
+    </div>
+    <div class="two">
+      <div class="card" id="ivAcctCard" hidden><h2>Accounts</h2><div id="ivAccts"></div></div>
+      <div class="card" id="ivHoldCard" hidden><h2>Top holdings</h2><div id="ivHold"></div></div>
+    </div>
+    <div class="card" id="ivActCard" hidden><h2>Recent activity</h2><div id="ivAct"></div></div>
   </div>
 
   <!-- GOALS -->
@@ -1108,7 +1122,7 @@ $("forgot").onclick = async () => {
   $("err").textContent = error ? error.message : "Check your email for a reset link.";
 };
 /** Sign out and leave nothing of this person's behind on the device (the next person may share the phone). */
-const PERSONAL_KEYS = ["hr_chat", "plaid_link_token", "hr_lock", "hr_pk_offered", "hr_slide", "hr_hist_hide", "hr_recap_seen"];
+const PERSONAL_KEYS = ["hr_chat", "plaid_link_token", "hr_lock", "hr_pk_offered", "hr_slide", "hr_hist_hide", "hr_recap_seen", "hr_invhist", "hr_inv_range"];
 function forgetLocal() { PERSONAL_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} }); }
 const signOut = async () => {
   try { const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); const sub = reg && reg.pushManager && await reg.pushManager.getSubscription();
@@ -1244,13 +1258,14 @@ async function load() {
     db.from("accounts").select("*").order("name"),
     db.from("budgets").select("*"),
     db.from("goals").select("*").eq("active", true).order("created_at"),
-    db.from("balance_snapshots").select("*").order("snap_date"),
+    fetchAll("balance_snapshots", "snap_date"),
     db.from("recurring_rules").select("*"),
     db.from("holdings").select("*"),
-    db.from("investment_transactions").select("*").order("date", { ascending: false }).limit(500),
+    fetchAll("investment_transactions", "date"),
     db.from("merchant_rules").select("*"),
     db.from("app_settings").select("*"),
   ]);
+  try { const { data: iv } = await db.from("inv_values").select("*").order("day"); S.invVals = iv || []; } catch (e) { S.invVals = []; }
   await loadItemInfo();
   try { const { data: adm } = await db.rpc("is_admin"); S.isAdmin = adm === true; } catch (e) { S.isAdmin = false; }
   // things saved on this device belong to whoever was signed in; a different person starts clean
@@ -1258,8 +1273,8 @@ async function load() {
   if (uid && prev && prev !== uid) { forgetLocal(); S.chat = { msgs: [], applied: {} }; }
   if (uid && prev !== uid) store.set("hr_owner", uid);
   S.tx = tx.sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
-  S.accts = ac.data || []; S.budgets = bu.data || []; S.goals = go_.data || []; S.snaps = sn.data || [];
-  S.rules = ru.data || []; S.holdings = ho.data || []; S.invtx = it.data || [];
+  S.accts = ac.data || []; S.budgets = bu.data || []; S.goals = go_.data || []; S.snaps = (sn || []).sort((x, y) => x.snap_date < y.snap_date ? -1 : x.snap_date > y.snap_date ? 1 : 0);
+  S.rules = ru.data || []; S.holdings = ho.data || []; S.invtx = it || [];
   S.mrules = Object.fromEntries((mr.data || []).map(r => [r.match, r]));
   S.settings = { income_transfers: true, custom_categories: [], hidden_accounts: [], ...Object.fromEntries((st.data || []).map(r => [r.key, r.value])) };
   S.months = [...new Set([...S.tx.map(t => t.date.slice(0, 7)), todayISO().slice(0, 7)])].sort().reverse();
@@ -1272,7 +1287,7 @@ async function load() {
   if (!S._aiLoaded) { S._aiLoaded = true; loadAi(); }
   const h = location.hash.slice(1); if (h && h !== S.tab && document.querySelector(`.pane#p-${h}`)) go(h);
   if (h === "review") goReview(); if (h === "recap") { history.replaceState(null, "", location.pathname + location.search); setTimeout(() => openRecap(), 400); } fabs();
-  moveInk(); pollHistory();
+  moveInk(); pollHistory(); loadInvHistory();
 }
 /** Bank names, when each was linked, and whether Plaid has finished sending its history. */
 async function loadItemInfo() {
@@ -2084,6 +2099,8 @@ const CENTER_TEXT = { id: "centerText", afterDraw(c) {
 const HERO_SCRUB = {
   cPace: i => S.paceHero && S.paceHero(i),
   cNet: i => S.nwHead && S.nwHead(i),
+  cInv: i => S.invHead && S.invHead(i),
+  cInvA: i => S.iaHead && S.iaHead(i),
   cTrend: i => { if (i == null || !S.trendMs || S.trendMs[i] === S.trendSel) return; S.trendSel = S.trendMs[i]; drawTrendSel(); },
   cStack: i => { const c = S.trCtx; if (i == null || !c || c.ms[i] === S.trSel) return; S.trSel = c.ms[i];
     const ch = S.charts.cStack; ch.data.datasets.forEach(ds => { if (ds.type === "line") return; const k = c.g.keys.find(x => c.g.name(x) === ds.label), col = c.g.col[k];
@@ -2230,10 +2247,11 @@ function nwSeries(cashOnly) {
     it.n++; it.byDay[t.date] = (it.byDay[t.date] || 0) + t.amount; if (!it.first || t.date < it.first) it.first = t.date; });
   const all = Object.values(items), real = all.filter(it => it.n >= 10).sort((x, y) => x.first < y.first ? -1 : 1);
   let base = all.filter(it => it.n < 10).reduce((s, it) => s + it.now, 0);
-  if (!cashOnly) base += S.accts.filter(a => a.type === "investment").reduce((s, a) => s + Number(a.current_balance || 0), 0);
+  let invOn = null;
+  if (!cashOnly && invAccts().length) { const ser = invData().ser; invOn = d => ser.reduce((t, s) => t + valOn(s, d), 0); }
   const start = real.length ? real[0].first : null, labels = [], vals = [], cur = Object.fromEntries(real.map(it => [it.id, it.now])), joinVal = {};
   if (start) for (let d = dnum(todayISO()); d >= dnum(start); d--) { const k = dstr(d);
-    let tot = base; real.forEach(it => { if (k >= it.first) tot += cur[it.id]; if (k === it.first) joinVal[it.id] = cur[it.id]; cur[it.id] += it.byDay[k] || 0; });
+    let tot = base + (invOn ? invOn(k) : 0); real.forEach(it => { if (k >= it.first) tot += cur[it.id]; if (k === it.first) joinVal[it.id] = cur[it.id]; cur[it.id] += it.byDay[k] || 0; });
     labels.push(k); vals.push(Math.round(tot)); }
   labels.reverse(); vals.reverse();
   const nameOf = it => (S.inst || {})[it.id] || (it.accts.slice().sort((x, y) => Math.abs(val(y)) - Math.abs(val(x)))[0] || {}).name || "A bank";
@@ -3418,86 +3436,226 @@ function renderAccts() {
 
 // ---------- investments ----------
 const invAccts = () => S.accts.filter(a => a.type === "investment");
+const INV_RANGES = { "1m": 30, "3m": 91, "1y": 365, all: 1e5 }, INV_RL = { "1m": "1M", "3m": "3M", "1y": "1Y", all: "all time" };
+S.invRange = store.get("hr_inv_range") || "1y";
+const invName = a => a.nickname || [((S.inst || {})[a.item_id] || "").replace(/ Online$/, ""), SUB[a.subtype] || a.subtype || ""].filter(Boolean).join(" ") || a.name;
+const isCashSec = h => /^CUR:/i.test(h.ticker || "") || h.security_type === "cash" || /money market/i.test(h.security_name || "");
+const monShort = d => new Date(d + "T12:00:00").toLocaleString("en-US", { month: "short", year: "numeric" });
+
+/** Each account's daily value, rebuilt on the server from today's holdings, every trade and contribution, and daily prices.
+ *  Kept on this device for a few hours; a sync fetches it again. */
+async function loadInvHistory(force) {
+  if (!invAccts().length || S._invLoading) return;
+  const c = store.get("hr_invhist"), uid = S.user && S.user.id;
+  if (!force && c && c.uid === uid && c.day === todayISO() && Date.now() - Date.parse(c.at) < 6 * 3600e3) { S.invHist = c; return; }
+  S._invLoading = true;
+  try {
+    const { data: { session } } = await db.auth.getSession(); if (!session) return;
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/invhistory`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token, apikey: SUPABASE_KEY }, body: "{}" });
+    const j = await r.json().catch(() => ({})); if (!r.ok || j.error) throw new Error(j.error || r.statusText);
+    S.invHist = { at: j.at, day: todayISO(), uid, accounts: j.accounts || [] }; store.set("hr_invhist", S.invHist);
+    renderInvest(); if (S.tab === "overview") drawNetWorth();
+  } catch (e) { S.invHistErr = e.message; } finally { S._invLoading = false; }
+}
+/** One account's daily values: rebuilt history, recorded balances from the first day one was saved, and any past values
+ *  the person added (straight lines between them, before the rebuilt history starts). */
+function invSeries(a) {
+  const id = a.account_id, h = ((S.invHist || {}).accounts || []).find(x => x.account_id === id), map = new Map(), today = todayISO();
+  if (h && h.rebuilt && h.days) h.days.forEach((d, i) => map.set(d, h.values[i]));
+  const snaps = S.snaps.filter(s => s.account_id === id), recFrom = snaps.length ? snaps.reduce((m, s) => s.snap_date < m ? s.snap_date : m, snaps[0].snap_date) : null;
+  if (recFrom) { [...map.keys()].forEach(d => { if (d >= recFrom) map.delete(d); }); snaps.forEach(s => map.set(s.snap_date, Number(s.current_balance || 0))); }
+  map.set(today, Number(a.current_balance || 0));
+  const first = [...map.keys()].sort()[0];
+  const manual = (S.invVals || []).filter(v => v.account_id === id && v.day < first).sort((x, y) => x.day < y.day ? -1 : 1);
+  if (manual.length) { const pts = manual.map(v => [v.day, Number(v.value)]).concat([[first, map.get(first)]]);
+    for (let k = 1; k < pts.length; k++) { const [d0, v0] = pts[k - 1], [d1, v1] = pts[k], n = dnum(d1) - dnum(d0); for (let j = 0; j < n; j++) map.set(dstr(dnum(d0) + j), v0 + (v1 - v0) * j / n); } }
+  const keys = [...map.keys()].sort(), start = keys[0], days = [], vals = []; let last = map.get(start);
+  for (let x = dnum(start); x <= dnum(today); x++) { const d = dstr(x); if (map.has(d)) last = map.get(d); days.push(d); vals.push(last); }
+  return { days, vals, start, h, recFrom, manualFrom: manual.length ? manual[0].day : null, opened: !!(h && h.rebuilt && h.opened && !manual.length) };
+}
+/** Value on a day: before an account's history starts it's $0 if it opened then, otherwise its earliest known value. */
+const valOn = (s, d) => d < s.start ? (s.opened ? 0 : s.vals[0]) : s.vals[Math.min(dnum(d) - dnum(s.start), s.vals.length - 1)];
+function invData() {
+  const key = [S._ver, (S.invHist || {}).at, (S.invVals || []).length, S.snaps.length, S.accts.length].join("|");
+  if (S._invD && S._invD.key === key) return S._invD;
+  const ser = invAccts().map(a => ({ a, ...invSeries(a) })), today = todayISO();
+  // the total starts on the first day every account with history is known (accounts opened later count as $0 before)
+  const known = ser.filter(s => s.days.length > 1 && !s.opened).map(s => s.start).sort();
+  const start = known.length ? known[known.length - 1] : (ser.filter(s => s.days.length > 1).map(s => s.start).sort()[0] || today);
+  const days = [], vals = [];
+  for (let x = dnum(start); x <= dnum(today); x++) { const d = dstr(x); days.push(d); vals.push(ser.reduce((t, s) => t + valOn(s, d), 0)); }
+  return S._invD = { key, ser, days, vals, start };
+}
+/** Money that came in from outside, dividends and fees after `from`, plus a "money in" line for the chart. */
+function invFlows(ser, from, days) {
+  let put = 0, div = 0, fee = 0, known = true, any = false; const byDay = {};
+  ser.forEach(s => { const h = s.h; if (!h || !h.rebuilt) { if (s.days.length > 1 && Number(s.a.current_balance || 0) > 0.5) known = false; return; } any = true; if (h.start > from && !s.opened) known = false;
+    (h.flows || []).forEach(f => { if (f.d > from) { put += f.v; byDay[f.d] = (byDay[f.d] || 0) + f.v; } });
+    (h.divs || []).forEach(f => { if (f.d > from) div += f.v; }); (h.fees || []).forEach(f => { if (f.d > from) fee += f.v; }); });
+  let run = 0; const line = days.map(d => (run += byDay[d] || 0));
+  return { put, div, fee, line, known: known && any };
+}
+function sparkSVG(vals) {
+  if (vals.length < 2) return "";
+  const step = Math.max(1, Math.floor(vals.length / 48)), v = vals.filter((_, i) => i % step === 0 || i === vals.length - 1);
+  const lo = Math.min(...v), hi = Math.max(...v), span = hi - lo || 1, up = v[v.length - 1] >= v[0];
+  return `<svg class="spark" viewBox="0 0 64 24" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="${up ? "var(--accent)" : "var(--bad)"}" stroke-width="1.6" points="${v.map((x, i) => `${(i / (v.length - 1) * 64).toFixed(1)},${(22 - (x - lo) / span * 20).toFixed(1)}`).join(" ")}"/></svg>`;
+}
+const optLabel = t => { const m = /^([A-Z.]{1,6})(\d{2})(\d{2})(\d{2})([CP])(\d{8})$/.exec(t || ""); return m ? `${m[1]} $${+m[6] / 1000} ${m[5] === "C" ? "call" : "put"}` : t; };
+/** Investment activity in plain words. Reinvested dividends show once, as the dividend. */
+function invTxView(t) {
+  const typ = String(t.type || "").toLowerCase(), sub = String(t.subtype || "").toLowerCase(), amt = Number(t.amount || 0);
+  const tk = t.ticker && !/^CUR:/i.test(t.ticker) ? optLabel(t.ticker) : "", what = tk || t.security_name || "";
+  if (typ === "buy" && /reinvest/.test(sub)) return null;
+  if (typ === "buy" && /money market|cash/i.test(t.security_name || "") && Math.abs(Number(t.price) - 1) < 0.01) return null;
+  if (typ === "buy") return { t: `Bought ${what || "shares"}`, a: money2(Math.abs(amt)), c: "" };
+  if (typ === "sell") return { t: `Sold ${what || "shares"}`, a: money2(Math.abs(amt)), c: "" };
+  if (typ === "fee" || /fee/.test(sub)) return { t: "Fee", a: "−" + money2(Math.abs(amt)), c: "neg" };
+  if (/dividend|interest|capital gain/.test(sub)) { if (Math.abs(amt) < 0.005) return null; return { t: `${/interest/.test(sub) ? "Interest" : "Dividend"}${tk ? " · " + tk : ""}`, a: "+" + money2(Math.abs(amt)), c: "pos" }; }
+  if (/contribution/.test(sub)) return { t: "Contribution", a: "+" + money2(Math.abs(amt)), c: "pos" };
+  if (amt < 0) return { t: typ === "transfer" ? "Deposit from bank" : "Deposit", a: "+" + money2(Math.abs(amt)), c: "pos" };
+  if (amt > 0) return { t: typ === "transfer" ? "Withdrawal to bank" : "Withdrawal", a: "−" + money2(amt), c: "" };
+  return null;
+}
+const invActRows = (list, withAcct) => list.map(t => { const v = invTxView(t); if (!v) return ""; const a = S.accts.find(x => x.account_id === t.account_id);
+  return `<div class="rowline"><span>${esc(v.t)} <span class="mute" style="white-space:nowrap">· ${withAcct && a ? esc(invName(a)) + " · " : ""}${esc(shortDate(t.date))}</span></span><span class="${v.c}" style="font-weight:600;white-space:nowrap">${v.a}</span></div>`; }).filter(Boolean);
+/** Holdings combined across accounts (or for one), biggest first; cash dust and empty positions left out. */
+function invHoldRows(hs, total, limit) {
+  const by = {};
+  hs.forEach(h => { const v = Number(h.value || 0); if (v < 0.5 || (isCashSec(h) && v < 50)) return;
+    const k = isCashSec(h) ? "Cash" : (h.ticker || h.security_name || "?"), e = by[k] = by[k] || { k, name: isCashSec(h) ? "Uninvested cash" : (h.security_name || ""), v: 0, cost: 0, costKnown: true };
+    e.v += v; if (h.cost_basis == null) e.costKnown = false; else e.cost += Number(h.cost_basis); });
+  const rows = Object.values(by).sort((a, b) => b.v - a.v);
+  return { n: rows.length, html: rows.slice(0, limit || rows.length).map(e => { const pc = total > 0 ? e.v / total * 100 : 0, g = e.costKnown && e.cost > 0 ? (e.v - e.cost) / e.cost * 100 : null;
+    return `<div class="ihrow"><div class="ih1"><span><b>${esc(optLabel(e.k))}</b> <span class="mute">${esc(e.name)}</span></span><b>${money(e.v)}</b></div>
+      <div class="ih2"><div class="bar"><i style="width:${Math.max(1, pc).toFixed(1)}%"></i></div><span class="mute">${pc < 1 ? "<1" : Math.round(pc)}%</span>${g == null ? "" : `<span class="${g < 0 ? "neg" : "pos"}">${g < 0 ? "−" : "+"}${Math.abs(g).toFixed(0)}%</span>`}</div></div>`; }).join("") };
+}
 function renderInvest() {
-  const accts = invAccts();
-  const value = accts.reduce((s, a) => s + Number(a.current_balance || 0), 0);
-  const withCost = S.holdings.filter(h => h.cost_basis != null);
-  const cost = withCost.reduce((s, h) => s + Number(h.cost_basis || 0), 0);
-  const costValue = withCost.reduce((s, h) => s + Number(h.value || 0), 0);
-  const gain = costValue - cost;
-  if (accts.length) countTo($("iValue"), value); else $("iValue").textContent = "–";
-  if (cost) { countTo($("iCost"), cost); countTo($("iGain"), gain); } else { $("iCost").textContent = "–"; $("iGain").textContent = "–"; }
-  $("iGain").className = "big " + (cost ? (gain < 0 ? "neg" : "pos") : "");
-  $("iGainPct").textContent = cost ? `${gain < 0 ? "" : "+"}${(gain / cost * 100).toFixed(1)}% on positions with a known cost` : "";
-  $("invEmpty").innerHTML = !accts.length
-    ? `<div class="note">No investment accounts linked yet. Use Settings → Link a brokerage.</div>`
-    : !S.holdings.length
-      ? `<div class="note">Positions aren't shared yet. Use <b>Settings → Link a brokerage</b>.</div>`
-      : "";
-  $("iAccts").innerHTML = accts.length ? accts.map(a => {
-    const hs = S.holdings.filter(h => h.account_id === a.account_id);
-    const hc = hs.filter(h => h.cost_basis != null).reduce((s, h) => s + Number(h.cost_basis || 0), 0);
-    const hcv = hs.filter(h => h.cost_basis != null).reduce((s, h) => s + Number(h.value || 0), 0);
-    const g = hcv - hc;
-    return `<div class="rowline tap" data-id="${esc(a.account_id)}">
-      <span>${esc(a.nickname || a.name)} <span class="mute">${esc(SUB[a.subtype] || a.subtype || "")}</span></span>
-      <span>${money2(Number(a.current_balance || 0))} ${hc ? `<span class="${g < 0 ? "neg" : "pos"}">${g < 0 ? "" : "+"}${money(g)}</span>` : hs.length ? "" : '<span class="mute">no positions</span>'}</span></div>`;
-  }).join("") : `<div class="mute">Nothing linked.</div>`;
-  $("iAccts").querySelectorAll("[data-id]").forEach(el => el.onclick = () => invAcctDetail(el.dataset.id));
-  const hs = [...S.holdings].sort((a, b) => Number(b.value || 0) - Number(a.value || 0));
-  $("invHoldings").innerHTML = hs.length ? `<tr><th>Holding</th><th>Account</th><th class="num">Shares</th><th class="num">Price</th><th class="num">Value</th><th class="num">Cost</th><th class="num">Gain</th></tr>` +
-    hs.map(h => { const g = h.cost_basis != null ? Number(h.value || 0) - Number(h.cost_basis) : null;
-      return `<tr><td>${esc(h.ticker || h.security_name || "–")}${h.ticker && h.security_name ? `<div class="mute">${esc(h.security_name)}</div>` : ""}</td>
-        <td class="mute">${esc(acctName(h.account_id))}</td><td class="num">${h.quantity != null ? Number(h.quantity).toLocaleString("en-US", { maximumFractionDigits: 4 }) : "–"}</td>
-        <td class="num">${h.price != null ? money2(Number(h.price)) : "–"}</td><td class="num">${money2(Number(h.value || 0))}</td>
-        <td class="num mute">${h.cost_basis != null ? money2(Number(h.cost_basis)) : "–"}</td>
-        <td class="num ${g == null ? "" : g < 0 ? "neg" : "pos"}">${g == null ? "–" : (g < 0 ? "" : "+") + money2(g)}</td></tr>`; }).join("")
-    : `<tr><td class="mute">No positions pulled yet.</td></tr>`;
-  $("invTx").innerHTML = S.invtx.length ? `<tr><th>Date</th><th>Account</th><th>What</th><th class="num">Amount</th></tr>` +
-    S.invtx.slice(0, 60).map(t => `<tr><td class="mute" style="white-space:nowrap">${esc(shortDate(t.date))}</td><td class="mute">${esc(acctName(t.account_id))}</td>
-      <td>${esc(t.name || t.security_name || t.type || "")} ${t.subtype ? `<span class="pill">${esc(t.subtype)}</span>` : ""}</td>
-      <td class="num ${Number(t.amount) < 0 ? "pos" : ""}">${money2(Math.abs(Number(t.amount || 0)))}</td></tr>`).join("")
-    : `<tr><td class="mute">No investment activity pulled yet.</td></tr>`;
+  const accts = invAccts(), has = !!accts.length;
+  $("invEmpty").innerHTML = has ? "" : `<div class="note">No investment accounts yet. Use <b>Settings → Link a brokerage</b>.</div>`;
+  ["ivHero", "ivAcctCard", "ivHoldCard", "ivActCard"].forEach(id => $(id).hidden = !has);
+  if (!has) return;
+  if (!S.invHist && !S._invLoading) loadInvHistory();
+  const D = invData(), total = accts.reduce((s, a) => s + Number(a.current_balance || 0), 0), from = invFrom(S.invRange, D.start);
+  // accounts: value, change over the range, a small trend line; empty ones tucked away
+  const empty = s => Number(s.a.current_balance || 0) < 0.5 && !S.holdings.some(h => h.account_id === s.a.account_id && Number(h.value) > 0.5);
+  const shown = D.ser.filter(s => S.invShowEmpty || !empty(s)).sort((x, y) => Number(y.a.current_balance || 0) - Number(x.a.current_balance || 0)), nEmpty = D.ser.filter(empty).length;
+  $("ivAccts").innerHTML = shown.map(s => {
+    const now = Number(s.a.current_balance || 0), f = from < s.start ? s.start : from, i0 = Math.max(0, dnum(f) - dnum(s.start)), ch = now - valOn(s, f);
+    const sub = s.days.length <= 1 ? "history builds from today" : s.opened && s.start > from ? `opened ${monShort(s.start)}` : `${ch >= 0 ? "+" : "−"}${money(Math.abs(ch))} · ${INV_RL[S.invRange]}`;
+    return `<div class="iarow tap" data-id="${esc(s.a.account_id)}"><div class="ian"><span>${esc(invName(s.a))}</span><span class="mute">${sub}</span></div>${sparkSVG(s.vals.slice(i0))}<b>${money(now)}</b></div>`;
+  }).join("") + (nEmpty ? `<div class="mute ivmore"><a class="link" id="ivEmptyT">${S.invShowEmpty ? "Hide empty accounts" : `${nEmpty} empty account${nEmpty > 1 ? "s" : ""} hidden · show`}</a></div>` : "");
+  $("ivAccts").querySelectorAll("[data-id]").forEach(el => el.onclick = () => openInvAcct(el.dataset.id));
+  if ($("ivEmptyT")) $("ivEmptyT").onclick = () => { S.invShowEmpty = !S.invShowEmpty; renderInvest(); };
+  // top holdings by share of everything invested
+  const H = invHoldRows(S.holdings, total, S.invAllH ? 0 : 5);
+  $("ivHold").innerHTML = H.n ? H.html + (H.n > 5 ? `<div class="ivmore"><a class="link" id="ivHoldT">${S.invAllH ? "Show fewer" : `See all ${H.n} holdings`}</a></div>` : "")
+    : `<div class="mute">No positions shared yet. Use <b>Settings → Link a brokerage</b> to include holdings.</div>`;
+  if ($("ivHoldT")) $("ivHoldT").onclick = () => { S.invAllH = !S.invAllH; renderInvest(); };
+  // recent activity in plain words
+  const rows = invActRows(S.invtx, true);
+  $("ivAct").innerHTML = rows.length ? rows.slice(0, 8).join("") + (rows.length > 8 ? `<div class="ivmore"><a class="link" id="ivActAll">See all activity</a></div>` : "") : `<div class="mute">No activity yet.</div>`;
+  if ($("ivActAll")) $("ivActAll").onclick = () => openModal("Investment activity", `${rows.length} items`, rows.join(""));
   if ($("p-invest").classList.contains("on")) drawInvChart();
 }
-function invAcctDetail(id) {
-  const a = S.accts.find(x => x.account_id === id); if (!a) return;
-  const hs = S.holdings.filter(h => h.account_id === id).sort((x, y) => Number(y.value || 0) - Number(x.value || 0));
-  S.drill = null;
-  openModal(a.nickname || a.name, SUB[a.subtype] || a.subtype || "", `<div class="rowline"><span class="mute">Value now</span><b>${money2(Number(a.current_balance || 0))}</b></div>
-    <div style="margin-top:14px"></div>
-    ${hs.length ? `<div class="scroll"><table><tr><th>Holding</th><th class="num">Shares</th><th class="num">Value</th><th class="num">Cost</th><th class="num">Gain</th></tr>
-      ${hs.map(h => { const g = h.cost_basis != null ? Number(h.value || 0) - Number(h.cost_basis) : null;
-        return `<tr><td>${esc(h.ticker || h.security_name || "–")}</td><td class="num">${h.quantity != null ? Number(h.quantity).toLocaleString("en-US", { maximumFractionDigits: 4 }) : "–"}</td>
-        <td class="num">${money2(Number(h.value || 0))}</td><td class="num mute">${h.cost_basis != null ? money2(Number(h.cost_basis)) : "–"}</td>
-        <td class="num ${g == null ? "" : g < 0 ? "neg" : "pos"}">${g == null ? "–" : (g < 0 ? "" : "+") + money2(g)}</td></tr>`; }).join("")}</table></div>`
-      : `<div class="mute">No positions shared for this account.</div>`}`);
+const invFrom = (r, start) => { const f = dstr(dnum(todayISO()) - INV_RANGES[r]); return f < start ? start : f; };
+/** The big number, change and chart for a set of series; used by the tab (all accounts) and an account's sheet. */
+function drawInvPanel(o) {
+  const { days: allDays, vals: allVals, start, ser, range, ids } = o, hist = dnum(todayISO()) - dnum(start);
+  document.querySelectorAll(`#${ids.range} [data-r]`).forEach(b => { b.disabled = b.dataset.r !== "all" && INV_RANGES[b.dataset.r] > hist + 5; });
+  const r = range !== "all" && INV_RANGES[range] > hist + 5 ? "all" : range;
+  document.querySelectorAll(`#${ids.range} [data-r]`).forEach(b => b.classList.toggle("on", b.dataset.r === r));
+  const from = invFrom(r, start), i0 = Math.max(0, allDays.indexOf(from)), days = allDays.slice(i0), vals = allVals.slice(i0);
+  const F = invFlows(ser, from, days), first = vals[0] || 0, last = vals[vals.length - 1] || 0, rl = r === "all" ? `since ${monShort(start)}` : `in ${INV_RL[r]}`;
+  const head = i => { const v = i == null ? last : vals[i], c = v - first;
+    $(ids.val).textContent = money(v);
+    $(ids.ch).innerHTML = days.length > 1 ? `<span class="${c >= 0 ? "pos" : "neg"}">${c >= 0 ? "▲" : "▼"} ${money(Math.abs(c))}</span> <span class="mute">${i == null ? rl : esc(shortDate(days[i]))}</span>` : ""; };
+  head(null); S[ids.hook] = head;
+  const dk = document.documentElement.classList.contains("dark"), line = dk ? "#2DD4BF" : "#0D9488", showIn = F.known && Math.abs(F.put) >= 1;
+  const sets = [{ data: vals.map(Math.round), borderColor: line, backgroundColor: fadeHex(line, .1), fill: true, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: .2, label: "Value" }];
+  if (showIn) sets.push({ data: F.line.map(x => Math.round(first + x)), borderColor: dk ? "#7C8784" : "#A8A29E", borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 0, fill: false, label: "Money in" });
+  const long = days.length > 120, lab = d => long ? new Date(d + "T12:00:00").toLocaleString("en-US", { month: "short" }) + " '" + d.slice(2, 4) : shortDate(d);
+  chart(ids.canvas, { type: "line", data: { labels: days.map(lab), datasets: sets },
+    options: { interaction: { mode: "index", intersect: false }, plugins: { legend: { display: false }, tooltip: { filter: i => i.datasetIndex === 0, callbacks: { label: c => " " + money(c.raw) } } },
+      scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 5, maxRotation: 0 } }, y: { ticks: { callback: moneyTick, maxTicksLimit: 4 } } } } });
+  $(ids.key).innerHTML = showIn ? `<span class="ivdash"></span>money in` : "";
+  // where the change came from
+  const change = last - first, market = change - F.put - F.div + F.fee;
+  const tile = (l, v, cls) => `<div><span class="mute">${l}</span><b class="${cls || ""}">${v}</b></div>`;
+  $(ids.grid).innerHTML = days.length < 2 ? "" : F.known
+    ? tile(F.put < 0 ? "You took out" : "You put in", money(Math.abs(F.put))) + tile("Market " + (market >= 0 ? "added" : "took"), (market >= 0 ? "+" : "−") + money(Math.abs(market)), market >= 0 ? "pos" : "neg")
+      + tile("Dividends", money(F.div)) + tile("Fees", F.fee ? "−" + money(F.fee) : "$0")
+    : tile("Change", (change >= 0 ? "+" : "−") + money(Math.abs(change)), change >= 0 ? "pos" : "neg");
+  return { from, F };
 }
 function drawInvChart() {
-  const accts = invAccts();
-  const dates = [...new Set(S.snaps.filter(s => accts.some(a => a.account_id === s.account_id)).map(s => s.snap_date))].sort();
-  const sets = accts.map(a => ({
-    label: a.nickname || a.name,
-    data: dates.map(d => { const s = S.snaps.find(x => x.account_id === a.account_id && x.snap_date === d); return s ? Math.round(Number(s.current_balance || 0)) : null; }),
-    borderColor: COLORS[accts.indexOf(a) % COLORS.length], backgroundColor: COLORS[accts.indexOf(a) % COLORS.length], pointRadius: 3, tension: .25, spanGaps: true,
-  }));
-  $("invNote").textContent = !dates.length ? "No balance history recorded yet."
-    : dates.length < 2 ? `Only ${dates[0]} recorded so far. Headroom saves each account's value on every sync, so this chart fills in from here.`
-    : `Recorded on each sync since ${shortDate(dates[0])}.`;
-  chart("cInv", { type: "line", data: { labels: dates.map(shortDate), datasets: sets },
-    options: { interaction: { mode: "index", intersect: false }, plugins: { legend: { position: "bottom", labels: { boxWidth: 10 } }, tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${money(c.raw)}` } } }, scales: { x: { ticks: { maxTicksLimit: 7 } }, y: { ticks: { callback: moneyTick } } } } });
+  if (!invAccts().length) return;
+  const D = invData();
+  drawInvPanel({ days: D.days, vals: D.vals, start: D.start, ser: D.ser, range: S.invRange, ids: { range: "ivRange", val: "ivVal", ch: "ivCh", canvas: "cInv", key: "ivKey", grid: "ivGrid", hook: "invHead" } });
 }
-$("refreshInv").onclick = async () => {
-  const b = $("refreshInv"); b.disabled = true; toast("Pulling positions…");
-  try {
-    const r = await fn({ action: "investments" });
-    await load();
-    const bad = (r.results || []).filter(x => x.note);
-    const got = (r.results || []).reduce((s2, x) => s2 + (x.holdings || 0), 0);
-    toast(got ? `Pulled ${got} positions` : bad.length ? "Nothing pulled — " + bad[0].note : "Nothing to pull");
-  } catch (e) { toast(e.message, true); }
-  b.disabled = false;
-};
+document.querySelectorAll("#ivRange [data-r]").forEach(b => b.onclick = () => { if (b.disabled) return; S.invRange = b.dataset.r; store.set("hr_inv_range", S.invRange); renderInvest(); });
+
+/** One account: its chart, where the change came from, holdings, activity, and past values to fill in older history. */
+function openInvAcct(id) {
+  const a = S.accts.find(x => x.account_id === id); if (!a) return;
+  S.drill = null; S.invAR = S.invAR || S.invRange;
+  const inst = ((S.inst || {})[a.item_id] || "Your brokerage").replace(/ Online$/, "");
+  openModal(invName(a), `${SUB[a.subtype] || a.subtype || ""}${a.mask ? " ••" + esc(a.mask) : ""}`, `
+    <div class="ivtop"><div class="ivv" id="iaVal"></div><div class="ivch" id="iaCh"></div></div>
+    <div class="chartbox ivchart"><canvas id="cInvA"></canvas></div>
+    <div class="ivfoot"><div class="seg" id="iaRange"><button data-r="1m">1M</button><button data-r="3m">3M</button><button data-r="1y">1Y</button><button data-r="all">All</button></div><span class="ivkey" id="iaKey"></span></div>
+    <div class="ivgrid" id="iaGrid"></div>
+    <p class="mute ivsrc" id="iaSrc"></p>
+    <h3 class="inch">Holdings</h3><div id="iaHold"></div>
+    <h3 class="inch">Activity</h3><div id="iaAct"></div>
+    <h3 class="inch">Past values</h3><div id="iaPast"></div>`);
+  const draw = () => {
+    const s = invSeries(a), ser = [{ a, ...s }];
+    drawInvPanel({ days: s.days, vals: s.vals, start: s.start, ser, range: S.invAR, ids: { range: "iaRange", val: "iaVal", ch: "iaCh", canvas: "cInvA", key: "iaKey", grid: "iaGrid", hook: "iaHead" } });
+    const h = s.h, bits = [];
+    if (h && h.rebuilt && s.recFrom && h.start < s.recFrom) bits.push(`Values before ${shortDate(s.recFrom)} are estimated from your ${h.method === "contributions" ? "contributions" : "trades"} and daily prices.`);
+    if (h && h.rebuilt && !h.opened) bits.push(`${esc(inst)} shares activity back to ${shortDate(h.start)}${s.manualFrom ? "; earlier values are ones you added" : ""}.`);
+    if (!h || !h.rebuilt) bits.push(s.days.length > 1 ? "Recorded each day since " + shortDate(s.start) + "." : "History builds from today.");
+    $("iaSrc").innerHTML = bits.join(" ");
+  };
+  draw();
+  document.querySelectorAll("#iaRange [data-r]").forEach(b => b.onclick = () => { if (b.disabled) return; S.invAR = b.dataset.r; draw(); });
+  const hs = S.holdings.filter(h => h.account_id === id), H = invHoldRows(hs, Number(a.current_balance || 0));
+  $("iaHold").innerHTML = H.n ? H.html : `<div class="mute">No positions shared for this account.</div>`;
+  const acts = invActRows(S.invtx.filter(t => t.account_id === id), false);
+  $("iaAct").innerHTML = acts.length ? acts.slice(0, 12).join("") + (acts.length > 12 ? `<div class="ivmore"><a class="link" id="iaMore">Show all ${acts.length}</a></div>` : "") : `<div class="mute">No activity yet.</div>`;
+  if ($("iaMore")) $("iaMore").onclick = () => { $("iaAct").innerHTML = acts.join(""); };
+  renderPast(a, draw);
+}
+/** Values from before the bank's history: typed in, or read from a statement PDF. */
+function renderPast(a, redraw) {
+  const id = a.account_id, list = (S.invVals || []).filter(v => v.account_id === id).sort((x, y) => x.day < y.day ? 1 : -1);
+  $("iaPast").innerHTML = `${list.map(v => `<div class="rowline"><span>${esc(shortDate(v.day))} <span class="mute">· ${v.source === "statement" ? "from a statement" : "added by you"}</span></span><span style="display:flex;gap:10px;align-items:center"><b>${money2(Number(v.value))}</b><button class="mini ghost" data-del="${esc(v.id)}" aria-label="Remove">✕</button></span></div>`).join("")}
+    <div class="pvform"><input type="date" id="pvD" max="${todayISO()}" aria-label="Date"><input type="number" id="pvV" inputmode="decimal" min="0" step="0.01" placeholder="Value" aria-label="Value"><button class="mini primary" id="pvSave">Add</button></div>
+    <div class="ivmore"><label class="link" style="cursor:pointer">Read a statement (PDF)<input type="file" id="pvFile" accept="application/pdf,.pdf" hidden></label> <span class="mute" id="pvMsg"></span></div>`;
+  const save = async (day, value, source) => {
+    const { data, error } = await db.from("inv_values").upsert({ account_id: id, day, value, source }, { onConflict: "user_id,account_id,day" }).select();
+    if (error) { toast(error.message, true); return false; }
+    S.invVals = (S.invVals || []).filter(v => !(v.account_id === id && v.day === day)).concat(data || []); S._invD = null;
+    renderPast(a, redraw); redraw(); renderInvest(); return true;
+  };
+  $("iaPast").querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+    const { error } = await db.from("inv_values").delete().eq("id", b.dataset.del); if (error) return toast(error.message, true);
+    S.invVals = (S.invVals || []).filter(v => v.id !== b.dataset.del); S._invD = null; renderPast(a, redraw); redraw(); renderInvest(); });
+  $("pvSave").onclick = async () => { const d = $("pvD").value, v = Number($("pvV").value);
+    if (!d || !(v >= 0) || $("pvV").value === "") return toast("Pick a date and enter the value", true);
+    if (d >= todayISO()) return toast("Use a date before today", true);
+    if (await save(d, Math.round(v * 100) / 100, "manual")) toast("Added"); };
+  $("pvFile").onchange = async e => {
+    const f = e.target.files[0]; if (!f) return; $("pvMsg").textContent = "Reading…";
+    try {
+      const text = (await pdfLines(f)).join("\n"), r = await ai({ action: "statement_value", text, hint: `${invName(a)} ${a.mask || ""}` });
+      if (r.error || !/^\d{4}-\d{2}-\d{2}$/.test(String(r.date || "")) || !isFinite(Number(r.value))) { $("pvMsg").textContent = r.error || "Couldn't find an ending value in that statement."; return; }
+      $("pvMsg").innerHTML = `${esc(shortDate(r.date))}: <b>${money2(r.value)}</b> <a class="link" id="pvOk">Save</a>`;
+      $("pvOk").onclick = async () => { if (await save(r.date, r.value, "statement")) toast("Saved from statement"); };
+    } catch (err) { $("pvMsg").textContent = "Couldn't read that file."; }
+  };
+}
 
 // ---------- goals ----------
 function goalSaved(g) {
@@ -3746,7 +3904,7 @@ async function doSync() {
   // 1) ask every bank connection to pull fresh activity from the bank now (Plaid otherwise checks on its own schedule,
   //    sometimes only once a day), 2) collect whatever Plaid already has, 3) about 40 seconds later collect again.
   try { await fn({ action: "refresh" }).catch(() => null);
-    const r = await fn({ action: "sync" }); await load();
+    const r = await fn({ action: "sync" }); await load(); loadInvHistory(true);
     const notes = (r.synced || []).filter(x => x.error).map(x => x.error);
     if (notes.length) toast("Synced, with issues: " + notes[0], true); else toast("Asked your banks for new activity; checking again in a moment…");
     setTimeout(async () => { try { const r2 = await fn({ action: "sync" }), n = (r2.synced || []).reduce((s, x) => s + (x.added || 0), 0);
