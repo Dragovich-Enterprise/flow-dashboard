@@ -233,8 +233,15 @@ html,body,*{touch-action:manipulation}
 .aicard .try{margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--mint);color:#134E4A;font-size:14px;line-height:1.4}
 .aicard .try b{font-weight:600}
 .aicard .aib{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-.aicard.short li:nth-child(n+3){display:none}
-.aicard .more{background:none;border:0;padding:4px 0;color:var(--accent-d);font-weight:600;font-size:14px}
+.aicard .more{background:none;border:0;padding:6px 0 0;color:var(--accent-d);font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+.aicard.teaser{cursor:pointer}.aicard .rvn{font-size:13.5px;color:var(--mute);margin-top:6px}
+.rvfull .hl{font-size:18px;font-weight:600;line-height:1.35;letter-spacing:-.005em;display:block;margin:0}
+.rvfull ul{margin:12px 0 0;padding-left:18px}.rvfull li{margin:8px 0;line-height:1.5;font-size:15px}
+.rvfull .try{margin-top:14px;padding:11px 13px;border-radius:10px;background:var(--mint);color:#134E4A;font-size:14.5px;line-height:1.45}.rvfull .try b{font-weight:600}
+.rvfull .aib{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.rvpast{display:flex;flex-direction:column;gap:2px;padding:9px 0;border-top:1px solid var(--line);cursor:pointer}.inch+.rvpast,.rvfull>.rvpast:first-child{border-top:0}
+.rvpast .mute{font-size:12.5px}.rvpast span:last-child{font-size:14.5px;line-height:1.4}
+.rvback{background:none;border:0;padding:0 0 10px;color:var(--accent-d);font-weight:600;font-size:14px;cursor:pointer}
 .chat{position:fixed;inset:0;z-index:85;background:var(--bg);display:flex;flex-direction:column;animation:chatin .22s var(--ease)}
 .chat.hidden{display:none}
 @keyframes chatin{from{transform:translateY(24px);opacity:0}}
@@ -569,7 +576,7 @@ html.dark .flagbox{background:#2E2610;border-color:#5C4A15}html.dark .msg.err{ba
 html.dark button.danger,html.dark .danger{border-color:#7F1D1D}html.dark #msg{background:#27312E}
 html.dark #bnav{background:rgba(22,30,28,.94)}html.dark .sk::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)}
 html.dark .nick:focus{background:var(--card)!important}html.dark .hero .st,html.dark .asub span:first-child{color:var(--mute)}
-html.dark .aicard .try{color:#99F6E4}html.dark .welcome{background:linear-gradient(180deg,#123A35,var(--card) 70%)}
+html.dark .aicard .try,html.dark .rvfull .try{color:#99F6E4}html.dark .welcome{background:linear-gradient(180deg,#123A35,var(--card) 70%)}
 html.dark .cgrid button.on{border-color:var(--bg);box-shadow:0 0 0 2px var(--text)}
 html.dark .sprow input[readonly]{background:var(--card2)}
 html.dark .dots button{background:#3A4642}html.dark .dots button.on{background:var(--accent)}
@@ -1812,36 +1819,70 @@ function saveDigest() {
 function goReview() {
   if (location.hash === "#review") history.replaceState(null, "", location.pathname + location.search);
   if (S.tab !== "overview") go("overview"); closeChat();
-  setTimeout(() => scrollTo({ top: $("aiCard").getBoundingClientRect().top + scrollY - (isMobile() ? 64 : 16) }), 700);
+  setTimeout(async () => { if (!S.aiStatus) await loadAi(); if (S.aiReview) openReview(); else scrollTo({ top: $("aiCard").getBoundingClientRect().top + scrollY - (isMobile() ? 64 : 16) }); }, 500);
 }
 const SPARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>';
+/** A review counts only if it finished writing: a headline that isn't raw JSON and at least one point. */
+const reviewGood = r => { const b = r && r.body; return !!b && typeof b.headline === "string" && !!b.headline.trim() && !b.headline.trim().startsWith("{") && Array.isArray(b.points) && b.points.length > 0; };
+const reviewDate = r => new Date(r.created_at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 async function loadAi() {
-  const [st, rv] = await Promise.all([ai({ action: "status" }), db.from("ai_reviews").select("*").order("created_at", { ascending: false }).limit(1)]);
-  S.aiStatus = st && !st.error && "configured" in st ? st : { configured: false, offline: !!(st && st.error) }; S.aiReview = (rv.data || [])[0] || null;
-  renderAiCard(); renderAiSettings();
+  const [st, rv] = await Promise.all([ai({ action: "status" }), db.from("ai_reviews").select("*").order("created_at", { ascending: false }).limit(20)]);
+  S.aiStatus = st && !st.error && "configured" in st ? st : { configured: false, offline: !!(st && st.error) };
+  setReviews(rv.data || []); renderAiCard(); renderAiSettings();
 }
+function setReviews(rows) {
+  S.aiAll = rows; const wk = new Set(); // newest finished review for each week
+  S.aiReviews = rows.filter(r => reviewGood(r) && !wk.has(r.week_of) && wk.add(r.week_of)); S.aiReview = S.aiReviews[0] || null;
+  S.aiBroken = !!rows[0] && !reviewGood(rows[0]) && (!S.aiReview || rows[0].week_of !== S.aiReview.week_of);
+}
+function reviewHTML(r) { const b = r.body;
+  return `<div class="hl">${esc(b.headline)}</div><ul>${b.points.map(p => `<li>${esc(p)}</li>`).join("")}</ul>${b.try ? `<div class="try"><b>Try this week:</b> ${esc(b.try)}</div>` : ""}`; }
 function renderAiCard() {
   const el = $("aiCard"), st = S.aiStatus, r = S.aiReview; if (!el) return;
   document.body.classList.toggle("no-ai", !!st && !st.configured && !S.isAdmin);
+  el.classList.remove("teaser"); el.onclick = null;
   if (!st) { el.innerHTML = ""; el.hidden = true; return; } el.hidden = false;
   const head = sub => `<div class="aih"><h2>${SPARK} Weekly review</h2><span class="mute">${sub || ""}</span></div>`;
   if (!st.configured && !S.isAdmin) { el.innerHTML = ""; el.hidden = true; return; }
   if (!st.configured) { el.innerHTML = head() + `<div class="mute">Get a short written review of your week, and ask questions about your money. <a href="#" id="aiSetup">Set it up</a></div>`;
     $("aiSetup").onclick = e => { e.preventDefault(); go("settings"); setTimeout(() => $("aiSet").scrollIntoView({ behavior: "smooth" }), 150); }; return; }
+  if (S.aiBroken) { el.innerHTML = head(reviewDate(S.aiAll[0])) + `<div class="mute">This week's review didn't finish writing.${r ? ` Your last one is from ${reviewDate(r)}.` : ""}</div>
+      <div class="aib"><button class="primary" id="aiWrite">Write it again</button>${r ? `<button id="aiOpen">Read the last one</button>` : ""}</div>`;
+    $("aiWrite").onclick = () => writeReview($("aiWrite")); if ($("aiOpen")) $("aiOpen").onclick = () => openReview(); return; }
   if (!r) { el.innerHTML = head() + `<div class="mute">A short take on your week, every Sunday.</div>
-      <div class="aib"><button class="primary" id="aiWrite">Write my first review</button><button id="aiAsk2">Ask a question</button></div>`; }
-  else { const b = r.body || {}, when = new Date(r.created_at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-    el.innerHTML = head(when) + `<div class="hl">${esc(b.headline || "")}</div>${(b.points || []).length ? `<ul>${b.points.map(p => `<li>${esc(p)}</li>`).join("")}</ul>` : ""}
-      ${(b.points || []).length > 2 && isMobile() ? `<button class="more" id="aiMore">${S._aiOpen ? "Show less" : "Read all " + b.points.length}</button>` : ""}
-      ${b.try ? `<div class="try"><b>Try this week:</b> ${esc(b.try)}</div>` : ""}
-      <div class="aib"><button class="primary" id="aiAsk2">Ask a follow-up</button><button id="aiWrite">Write a fresh one</button></div>`;
-    el.classList.toggle("short", !S._aiOpen && isMobile());
-    if ($("aiMore")) $("aiMore").onclick = () => { S._aiOpen = !S._aiOpen; renderAiCard(); }; }
-  $("aiAsk2").onclick = () => openChat(r ? `About my weekly review ("${(r.body || {}).headline || ""}"): ` : "");
-  $("aiWrite").onclick = async () => { const b = $("aiWrite"); b.disabled = true; b.textContent = "Writing…"; saveDigest(); S._digSig = null; await new Promise(ok => setTimeout(ok, 50));
-    await db.from("app_settings").upsert({ key: "ai_digest", value: buildDigest(), updated_at: new Date().toISOString() }, { onConflict: "user_id,key" });
-    const j = await ai({ action: "review" }); if (j.error) { toast(j.error, true); b.disabled = false; b.textContent = "Try again"; return; }
-    S.aiReview = j.review; S._aiOpen = false; renderAiCard(); toast("Review ready"); refreshAiUsage(); };
+      <div class="aib"><button class="primary" id="aiWrite">Write my first review</button><button id="aiAsk2">Ask a question</button></div>`;
+    $("aiWrite").onclick = () => writeReview($("aiWrite")); $("aiAsk2").onclick = () => openChat(""); return; }
+  if (isMobile()) { // phone: the headline here, the whole review in a sheet
+    const n = r.body.points.length;
+    el.innerHTML = head(reviewDate(r)) + `<div class="hl">${esc(r.body.headline)}</div>
+      <button class="more" id="aiMore">Read the full review <span aria-hidden="true">›</span></button><div class="rvn">${n} point${n === 1 ? "" : "s"}${r.body.try ? " and one thing to try this week" : ""}</div>`;
+    el.classList.add("teaser"); el.onclick = () => openReview(); return; }
+  el.innerHTML = head(reviewDate(r)) + reviewHTML(r) + `<div class="aib"><button class="primary" id="aiAsk2">Ask a follow-up</button><button id="aiWrite">Write a fresh one</button>${S.aiReviews.length > 1 ? `<button id="aiPast">Earlier reviews</button>` : ""}</div>`;
+  $("aiAsk2").onclick = () => openChat(`About my weekly review ("${r.body.headline}"): `);
+  $("aiWrite").onclick = () => writeReview($("aiWrite"));
+  if ($("aiPast")) $("aiPast").onclick = () => openReview(null, true);
+}
+/** The full review in a sheet, with earlier weeks underneath. Pass a review to show an earlier one. */
+function openReview(r, pastOnly) {
+  const cur = S.aiReview; r = r || cur; if (!r) return;
+  const older = S.aiReviews.filter(x => x.id !== r.id).slice(0, 10), isCur = r.id === (cur && cur.id);
+  const list = older.map(x => `<div class="rvpast" data-rv="${esc(x.id)}"><span class="mute">${esc(reviewDate(x))}</span><span>${esc(x.body.headline)}</span></div>`).join("");
+  if (pastOnly) openModal("Earlier reviews", "", `<div class="rvfull">${list}</div>`);
+  else openModal("Weekly review", reviewDate(r), `<div class="rvfull">${!isCur ? `<button class="rvback" id="rvBack">‹ Back to the latest</button>` : ""}${reviewHTML(r)}
+      <div class="aib"><button class="primary" id="rvAsk">Ask a follow-up</button>${isCur ? `<button id="rvWrite">Write a fresh one</button>` : ""}</div>
+      ${older.length ? `<h3 class="inch">Earlier reviews</h3>${list}` : ""}</div>`);
+  if ($("rvBack")) $("rvBack").onclick = () => openReview();
+  if ($("rvAsk")) $("rvAsk").onclick = () => { closeModal(); openChat(`About my weekly review from ${reviewDate(r)} ("${r.body.headline}"): `); };
+  if ($("rvWrite")) $("rvWrite").onclick = () => writeReview($("rvWrite"), true);
+  $("mBody").querySelectorAll("[data-rv]").forEach(x => x.onclick = () => { const o = S.aiReviews.find(y => String(y.id) === x.dataset.rv); if (o) { openReview(o); $("modal").scrollTop = 0; const bx = $("modal").querySelector(".box"); if (bx) bx.scrollTop = 0; } });
+}
+async function writeReview(btn, inSheet) {
+  const label = btn.textContent; btn.disabled = true; btn.textContent = "Writing…";
+  saveDigest(); S._digSig = null; await new Promise(ok => setTimeout(ok, 50));
+  await db.from("app_settings").upsert({ key: "ai_digest", value: buildDigest(), updated_at: new Date().toISOString() }, { onConflict: "user_id,key" });
+  const j = await ai({ action: "review" });
+  if (j.error || !reviewGood(j.review)) { toast(j.error || "The review didn't come out right. Try again in a minute.", true); btn.disabled = false; btn.textContent = label === "Write my first review" ? label : "Try again"; return; }
+  setReviews([j.review, ...(S.aiAll || [])]); renderAiCard(); if (inSheet || isMobile()) openReview(); toast("Review ready"); refreshAiUsage();
 }
 async function refreshAiUsage() { const st = await ai({ action: "status" }); if (st && !st.error) { S.aiStatus = st; renderAiSettings(); } }
 function renderAiSettings() {
