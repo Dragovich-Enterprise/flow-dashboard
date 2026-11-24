@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<!-- Only this site, Supabase and Plaid may run code or receive data. Inline scripts stay allowed because the app lives in this file. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.plaid.com; connect-src 'self' https://pnpigzwltdoeysgeyxbr.supabase.co wss://pnpigzwltdoeysgeyxbr.supabase.co https://*.plaid.com; frame-src https://cdn.plaid.com https://*.plaid.com; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F7F8FA">
 <script>(function () { try { var t = JSON.parse(localStorage.getItem("hr_theme")) || "auto";
@@ -898,8 +900,9 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
 </div></div>
 <div id="msg"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<!-- Pinned copies kept in this repo (supabase-js 2.119.0, Chart.js 4.6.1). To update, replace the file and change the name. -->
+<script src="vendor/supabase-js-2.119.0.js"></script>
+<script src="vendor/chart-4.6.1.umd.min.js"></script>
 <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 <script>
 const SUPABASE_URL = "https://pnpigzwltdoeysgeyxbr.supabase.co";
@@ -1911,13 +1914,18 @@ async function writeReview(btn, inSheet) {
   setReviews([j.review, ...(S.aiAll || [])]); renderAiCard(); if (inSheet || isMobile()) openReview(); toast("Review ready"); refreshAiUsage();
 }
 async function refreshAiUsage() { const st = await ai({ action: "status" }); if (st && !st.error) { S.aiStatus = st; renderAiSettings(); } }
+/** How much of today's and this month's AI allowance is used, for invited people (no dollar amounts). */
+function aiAllowance(st) {
+  const a = st.allowance; if (!a) return `${st.today || 0} assistant requests today.`;
+  return `${a.day_pct}% of today's and ${a.month_pct}% of this month's used. Today's resets at midnight Eastern time, the month's on the 1st.`;
+}
 function renderAiSettings() {
   const el = $("aiSetBody"), st = S.aiStatus; if (!el || !st) return;
   if (!S.isAdmin) { // invited people: no keys or costs, just their switch and how much is left today
     if (!st.configured) { el.textContent = "The assistant isn't available right now."; return; }
     const on = (S.settings.ai || {}).weekly !== false;
     el.innerHTML = `<div class="optrow" style="border-top:0"><div><div class="t">Sunday review</div><div class="d">A short written review of your week, sent Sunday morning with your weekly notification.</div></div><label class="sw"><input type="checkbox" id="aiWeekly" ${on ? "checked" : ""}><span></span></label></div>
-      <div class="optrow"><div><div class="t">Today</div><div class="d">${st.today || 0} of ${st.cap} assistant requests used. Resets at midnight.</div></div></div>
+      <div class="optrow"><div><div class="t">Your allowance</div><div class="d">${aiAllowance(st)}</div></div></div>
       <div class="optrow"><div><div class="t">What it sees</div><div class="d">Totals, categories, store names and amounts from your Headroom. Never account numbers or bank logins.</div></div></div>`;
     $("aiWeekly").onchange = e => saveSetting("ai", { ...(S.settings.ai || {}), weekly: e.target.checked }); return;
   }
@@ -1925,8 +1933,8 @@ function renderAiSettings() {
       <ol style="margin:8px 0 0;padding-left:20px"><li>Create a key at <b>console.anthropic.com</b> → API Keys (add a few dollars of credit and a monthly spend limit there).</li>
       <li>In Supabase: <b>Isaac's Budget Project → Edge Functions → Secrets → Add new secret</b>. Name: <code>ANTHROPIC_API_KEY</code>, value: your key.</li>
       <li>Close and reopen Headroom.</li></ol></div>`; return; }
-  const u = st.month || {}, cost = (u.input_tokens || 0) / 1e6 * 2 + (u.output_tokens || 0) / 1e6 * 10, on = (S.settings.ai || {}).weekly !== false;
-  el.innerHTML = `<div class="optrow" style="border-top:0"><div><div class="t">Status</div><div class="d">Connected ✓ · ${esc(st.model || "")} · up to ${st.cap} requests a day</div></div></div>
+  const u = st.month || {}, cost = u.cost_usd ?? ((u.input_tokens || 0) / 1e6 * 2 + (u.output_tokens || 0) / 1e6 * 10), on = (S.settings.ai || {}).weekly !== false, al = st.allowance;
+  el.innerHTML = `<div class="optrow" style="border-top:0"><div><div class="t">Status</div><div class="d">Connected ✓ · ${esc(st.model || "")}${al ? ` · your limit is $${al.day_usd} a day and $${al.month_usd} a month` : ""}</div></div></div>
     <div class="optrow"><div><div class="t">Sunday review</div><div class="d">Written at 8 AM Sunday and sent as your weekly notification.</div></div><label class="sw"><input type="checkbox" id="aiWeekly" ${on ? "checked" : ""}><span></span></label></div>
     <div class="optrow"><div><div class="t">This month</div><div class="d">${u.calls || 0} requests · about ${cost < .01 ? "less than 1¢" : "$" + cost.toFixed(2)} in AI charges</div></div></div>
     <div class="optrow"><div><div class="t">What it sees</div><div class="d">Totals, categories, store names and amounts from this app. Never account numbers or bank logins.</div></div></div>`;
@@ -3977,7 +3985,7 @@ async function fn(body) {
   const { data: { session } } = await db.auth.getSession();
   const r = await fetch(`${SUPABASE_URL}/functions/v1/plaid`, { method: "POST",
     headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token, apikey: SUPABASE_KEY }, body: JSON.stringify(body) });
-  const j = await r.json().catch(() => ({})); if (!r.ok || j.error) throw new Error(j.error || r.statusText); return j;
+  const j = await r.json().catch(() => ({})); if (!r.ok || j.error) throw Object.assign(new Error(j.error || r.statusText), { data: j }); return j;
 }
 const REDIRECT = location.origin + location.pathname;
 /** Opens Plaid Link. With itemId it's update mode: the same bank signs in again and keeps its history (nothing to exchange). */
@@ -3994,8 +4002,12 @@ function openLink(token, receivedRedirectUri, itemId) {
         return;
       }
       toast("Linking… pulling your data (can take a minute)");
-      try { await fn({ action: "exchange", public_token, institution_name: meta.institution?.name }); await load(); await loadItems(); toast("Linked"); }
-      catch (e) { toast(e.message, true); } },
+      try { await fn({ action: "exchange", public_token, institution_name: meta.institution?.name, institution_id: meta.institution?.institution_id,
+          accounts: (meta.accounts || []).map(a => ({ mask: a.mask, type: a.type })) }); await load(); await loadItems(); toast("Linked"); }
+      catch (e) { const d = e.data || {};
+        // same bank already linked: nothing was added; offer Reconnect when that's what it needs
+        if (d.duplicate && d.needs_reconnect && confirm(`${e.message}\n\nReconnect ${d.institution} now?`)) { startReconnect(d.item_id); return; }
+        toast(e.message, true); } },
     onExit: err => { if (itemId) store.set("plaid_link_item", null); if (err) toast(err.display_message || err.error_message || "Link closed", true); } };
   if (receivedRedirectUri) cfg.receivedRedirectUri = receivedRedirectUri;
   Plaid.create(cfg).open();
@@ -4113,7 +4125,7 @@ function csvRows(text, impPos) {
 }
 
 // ---------- PDF statements ----------
-const PDFJS = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/";
+const PDFJS = "vendor/pdfjs/";   // pdfjs-dist 3.11.174, kept in this repo
 async function pdfLib() {
   if (window.pdfjsLib) return window.pdfjsLib;
   await new Promise((ok, bad) => { const sc = document.createElement("script"); sc.src = PDFJS + "pdf.min.js"; sc.onload = ok; sc.onerror = () => bad(new Error("Couldn't load the PDF reader. Check your connection.")); document.head.appendChild(sc); });
