@@ -90,6 +90,8 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
 .mini-bars{display:flex;gap:4px;align-items:flex-end;height:34px;margin-top:8px}.mini-bars i{display:block;width:12px;flex:0 0 12px;border-radius:3px;transform-origin:bottom;animation:grow .7s var(--ease)}
 @keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 .note{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:14px;color:var(--mute)}
+.bankalert{border-color:var(--warn);color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:10px 0 0}
+.bankalert b{color:var(--warn)}
 .rowline{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
 .rowline:first-child{border-top:0}.rowline.tap:hover{color:var(--accent-d)}
 .lbl{display:block;font-size:12px;color:var(--mute);margin-bottom:4px}
@@ -644,6 +646,7 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
     <button class="tab" data-t="settings">Settings</button>
     <i class="ink" id="ink"></i>
   </nav>
+  <div id="bankAlert"></div>
 
   <!-- OVERVIEW -->
   <div class="pane on" id="p-overview">
@@ -952,7 +955,9 @@ function toast(t, err, action) {
   m.classList.toggle("err", !!err); m.classList.add("show"); clearTimeout(S.toastT);
   S.toastT = setTimeout(() => m.classList.remove("show"), action ? 9000 : err ? 6000 : 3200);
 }
-const acctName = id => { const a = S.accts.find(x => x.account_id === id); return a ? (a.nickname || a.name) : (!id || String(id).startsWith("cash") ? "Cash" : ""); };
+/** Any account by id, including ones whose bank was disconnected (their history stays). */
+const acctOf = id => (S.allAccts || S.accts).find(x => x.account_id === id);
+const acctName = id => { const a = acctOf(id); return a ? (a.nickname || a.name) : (!id || String(id).startsWith("cash") ? "Cash" : ""); };
 
 /** Count a number up from its last shown value. */
 function countTo(el, v, fmt = money) {
@@ -1041,7 +1046,7 @@ function catSource(t) {
 }
 const eff = t => t.user_category || baseCat(t);
 const tname = t => t.user_name || (rule(t) && rule(t).rename) || t.merchant_name || t.name || "Unknown";
-const typeOf = id => (S.accts.find(a => a.account_id === id) || {}).type;
+const typeOf = id => (acctOf(id) || {}).type;
 const isCardPay = t => (t.category_detailed || "").includes("CREDIT_CARD_PAYMENT");
 
 /** Pair transfers between your own linked accounts (same amount, opposite sign, within 4 days). */
@@ -1142,7 +1147,7 @@ $("forgot").onclick = async () => {
   $("err").textContent = error ? error.message : "Check your email for a reset link.";
 };
 /** Sign out and leave nothing of this person's behind on the device (the next person may share the phone). */
-const PERSONAL_KEYS = ["hr_chat", "plaid_link_token", "hr_lock", "hr_pk_offered", "hr_slide", "hr_hist_hide", "hr_recap_seen", "hr_invhist", "hr_inv_range"];
+const PERSONAL_KEYS = ["hr_chat", "plaid_link_token", "plaid_link_item", "hr_lock", "hr_pk_offered", "hr_slide", "hr_hist_hide", "hr_recap_seen", "hr_invhist", "hr_inv_range"];
 function forgetLocal() { PERSONAL_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} }); }
 const signOut = async () => {
   try { const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); const sub = reg && reg.pushManager && await reg.pushManager.getSubscription();
@@ -1293,8 +1298,11 @@ async function load() {
   if (uid && prev && prev !== uid) { forgetLocal(); S.chat = { msgs: [], applied: {} }; }
   if (uid && prev !== uid) store.set("hr_owner", uid);
   S.tx = tx.sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
-  S.accts = ac.data || []; S.budgets = bu.data || []; S.goals = go_.data || []; S.snaps = (sn || []).sort((x, y) => x.snap_date < y.snap_date ? -1 : x.snap_date > y.snap_date ? 1 : 0);
-  S.rules = ru.data || []; S.holdings = ho.data || []; S.invtx = it || [];
+  // a disconnected bank's accounts stay for their history, but their last balances no longer count
+  S.allAccts = ac.data || []; S.accts = S.allAccts.filter(a => !a.disconnected_at);
+  const offAccts = new Set(S.allAccts.filter(a => a.disconnected_at).map(a => a.account_id));
+  S.budgets = bu.data || []; S.goals = go_.data || []; S.snaps = (sn || []).sort((x, y) => x.snap_date < y.snap_date ? -1 : x.snap_date > y.snap_date ? 1 : 0);
+  S.rules = ru.data || []; S.holdings = (ho.data || []).filter(h => !offAccts.has(h.account_id)); S.invtx = it || [];
   S.mrules = Object.fromEntries((mr.data || []).map(r => [r.match, r]));
   S.settings = { income_transfers: true, custom_categories: [], hidden_accounts: [], ...Object.fromEntries((st.data || []).map(r => [r.key, r.value])) };
   S.months = [...new Set([...S.tx.map(t => t.date.slice(0, 7)), todayISO().slice(0, 7)])].sort().reverse();
@@ -1313,8 +1321,26 @@ async function load() {
 async function loadItemInfo() {
   try { let { data: nm, error } = await db.rpc("item_info"); if (error) ({ data: nm } = await db.rpc("item_names"));
     S.inst = Object.fromEntries((nm || []).map(r => [r.item_id, r.institution_name]));
-    S.items = Object.fromEntries((nm || []).map(r => [r.item_id, { name: r.institution_name || "Bank", linked: r.linked_at || null, status: r.history_status || null }]));
+    S.items = Object.fromEntries((nm || []).map(r => [r.item_id, { name: r.institution_name || "Bank", linked: r.linked_at || null, status: r.history_status || null,
+      err: r.error_code || null, errAt: r.error_at || null, off: r.disconnected_at || null }]));
   } catch (e) { S.inst = {}; S.items = {}; }
+  renderBankAlert();
+}
+// Plaid errors the person fixes by signing in to the bank again (keep in step with NEEDS_RECONNECT in the plaid function)
+const NEEDS_RECONNECT = ["ITEM_LOGIN_REQUIRED", "PENDING_EXPIRATION", "PENDING_DISCONNECT", "INVALID_CREDENTIALS", "INSUFFICIENT_CREDENTIALS",
+  "INVALID_MFA", "ITEM_LOCKED", "USER_SETUP_REQUIRED", "ACCESS_NOT_GRANTED", "NO_ACCOUNTS", "INVALID_UPDATED_USERNAME"];
+const needsReconnect = it => !!it && !it.off && NEEDS_RECONNECT.includes(it.err);
+/** "Reconnect your bank" banner, on every page, for each bank that has stopped updating until you sign in again. */
+function renderBankAlert() {
+  const el = $("bankAlert"); if (!el) return;
+  const stuck = Object.entries(S.items || {}).filter(([, it]) => needsReconnect(it));
+  el.innerHTML = stuck.map(([id, it]) => {
+    const soon = it.err === "PENDING_EXPIRATION" || it.err === "PENDING_DISCONNECT";
+    const msg = soon ? `${esc(it.name)}'s connection expires soon. Reconnect to keep it updating.`
+      : `${esc(it.name)} needs you to sign in again, so it stopped updating${it.errAt ? " " + timeAgo(it.errAt) : ""}. Your history is safe.`;
+    return `<div class="note bankalert"><span><b>Reconnect your bank</b><br>${msg}</span><button class="mini primary" data-reconnect="${esc(id)}">Reconnect</button></div>`;
+  }).join("");
+  el.querySelectorAll("[data-reconnect]").forEach(b => b.onclick = () => startReconnect(b.dataset.reconnect));
 }
 function timeAgo(iso) { const s = (Date.now() - Date.parse(iso)) / 1000; if (s < 90) return "just now"; if (s < 3600) return Math.round(s / 60) + " min ago"; if (s < 86400) return Math.round(s / 3600) + " h ago"; return Math.round(s / 86400) + " d ago"; }
 async function saveSetting(key, value) {
@@ -1617,7 +1643,7 @@ function budgetMap() { return Object.fromEntries(S.budgets.map(b => [b.category,
 function refOf(id) { const r = S.chat.refs || (S.chat.refs = { n: 0, byId: {}, byRef: {} }); if (!r.byId[id]) { const k = "T" + (++r.n); r.byId[id] = k; r.byRef[k] = id; } return r.byId[id]; }
 const txByRef = k => { const id = ((S.chat.refs || {}).byRef || {})[String(k).trim().toUpperCase()]; return id ? S.tx.find(t => t.transaction_id === id) : null; };
 const COUNTED = { spend: "spending", refund: "refund", income: "income", transfer: "transfer", excluded: "excluded" };
-function txRow(t) { const a = S.accts.find(x => x.account_id === t.account_id), raw = t.name && t.name !== tname(t) ? t.name : undefined;
+function txRow(t) { const a = acctOf(t.account_id), raw = t.name && t.name !== tname(t) ? t.name : undefined;
   return { ref: refOf(t.transaction_id), date: t.date, name: tname(t), bank_description: raw, amount: r2(t.amount), category: pretty(eff(t)), counted_as: COUNTED[t._k] || t._k, account: a ? (a.nickname || a.name) : "Cash" }; }
 function nwChange(days) { const s = nwSeries(false); if (!s.vals.length) return null; const i = Math.max(0, s.vals.length - 1 - days); return s.labels[i] >= s.start ? r0(s.vals[s.vals.length - 1] - s.vals[i]) : null; }
 
@@ -1767,7 +1793,7 @@ async function undoTxPlan(u) {
 /** Background the assistant gets with every question: categories, budgets, accounts, income and how far back data goes. */
 function chatContext() {
   const bud = budgetMap(), inc = incomeStreams();
-  const firstByBank = {}; S.tx.forEach(t => { const a = S.accts.find(x => x.account_id === t.account_id); const b = a ? ((S.inst || {})[a.item_id] || "Bank") : "Manual"; if (!firstByBank[b] || t.date < firstByBank[b]) firstByBank[b] = t.date; });
+  const firstByBank = {}; S.tx.forEach(t => { const a = acctOf(t.account_id); const b = a ? ((S.inst || {})[a.item_id] || "Bank") : "Manual"; if (!firstByBank[b] || t.date < firstByBank[b]) firstByBank[b] = t.date; });
   return [
     `Categories: ${allCats().filter(c => !["INCOME", "TRANSFER_IN", "TRANSFER_OUT"].includes(c)).map(pretty).join(", ")}. Spending in a category with no budget counts toward "Everything else".`,
     `Monthly budgets: ${Object.entries(bud).map(([c, v]) => `${pretty(c)} ${rawMoney(v)}`).join(", ") || "none set"}.`,
@@ -3378,7 +3404,7 @@ function setupFilters() {
   $("fCat").innerHTML = `<option value="">All categories</option>` + allCats().map(c => `<option value="${esc(c)}">${esc(pretty(c))}</option>`).join("");
   const extra = [...new Set(S.tx.map(t => t.account_id))].filter(id => !S.accts.some(a => a.account_id === id));
   $("fAcct").innerHTML = `<option value="">All accounts</option>` + S.accts.filter(a => !isEmptyAcct(a)).map(a => `<option value="${esc(a.account_id)}">${esc(a.nickname || a.name)} ${a.mask ? "••" + esc(a.mask) : ""}</option>`).join("")
-    + extra.map(id => `<option value="${esc(id)}">${esc(acctName(id) || id)}</option>`).join("");
+    + extra.map(id => `<option value="${esc(id)}">${esc(acctName(id) || id)}${acctOf(id) && acctOf(id).disconnected_at ? " (disconnected)" : ""}</option>`).join("");
   $("fCat").value = keep.c; $("fAcct").value = keep.a;
 }
 let sT;
@@ -3573,7 +3599,7 @@ function invTxView(t) {
   if (amt > 0) return { t: typ === "transfer" ? "Withdrawal to bank" : "Withdrawal", a: "−" + money2(amt), c: "" };
   return null;
 }
-const invActRows = (list, withAcct) => list.map(t => { const v = invTxView(t); if (!v) return ""; const a = S.accts.find(x => x.account_id === t.account_id);
+const invActRows = (list, withAcct) => list.map(t => { const v = invTxView(t); if (!v) return ""; const a = acctOf(t.account_id);
   return `<div class="rowline"><span>${esc(v.t)} <span class="mute" style="white-space:nowrap">· ${withAcct && a ? esc(invName(a)) + " · " : ""}${esc(shortDate(t.date))}</span></span><span class="${v.c}" style="font-weight:600;white-space:nowrap">${v.a}</span></div>`; }).filter(Boolean);
 /** Holdings combined across accounts (or for one), biggest first; cash dust and empty positions left out. */
 function invHoldRows(hs, total, limit) {
@@ -3920,14 +3946,29 @@ async function loadItems() {
   $("itemList").innerHTML = `<div class="mute">Loading connections…</div>`;
   try {
     const { items } = await fn({ action: "items" });
-    $("itemList").innerHTML = items.length ? items.map(i => `<div class="rowline">
-      <span>${esc(i.institution || "Bank")} <span class="mute">${i.accounts} account${i.accounts === 1 ? "" : "s"}${i.has_investment ? " · brokerage" : ""}</span></span>
-      <button class="mini danger rm" data-id="${esc(i.item_id)}" data-n="${esc(i.institution || "this bank")}">Remove</button></div>`).join("")
+    const live = items.filter(i => !i.disconnected_at), off = items.filter(i => i.disconnected_at);
+    const line = i => `<span class="mute">${i.accounts} account${i.accounts === 1 ? "" : "s"}${i.has_investment ? " · brokerage" : ""}</span>`;
+    $("itemList").innerHTML = items.length ? live.map(i => `<div class="rowline" style="flex-wrap:wrap">
+      <span>${esc(i.institution || "Bank")} ${line(i)}${i.needs_reconnect ? `<br><span class="neg" style="font-size:13px">Needs you to sign in again</span>` : ""}</span>
+      <span class="btns">${i.needs_reconnect ? `<button class="mini primary rc" data-id="${esc(i.item_id)}">Reconnect</button>` : ""}<button class="mini rm" data-id="${esc(i.item_id)}" data-n="${esc(i.institution || "this bank")}">Disconnect</button></span></div>`).join("")
+      + off.map(i => `<div class="rowline" style="flex-wrap:wrap">
+      <span>${esc(i.institution || "Bank")} ${line(i)}<br><span class="mute" style="font-size:13px">Disconnected ${fmtDay(i.disconnected_at)} · history kept</span></span>
+      <button class="mini danger del" data-id="${esc(i.item_id)}" data-n="${esc(i.institution || "this bank")}">Delete history</button></div>`).join("")
       : `<div class="mute">No banks linked yet.</div>`;
+    $("itemList").querySelectorAll(".rc").forEach(b => b.onclick = () => startReconnect(b.dataset.id));
     $("itemList").querySelectorAll(".rm").forEach(b => b.onclick = async () => {
-      if (!confirm(`Disconnect ${b.dataset.n}? Its accounts and transactions are removed from Headroom. Budgets and goals are kept.`)) return;
+      const it = items.find(i => i.item_id === b.dataset.id);
+      if (!confirm(`Disconnect ${b.dataset.n}? It stops updating. Its accounts and past transactions stay in Headroom, with your categories and notes, and stop counting toward balances.`
+        + (it && it.needs_reconnect ? `\n\nIf it just needs a fresh sign-in, use Reconnect instead.` : "")
+        + `\n\nIf you plan to link this bank again, use Delete history afterwards, or its transactions will show up twice.`)) return;
       toast("Disconnecting…");
-      try { await fn({ action: "remove_item", item_id: b.dataset.id }); await load(); await loadItems(); toast("Disconnected"); }
+      try { await fn({ action: "remove_item", item_id: b.dataset.id }); await load(); await loadItems(); toast("Disconnected. History kept."); }
+      catch (e) { toast(e.message, true); }
+    });
+    $("itemList").querySelectorAll(".del").forEach(b => b.onclick = async () => {
+      if (!confirm(`Delete ${b.dataset.n}'s history? Its accounts, transactions, categories, notes, splits and balance history are erased from Headroom. Budgets and goals are kept. This can't be undone.`)) return;
+      toast("Deleting…");
+      try { await fn({ action: "delete_history", item_id: b.dataset.id, confirm: "DELETE" }); await load(); await loadItems(); toast("History deleted"); }
       catch (e) { toast(e.message, true); }
     });
   } catch (e) { $("itemList").innerHTML = `<div class="mute">Could not load connections: ${esc(e.message)}</div>`; }
@@ -3939,23 +3980,40 @@ async function fn(body) {
   const j = await r.json().catch(() => ({})); if (!r.ok || j.error) throw new Error(j.error || r.statusText); return j;
 }
 const REDIRECT = location.origin + location.pathname;
-function openLink(token, receivedRedirectUri) {
+/** Opens Plaid Link. With itemId it's update mode: the same bank signs in again and keeps its history (nothing to exchange). */
+function openLink(token, receivedRedirectUri, itemId) {
   const cfg = { token,
     onSuccess: async (public_token, meta) => {
+      if (itemId) {
+        store.set("plaid_link_item", null);
+        toast("Reconnecting… catching up on what was missed");
+        try { const r = await fn({ action: "reconnected", item_id: itemId });
+          if (r.ok === false) { toast(r.error || "That didn't finish. Try Reconnect again.", true); await loadItemInfo(); return; }
+          await load(); if (S.tab === "settings") await loadItems(); toast(r.sync_error ? "Reconnected. Sync will finish shortly." : "Reconnected ✓"); }
+        catch (e) { toast(e.message, true); }
+        return;
+      }
       toast("Linking… pulling your data (can take a minute)");
       try { await fn({ action: "exchange", public_token, institution_name: meta.institution?.name }); await load(); await loadItems(); toast("Linked"); }
       catch (e) { toast(e.message, true); } },
-    onExit: err => { if (err) toast(err.display_message || err.error_message || "Link closed", true); } };
+    onExit: err => { if (itemId) store.set("plaid_link_item", null); if (err) toast(err.display_message || err.error_message || "Link closed", true); } };
   if (receivedRedirectUri) cfg.receivedRedirectUri = receivedRedirectUri;
   Plaid.create(cfg).open();
 }
 async function startLink(investments) {
   try {
     const { link_token } = await fn({ action: "link_token", redirect_uri: REDIRECT, investments: !!investments });
-    store.set("plaid_link_token", link_token); openLink(link_token);
+    store.set("plaid_link_token", link_token); store.set("plaid_link_item", null); openLink(link_token);
   } catch (e) { toast(e.message, true); }
 }
-function resumeOAuth() { if (location.search.includes("oauth_state_id")) { const t = store.get("plaid_link_token"); if (t) openLink(t, location.href); } }
+/** Reconnect in place: sign in to the same bank again through Plaid, keeping its accounts, transactions and edits. */
+async function startReconnect(itemId) {
+  try {
+    const { link_token } = await fn({ action: "reconnect_token", item_id: itemId, redirect_uri: REDIRECT });
+    store.set("plaid_link_token", link_token); store.set("plaid_link_item", itemId); openLink(link_token, undefined, itemId);
+  } catch (e) { toast(e.message, true); }
+}
+function resumeOAuth() { if (location.search.includes("oauth_state_id")) { const t = store.get("plaid_link_token"); if (t) openLink(t, location.href, store.get("plaid_link_item") || undefined); } }
 $("linkBtn").onclick = () => startLink(false);
 $("linkInvBtn").onclick = () => startLink(true);
 async function doSync() {
@@ -3965,8 +4023,9 @@ async function doSync() {
   //    sometimes only once a day), 2) collect whatever Plaid already has, 3) about 40 seconds later collect again.
   try { await fn({ action: "refresh" }).catch(() => null);
     const r = await fn({ action: "sync" }); await load(); loadInvHistory(true);
-    const notes = (r.synced || []).filter(x => x.error).map(x => x.error);
-    if (notes.length) toast("Synced, with issues: " + notes[0], true); else toast("Asked your banks for new activity; checking again in a moment…");
+    const stuck = (r.synced || []).filter(x => x.needs_reconnect), notes = (r.synced || []).filter(x => x.error && !x.needs_reconnect).map(x => x.error);
+    if (stuck.length) toast(`${stuck.map(x => x.institution || "A bank").join(", ")} needs you to sign in again. Tap Reconnect.`, true);
+    else if (notes.length) toast("Synced, with issues: " + notes[0], true); else toast("Asked your banks for new activity; checking again in a moment…");
     setTimeout(async () => { try { const r2 = await fn({ action: "sync" }), n = (r2.synced || []).reduce((s, x) => s + (x.added || 0), 0);
       if (n) await load(); toast(n ? `${n} new transaction${n > 1 ? "s" : ""} ✓` : "Up to date ✓"); } catch (e) { /* the scheduled syncs will catch up */ }
       b.classList.remove("spin"); $("syncBtn2").disabled = false; }, 40000);
