@@ -3307,7 +3307,12 @@ const goalLeft = g => Math.max(0, Number(g.target_amount || 0) - goalSaved(g));
  *  half-typed one isn't, so it's never saved and never spread. */
 const goalDateOk = d => /^\d{4}-\d{2}-\d{2}$/.test(d || "") && Number(d.slice(0, 4)) >= 2000 && Number(d.slice(0, 4)) <= new Date().getFullYear() + 100 && !isNaN(dnum(d));
 /** Why a goal date can't be saved, or "" when it can. Clearing the date is fine. */
-const goalDateProblem = d => !d ? "" : !goalDateOk(d) ? "That date doesn't look right. Pick the month, day and year again." : d < todayISO() ? "Pick a date from today on." : "";
+const goalDateProblem = d => !d ? "" : !/^\d{4}-\d{2}-\d{2}$/.test(d) ? "That date doesn't look right. Pick it again."
+  : !goalDateOk(d) ? `That's the year ${Number(d.slice(0, 4))}, not ${new Date().getFullYear()}. Pick the year again.` : d < todayISO() ? "Pick a date from today on." : "";
+/** What the date field shows: the saved date, or nothing when the saved one isn't a real date. A phone's picker opens at
+ *  the field's date, so a saved year like 0026 would make it open in the year 26 (shown in the old Julian calendar,
+ *  so even the day looks off). Empty, it opens at today. */
+const goalDateField = g => g.target_date && goalDateOk(String(g.target_date).slice(0, 10)) ? String(g.target_date).slice(0, 10) : "";
 const monthsApart = (a, b) => (Number(b.slice(0, 4)) - Number(a.slice(0, 4))) * 12 + Number(b.slice(5, 7)) - Number(a.slice(5, 7));
 const mShort = m => new Date(m + "-15T12:00:00").toLocaleString("en-US", { month: "short" });
 /** What's left of a goal, spread evenly from this month through the month of its date. If the date falls in the first week of
@@ -4350,7 +4355,7 @@ function renderGoals() {
       <div class="fields">
         <div><label class="lbl">Amount saved so far</label><input class="g-cur" type="number" step="1" inputmode="decimal" value="${saved}" ${g.account_id ? "disabled" : ""}></div>
         <div><label class="lbl">Total you need</label><input class="g-tgt" type="number" step="1" inputmode="decimal" value="${g.target_amount ?? ""}"></div>
-        <div><label class="lbl">Date you want it by</label><input class="g-date" type="date" value="${g.target_date ?? ""}" min="${todayISO()}" max="${new Date().getFullYear() + 100}-12-31"></div>
+        <div><label class="lbl">Date you want it by</label><input class="g-date" type="date" value="${goalDateField(g)}" min="${todayISO()}" max="${new Date().getFullYear() + 100}-12-31"></div>
         <div><label class="lbl">In my monthly plan</label><div class="gplan"><select class="g-plan" aria-label="In my monthly plan"><option value="" ${!mode ? "selected" : ""}>No</option>
             <option value="auto" ${mode === "auto" ? "selected" : ""}>Spread evenly to the date</option><option value="fixed" ${mode === "fixed" ? "selected" : ""}>A set amount each month</option></select>
           <input class="g-mon" type="number" step="5" min="0" inputmode="numeric" aria-label="Amount each month" value="${mode === "fixed" ? g.monthly_amount ?? "" : ""}" placeholder="${sp && sp.amt ? Math.round(sp.amt) : "per month"}" ${mode === "fixed" ? "" : "hidden"}></div></div>
@@ -4371,21 +4376,22 @@ function renderGoals() {
      *  mid-scroll on a phone's picker is never saved, and a mistyped or past date is refused. */
     const save = async withDate => {
       const acct = el.querySelector(".g-acct").value || null, old = S.goals.find(g => String(g.id) === id);
-      let tdate = old.target_date ?? null;
+      let tdate = old.target_date ?? null, dateChanged = false;
       if (withDate) { const v = dateEl.value || null, bad = goalDateProblem(v);
-        if (bad) { dateEl.value = old.target_date ?? ""; if (S._goalsStale) renderGoals(); return toast(bad, true); }
-        if (v === (old.target_date ?? null)) { if (S._goalsStale) renderGoals(); return; } tdate = v; }
+        if (bad) { dateEl.value = goalDateField(old); if (S._goalsStale) renderGoals(); return toast(bad, true); }
+        if (v === (old.target_date ?? null) || (!v && !goalDateField(old))) { if (S._goalsStale) renderGoals(); return; } tdate = v; dateChanged = true; }
       const patch = { name: el.querySelector(".g-name").value.trim() || "Untitled goal", current_amount: Number(el.querySelector(".g-cur").value) || 0,
-        target_amount: el.querySelector(".g-tgt").value === "" ? null : Number(el.querySelector(".g-tgt").value), target_date: tdate, account_id: acct };
+        target_amount: el.querySelector(".g-tgt").value === "" ? null : Number(el.querySelector(".g-tgt").value), account_id: acct };
+      if (dateChanged) patch.target_date = tdate;   // only sent when the date itself was picked, so other edits never touch it
       const mode = el.querySelector(".g-plan").value || null, monEl = el.querySelector(".g-mon");
-      if (mode === "auto" && !patch.target_date) { el.querySelector(".g-plan").value = goalMode(old) || ""; return toast("Add the date you want it by, then it can be spread evenly", true); }
+      if (mode === "auto" && !goalDateOk(String(tdate || "").slice(0, 10))) { el.querySelector(".g-plan").value = goalMode(old) || ""; return toast("Add the date you want it by, then it can be spread evenly", true); }
       if (mode === "fixed" && monEl.value === "") { const sp = goalSpread({ ...old, ...patch }); monEl.value = sp && sp.amt ? sp.amt : ""; }
       const mon = mode === "fixed" ? (monEl.value === "" ? null : Math.max(0, Math.round(Number(monEl.value)))) : null;
       if (mode === "fixed" && mon == null) { monEl.hidden = false; monEl.focus(); return toast("Type how much to set aside each month", true); }
       // the plan fields are only sent when they change, so editing a goal works the same before the server update
       if (mode !== goalMode(old) || (mode === "fixed" && mon !== Number(old.monthly_amount))) { patch.plan_mode = mode; patch.monthly_amount = mon; }
       const { error } = await db.from("goals").update(patch).eq("id", id);
-      if (error) return toast(/plan_mode|monthly_amount/.test(error.message) ? "This needs the latest Headroom update on the server." : error.message, true);
+      if (error) { if (dateChanged) dateEl.value = goalDateField(old); return toast(/plan_mode|monthly_amount/.test(error.message) ? "This needs the latest Headroom update on the server." : error.message, true); }
       Object.assign(old, patch); renderAll(); toast(!("plan_mode" in patch) ? "Goal saved" : mode ? "Goal saved to your plan" : "Taken out of your plan");
     };
     el.querySelectorAll("input, select").forEach(i => { if (i !== dateEl) i.onchange = () => save(false); });
