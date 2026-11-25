@@ -354,6 +354,22 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
 .incsum{padding:4px 0 6px}.incsum .big{font-size:30px;font-weight:700;letter-spacing:-.02em}.incsum .mute{font-size:13.5px;margin-top:2px}
 .inch{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin:16px 0 4px;font-weight:600}
 .catrow{cursor:pointer}.catrow.hid{opacity:.55}.catrow .go{color:var(--mute);font-size:18px;margin-left:8px}
+/* settings groups + manager */
+.setnav{margin:0 0 14px}.setnav .chip{background:var(--card)}
+.setgrp{scroll-margin-top:70px}.setgrp+.setgrp{margin-top:22px}
+.gh{font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0 2px 10px;color:var(--text)}
+.mgrlink{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 16px;border-radius:var(--r);font:inherit;color:inherit}
+.mgrlink .mgi{font-size:22px;width:40px;height:40px;border-radius:12px;background:var(--mint);display:grid;place-items:center;flex:0 0 auto}
+.mgrlink .mgt{display:flex;flex-direction:column;gap:2px;flex:1}.mgrlink .go{color:var(--mute);font-size:20px}
+.dz{border-color:#FECACA}html.dark .dz{border-color:#5B2222}
+.mrow{display:flex;justify-content:space-between;font-size:13px;margin:10px 0 5px}.mrow .num{font-variant-numeric:tabular-nums}
+.mstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.mstats>div{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px 10px;display:flex;flex-direction:column;gap:2px}
+.mstats b{font-size:16px;font-variant-numeric:tabular-nums}.mstats .mute{font-size:11px}
+.mperson{padding:14px 0;border-top:1px solid var(--line)}.mperson:first-child{border-top:0;padding-top:2px}
+.mph{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.mph .t{font-size:15px;font-weight:600}.mph .d,.mfoot{font-size:12px;color:var(--mute)}
+.mfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px}
+.mgrfoot{font-size:12px;margin:4px 4px 20px}
 .cpre{display:flex;align-items:center;gap:12px;margin:2px 0 6px}.cpre b{font-size:18px}.cpre .cicon{display:grid;place-items:center;border-radius:14px}
 #ceName,#ceEmoIn{width:100%}
 .flabel{display:block;font-size:12.5px;font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px}
@@ -646,6 +662,7 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
     <button class="tab" data-t="invest">Investments</button>
     <button class="tab" data-t="goals">Goals</button>
     <button class="tab" data-t="settings">Settings</button>
+    <button class="tab" data-t="manager" id="mgrTab" hidden>Manager</button>
     <i class="ink" id="ink"></i>
   </nav>
   <div id="bankAlert"></div>
@@ -808,17 +825,25 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
     </div>
   </div>
 
-  <!-- SETTINGS -->
+  <!-- SETTINGS: grouped so the things you change most sit at the top; the chips jump to each group -->
   <div class="pane" id="p-settings">
-    <div class="card" id="peopleSet" hidden><h2>People &amp; invites</h2><div id="peopleBody" class="mute">Loading…</div></div>
-    <div class="card" id="aiSet"><h2>AI assistant</h2><div id="aiSetBody" class="mute">Checking…</div></div>
-    <div class="card" id="acctSet"><h2>Your account</h2><div id="acctBody"></div></div>
-    <div class="card" id="lookSet"><h2>Appearance</h2>
-      <div class="optrow" style="border-top:0"><div><div class="t">Theme</div><div class="d">Auto follows your phone's light or dark setting.</div></div>
-        <div class="seg" id="themeSeg"><button data-th="auto">Auto</button><button data-th="light">Light</button><button data-th="dark">Dark</button></div></div>
-      <div class="optrow"><div><div class="t">Hide amounts</div><div class="d">Shows $••• instead of numbers, for using Headroom in public. Also in the More menu.</div></div>
-        <label class="sw"><input type="checkbox" id="hideAmt"><span></span></label></div>
+    <button class="card tap mgrlink" id="mgrLink" hidden><span class="mgi">👥</span><span class="mgt"><b>Manager</b><span class="mute">Each person's AI use, invites and bank connections</span></span><span class="go">›</span></button>
+    <div class="chips setnav" id="setNav"><button class="chip" data-sg="sg-banks">Banks &amp; history</button><button class="chip" data-sg="sg-rules">Budget rules</button><button class="chip" data-sg="sg-app">Alerts &amp; AI</button><button class="chip" data-sg="sg-look">Appearance</button><button class="chip" data-sg="sg-acct">Account</button></div>
+    <section class="setgrp" id="sg-banks"><h3 class="gh">Banks &amp; history</h3>
+    <div class="card"><h2>Banks</h2><div id="setInfo" class="mute" style="margin-bottom:12px"></div>
+      <div id="itemList" style="margin-bottom:12px"></div>
+      <div class="btns"><button id="linkBtn" class="primary">+ Link a bank</button><button id="linkInvBtn">+ Link a brokerage</button><button id="syncBtn2">Sync now</button></div>
     </div>
+    <div class="card" id="impCard"><h2>History</h2>
+      <div id="histList"></div>
+      <div class="mute" style="margin:12px 0 10px">Add older activity from statement PDFs or a CSV. Anything your bank already sent is skipped.</div>
+      <div class="filters"><select id="impAcct"></select><input type="file" id="impFile" accept=".csv,.pdf,application/pdf,text/csv" multiple>
+        <label class="mute" id="impPosL"><input type="checkbox" id="impPos"> single "Amount" column: positive = money spent</label></div>
+      <div class="btns"><button id="impBtn" class="primary">Read &amp; review</button><span class="mute" id="impOut"></span></div>
+      <div id="impPrev" style="margin-top:12px"></div>
+      <div id="impList" style="margin-top:12px"></div></div>
+    </section>
+    <section class="setgrp" id="sg-rules"><h3 class="gh">Budget rules</h3>
     <div class="card"><h2>How money is counted</h2>
       <div class="optrow" style="border-top:0"><div><div class="t">Count money from outside as income</div>
         <div class="d">Zelle, Venmo, and transfers from other banks count as income. Moves between your own linked accounts never do.</div></div>
@@ -831,21 +856,11 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
       <div id="catList"></div>
       <div class="btns" style="margin-top:10px"><input id="newCat" placeholder="New category name" style="flex:1;min-width:160px"><button id="addCat" class="primary">Add</button></div>
     </div>
-    <div class="card"><h2>Merchant rules</h2>
+    <div class="card" id="ruleCard"><h2>Merchant rules</h2>
       <div id="ruleList"></div>
     </div>
-    <div class="card"><h2>Banks</h2><div id="setInfo" class="mute" style="margin-bottom:12px"></div>
-      <div id="itemList" style="margin-bottom:12px"></div>
-      <div class="btns"><button id="linkBtn" class="primary">+ Link a bank</button><button id="linkInvBtn">+ Link a brokerage</button><button id="syncBtn2">Sync now</button></div>
-</div>
-    <div class="card" id="impCard"><h2>History</h2>
-      <div id="histList"></div>
-      <div class="mute" style="margin:12px 0 10px">Add older activity from statement PDFs or a CSV. Anything your bank already sent is skipped.</div>
-      <div class="filters"><select id="impAcct"></select><input type="file" id="impFile" accept=".csv,.pdf,application/pdf,text/csv" multiple>
-        <label class="mute" id="impPosL"><input type="checkbox" id="impPos"> single "Amount" column: positive = money spent</label></div>
-      <div class="btns"><button id="impBtn" class="primary">Read &amp; review</button><span class="mute" id="impOut"></span></div>
-      <div id="impPrev" style="margin-top:12px"></div>
-      <div id="impList" style="margin-top:12px"></div></div>
+    </section>
+    <section class="setgrp" id="sg-app"><h3 class="gh">Alerts &amp; AI</h3>
     <div class="card" id="notifCard"><h2>Notifications</h2>
       <div class="mute" id="pushStatus" style="margin-bottom:12px"></div>
       <div class="btns" style="margin-bottom:6px"><button class="primary" id="pushOn">Turn on notifications</button><button id="pushTest" class="hidden">Send a test</button><button id="pushOff" class="hidden ghost">Turn off on this device</button></div>
@@ -860,14 +875,36 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
         <div class="optrow"><div><div class="t">Monthly recap</div><div class="d">On the 1st: how last month went</div></div><label class="sw"><input type="checkbox" data-np="monthly"><span></span></label></div>
       </div>
     </div>
-    <div class="card"><h2>Account &amp; security</h2>
-      <div class="optrow" style="border-top:0"><div><div class="t">Face ID sign-in</div><div class="d" id="pkStatus">Checking…</div></div><button class="mini primary" id="pkAdd">Set up on this device</button></div>
+    <div class="card" id="aiSet"><h2>AI assistant</h2><div id="aiSetBody" class="mute">Checking…</div></div>
+    </section>
+    <section class="setgrp" id="sg-look"><h3 class="gh">Appearance</h3>
+    <div class="card" id="lookSet">
+      <div class="optrow" style="border-top:0"><div><div class="t">Theme</div><div class="d">Auto follows your phone's light or dark setting.</div></div>
+        <div class="seg" id="themeSeg"><button data-th="auto">Auto</button><button data-th="light">Light</button><button data-th="dark">Dark</button></div></div>
+      <div class="optrow"><div><div class="t">Hide amounts</div><div class="d">Shows $••• instead of numbers, for using Headroom in public. Also in the More menu.</div></div>
+        <label class="sw"><input type="checkbox" id="hideAmt"><span></span></label></div>
+    </div>
+    </section>
+    <section class="setgrp" id="sg-acct"><h3 class="gh">Account</h3>
+    <div class="card" id="acctSet"><h2>Sign-in &amp; security</h2>
+      <div id="acctBody"></div>
+      <div class="optrow"><div><div class="t">Face ID sign-in</div><div class="d" id="pkStatus">Checking…</div></div><button class="mini primary" id="pkAdd">Set up on this device</button></div>
       <div id="pkList"></div>
       <div class="optrow"><div><div class="t">Ask for Face ID when opening the app</div><div class="d">Locks Headroom on this device after 5 minutes away. Needs Face ID sign-in set up.</div></div><label class="sw"><input type="checkbox" id="lockOpt"><span></span></label></div>
-      <div class="btns" style="margin-top:12px"><button id="outBtn2">Sign out</button></div></div>
-    <div class="card"><h2>Reset connections</h2>
-      <div class="mute" style="margin-bottom:12px">Disconnects your banks and clears synced and imported transactions. Budgets and goals stay.</div>
-      <button id="resetBtn" class="danger">Reset &amp; re-link all banks</button></div>
+    </div>
+    <div class="card dz"><h2>Start over</h2>
+      <div class="optrow" style="border-top:0"><div><div class="t">Reset &amp; re-link all banks</div><div class="d">Disconnects your banks and clears synced and imported transactions. Budgets and goals stay.</div></div><button id="resetBtn" class="mini danger">Reset</button></div>
+      <div id="acctDanger"></div>
+    </div>
+    </section>
+  </div>
+
+  <!-- MANAGER (the app's owner only; the server refuses anyone else) -->
+  <div class="pane" id="p-manager">
+    <div class="card" id="mgrAll"><h2>AI use, everyone together</h2><div id="mgrAllBody" class="mute">Loading…</div></div>
+    <div class="card"><h2>People</h2><div id="mgrPeople" class="mute">Loading…</div></div>
+    <div class="card"><h2>Invites &amp; bank connections</h2><div id="mgrInv" class="mute">Loading…</div></div>
+    <div class="mute mgrfoot">Shows the names you give people, when they joined and last signed in, and their AI use. Never anyone's email, banks, balances or transactions.</div>
   </div>
 </div>
 
@@ -1157,15 +1194,15 @@ const signOut = async () => {
     if (sub) await db.from("push_subscriptions").delete().eq("endpoint", sub.endpoint); } catch (e) {}
   forgetLocal(); await db.auth.signOut(); location.replace(location.pathname);
 };
-$("outBtn").onclick = signOut; $("outBtn2").onclick = signOut;
+$("outBtn").onclick = signOut;
 db.auth.onAuthStateChange(async ev => {
   if (ev === "SIGNED_OUT") show(false);
   if (ev === "PASSWORD_RECOVERY") { const p = prompt("Choose a new password (8+ characters)"); if (p) { const { error } = await db.auth.updateUser({ password: p }); toast(error ? error.message : "Password updated", !!error); } }
 });
 
 // ---------- navigation ----------
-const TITLES = { txns: "Activity", budget: "Budget", trends: "Trends", recurring: "Recurring", accts: "Accounts", invest: "Investments", goals: "Goals", settings: "Settings" };
-const NO_RANGE = ["trends", "recurring", "accts", "invest", "goals", "settings"]; // these screens don't depend on the dates picked
+const TITLES = { txns: "Activity", budget: "Budget", trends: "Trends", recurring: "Recurring", accts: "Accounts", invest: "Investments", goals: "Goals", settings: "Settings", manager: "Manager" };
+const NO_RANGE = ["trends", "recurring", "accts", "invest", "goals", "settings", "manager"]; // these screens don't depend on the dates picked
 /** Phone only: show the first n items of a list with a "See all" button for the rest. Stays open once expanded. */
 function clampList(box, n, noun) {
   if (!box || !isMobile()) return;
@@ -1175,14 +1212,15 @@ function clampList(box, n, noun) {
   b.onclick = () => { (S._open = S._open || new Set()).add(box.id); kids.forEach(el => el.classList.remove("clamped")); b.remove(); };
   box.appendChild(b);
 }
-const MORE = [["ask", "Ask Headroom", "✨"], ["recurring", "Recurring", "🔁"], ["accts", "Accounts", "🏦"], ["invest", "Investments", "📈"], ["goals", "Goals", "🎯"], ["settings", "Settings", "⚙️"]];
+const MORE = [["ask", "Ask Headroom", "✨"], ["recurring", "Recurring", "🔁"], ["accts", "Accounts", "🏦"], ["invest", "Investments", "📈"], ["goals", "Goals", "🎯"], ["settings", "Settings", "⚙️"], ["manager", "Manager", "👥"]];
 function go(t) {
-  if (t === "more") { openModal("More", "", `<div class="pgrid">${MORE.filter(([k]) => k !== "ask" || !document.body.classList.contains("no-ai")).map(([k, l, e]) => `<button data-go="${k}" class="${S.tab === k ? "on" : ""}">${e}&nbsp; ${l}</button>`).join("")}<button data-go="__hide">${S.hide ? "👁&nbsp; Show amounts" : "🙈&nbsp; Hide amounts"}</button></div>
+  if (t === "more") { openModal("More", "", `<div class="pgrid">${MORE.filter(([k]) => (k !== "ask" || !document.body.classList.contains("no-ai")) && (k !== "manager" || S.isAdmin)).map(([k, l, e]) => `<button data-go="${k}" class="${S.tab === k ? "on" : ""}">${e}&nbsp; ${l}</button>`).join("")}<button data-go="__hide">${S.hide ? "👁&nbsp; Show amounts" : "🙈&nbsp; Hide amounts"}</button></div>
       <div class="morefoot"><span class="mute">${esc(S.user && S.user.email ? "Signed in as " + S.user.email : "")}</span><button class="danger" id="moreOut">Sign out</button></div>`);
     $("moreOut").onclick = () => { closeModal(); signOut(); };
     if (!S.user) db.auth.getSession().then(({ data }) => { S.user = data && data.session ? data.session.user : null;
       const el = document.querySelector(".morefoot .mute"); if (el && S.user && S.user.email) el.textContent = "Signed in as " + S.user.email; });
     $("mBody").querySelectorAll("[data-go]").forEach(b => b.onclick = () => { closeModal(); b.dataset.go === "ask" ? openChat() : b.dataset.go === "__hide" ? setHide(!S.hide) : go(b.dataset.go); }); return; }
+  if (t === "manager" && !S.isAdmin) t = "settings"; // the page is owner-only; the server refuses anyone else too
   S.tab = t;
   $("pTitle").textContent = TITLES[t] || "";
   $("app").classList.toggle("titled", !!TITLES[t]);
@@ -1199,6 +1237,7 @@ function go(t) {
   setTimeout(() => Object.values(S.charts).forEach(c => { if (c.canvas && c.canvas.offsetParent) { c.resize(); c.update("none"); } }), 1000);
   if (t === "trends") drawStack();
   if (t === "settings") { loadItems(); renderFaceId(); }
+  if (t === "manager") renderManager();
   if (t === "budget") renderBudget();
   history.replaceState(null, "", "#" + t);
   if (isMobile()) scrollTo({ top: 0, behavior: RM ? "auto" : "smooth" });
@@ -1936,9 +1975,10 @@ function renderAiSettings() {
   const u = st.month || {}, cost = u.cost_usd ?? ((u.input_tokens || 0) / 1e6 * 2 + (u.output_tokens || 0) / 1e6 * 10), on = (S.settings.ai || {}).weekly !== false, al = st.allowance;
   el.innerHTML = `<div class="optrow" style="border-top:0"><div><div class="t">Status</div><div class="d">Connected ✓ · ${esc(st.model || "")}${al ? ` · your limit is $${al.day_usd} a day and $${al.month_usd} a month` : ""}</div></div></div>
     <div class="optrow"><div><div class="t">Sunday review</div><div class="d">Written at 8 AM Sunday and sent as your weekly notification.</div></div><label class="sw"><input type="checkbox" id="aiWeekly" ${on ? "checked" : ""}><span></span></label></div>
-    <div class="optrow"><div><div class="t">This month</div><div class="d">${u.calls || 0} requests · about ${cost < .01 ? "less than 1¢" : "$" + cost.toFixed(2)} in AI charges</div></div></div>
+    <div class="optrow"><div><div class="t">This month (you)</div><div class="d">${u.calls || 0} requests · about ${cost < .01 ? "less than 1¢" : "$" + cost.toFixed(2)} in AI charges</div></div><button class="mini" data-go="manager">Everyone</button></div>
     <div class="optrow"><div><div class="t">What it sees</div><div class="d">Totals, categories, store names and amounts from this app. Never account numbers or bank logins.</div></div></div>`;
   $("aiWeekly").onchange = e => saveSetting("ai", { ...(S.settings.ai || {}), weekly: e.target.checked });
+  el.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
 }
 
 // ---------- chat ----------
@@ -3810,29 +3850,71 @@ $("addGoal").onclick = async () => {
 };
 
 // ---------- settings + Plaid ----------
-// ---------- people & invites (the app's owner only) ----------
-const fmtDay = d => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "never";
-async function renderPeople() {
-  const card = $("peopleSet"); if (!card) return; card.hidden = !S.isAdmin; if (!S.isAdmin) return;
-  const [ov, inv] = await Promise.all([db.rpc("admin_overview"), db.from("invites").select("*").order("created_at", { ascending: false })]);
-  const o = ov.data || {}, people = o.people || [], open = (inv.data || []).filter(i => !i.used_at && new Date(i.expires_at) > new Date());
-  const used = o.bank_links_ever || 0, left = Math.max(0, 10 - used);
-  $("peopleBody").innerHTML = `
-    <div class="optrow" style="border-top:0"><div><div class="t">Bank connections</div><div class="d">${o.bank_links_now || 0} linked now. Plaid's free plan allows 10 ever made: ${used} used, <b>${left} left</b>. Removing a bank doesn't give one back.</div></div></div>
-    ${people.map(p => `<div class="optrow"><div><div class="t">${esc(p.email || "")}${p.me ? " (you)" : ""}</div><div class="d">Joined ${fmtDay(p.joined)} · last here ${fmtDay(p.last_seen)} · ${p.banks} bank${p.banks === 1 ? "" : "s"}</div></div></div>`).join("")}
+// ---------- manager (the app's owner only; the assistant function checks this again on the server) ----------
+// Per-person AI use against each cap, invites and the bank-connection total. The server sends no emails, banks,
+// balances or transactions, so none can show here. Names are the owner's own labels, kept in the owner's settings.
+const fmtDay = d => d ? new Date(String(d).length === 10 ? d + "T12:00:00" : d).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "never";
+const usd2 = n => S.hide ? MASK : "$" + (Number(n) || 0).toFixed(2);
+const mLabels = () => S.settings.member_labels || {};
+function personName(p, n) { return p.me ? "You" : (mLabels()[p.id] || p.note || `Person ${n}`); }
+function meter(label, used, cap) {
+  const pct = cap ? used / cap * 100 : 0, cls = pct >= 100 ? "over" : pct >= 80 ? "warn" : "";
+  return `<div class="mrow"><span>${label}</span><span class="num">${usd2(used)} <span class="mute">of ${usd2(cap)}</span></span></div>
+    <div class="bar ${cls}"><i style="width:${(used > 0 ? Math.min(100, Math.max(2, pct)) : 0).toFixed(1)}%"></i></div>`;
+}
+function capPill(p) {
+  if (p.month_used >= p.month_cap) return `<span class="pill bad">At monthly cap</span>`;
+  if (p.day_used >= p.day_cap) return `<span class="pill warn">Hit today's cap</span>`;
+  if (!p.calls_month && !p.calls_last_month) return `<span class="pill">No AI use yet</span>`;
+  const pc = Math.round(p.month_used / p.month_cap * 100);
+  return `<span class="pill ${pc >= 80 ? "warn" : "ok"}">${pc}% of month</span>`;
+}
+async function renderManager() {
+  if (!S.isAdmin) return;
+  const [m, inv] = await Promise.all([ai({ action: "manager" }), db.from("invites").select("code, note, expires_at, used_at").order("created_at", { ascending: false })]);
+  S.mgr = m;
+  if (!m || m.error) { const msg = esc((m && m.error) || "Couldn't load.");
+    $("mgrAllBody").innerHTML = `<div class="mute">${/unknown action/.test(msg) ? "The manager view needs the updated assistant function." : msg}</div>`;
+    $("mgrPeople").innerHTML = ""; } else {
+    const a = m.all, d = new Date(m.today + "T12:00:00"), dom = d.getDate(), days = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    const pace = a.month_used / dom * days, me = m.people.find(p => p.me), guest = m.people.find(p => !p.owner);
+    $("mgrAllBody").innerHTML = `${m.configured ? "" : `<div class="note">The assistant's key isn't set up, so nobody can use AI right now.</div>`}
+      ${meter("Today", a.day_used, a.day_cap)}${meter("This month", a.month_used, a.month_cap)}
+      <div class="mstats"><div><b>${a.month_used ? usd2(pace) : usd2(0)}</b><span class="mute">on pace for this month</span></div>
+        <div><b>${(a.calls_month || 0).toLocaleString()}</b><span class="mute">requests this month</span></div>
+        <div><b>${usd2(a.last_month_used)}</b><span class="mute">last month</span></div></div>
+      <div class="mute" style="font-size:12px;margin-top:10px">Caps: ${me ? `you $${me.day_cap} a day and $${me.month_cap} a month; ` : ""}${guest ? `each invited person $${guest.day_cap} and $${guest.month_cap}; ` : ""}everyone together $${a.day_cap} and $${a.month_cap}. Days reset at midnight Eastern, months on the 1st.</div>`;
+    let k = 0;
+    $("mgrPeople").innerHTML = m.people.map(p => { const nm = personName(p, p.me ? 0 : ++k);
+      return `<div class="mperson">
+        <div class="mph"><div><div class="t">${esc(nm)}${p.owner ? ` <span class="pill blue">Owner</span>` : ""}</div>
+          <div class="d">Joined ${fmtDay(p.joined)}${p.invited ? " by invite" : ""} · signed in ${fmtDay(p.last_sign_in)} · AI last used ${fmtDay(p.last_ai)}</div></div>${capPill(p)}</div>
+        ${meter("Today", p.day_used, p.day_cap)}${meter("This month", p.month_used, p.month_cap)}
+        <div class="d mfoot"><span>${p.calls_today} request${p.calls_today === 1 ? "" : "s"} today · ${p.calls_month} this month · last month ${usd2(p.last_month_used)}${p.held > 0 ? ` · ${usd2(p.held)} held for a request in progress` : ""}</span>
+          ${p.me ? "" : `<button class="mini ghost" data-mren="${esc(p.id)}">Rename</button>`}</div>
+      </div>`; }).join("") || `<div class="mute">Nobody yet.</div>`;
+    $("mgrPeople").querySelectorAll("[data-mren]").forEach(b => b.onclick = async () => {
+      const id = b.dataset.mren, cur = mLabels()[id] || (m.people.find(p => p.id === id) || {}).note || "";
+      const v = prompt("Name to show for this person (only you see it)", cur); if (v === null) return;
+      const next = { ...mLabels() }; if (v.trim()) next[id] = v.trim().slice(0, 40); else delete next[id];
+      if (await saveSetting("member_labels", next)) { toast("Renamed"); renderManager(); } });
+  }
+  const open = (inv.data || []).filter(i => !i.used_at && new Date(i.expires_at) > new Date());
+  const b = (m && m.banks) || null, left = b ? Math.max(0, 10 - b.ever) : null;
+  $("mgrInv").innerHTML = `${b ? `<div class="optrow" style="border-top:0"><div><div class="t">Bank connections</div><div class="d">${b.now} linked now across everyone. Plaid's free plan allows 10 ever made: ${b.ever} used, <b>${left} left</b>. Removing a bank doesn't give one back.</div></div></div>` : ""}
+    ${open.length ? open.map(i => `<div class="optrow"><div><div class="t">${esc(i.note || "Invite")}</div><div class="d">Open invite · expires ${fmtDay(i.expires_at)}</div></div>
+      <div class="btns"><button class="mini" data-invcopy="${esc(i.code)}">Share</button><button class="mini" data-invdel="${esc(i.code)}">Cancel</button></div></div>`).join("") : `<div class="optrow"><div class="d">No open invites. Each invite works once, for 14 days.</div></div>`}
     <div class="btns" style="margin-top:12px"><button class="primary" id="invNew">Create invite link</button></div>
-    <div id="invOut"></div>
-    ${open.length ? `<div class="mute" style="margin-top:14px;font-size:13px">Open invites (each works once, for 14 days)</div>${open.map(i => `<div class="optrow"><div><div class="t">${esc(i.note || "Invite")}</div><div class="d">Expires ${fmtDay(i.expires_at)}</div></div>
-      <div class="btns"><button class="mini" data-invcopy="${esc(i.code)}">Share</button><button class="mini" data-invdel="${esc(i.code)}">Cancel</button></div></div>`).join("")}` : ""}`;
+    <div id="invOut"></div>`;
   $("invNew").onclick = async () => {
-    const note = (prompt("Who is this invite for? (just a note for you)", "") || "").trim().slice(0, 60);
+    const note = (prompt("Who is this invite for? This becomes their name here, only you see it.", "") || "").trim().slice(0, 60);
     const { data, error } = await db.from("invites").insert({ note: note || null }).select().single();
     if (error) return toast(error.message, true);
-    await renderPeople(); shareInvite(data.code, note);
+    await renderManager(); shareInvite(data.code, note);
   };
-  $("peopleBody").querySelectorAll("[data-invcopy]").forEach(b => b.onclick = () => shareInvite(b.dataset.invcopy));
-  $("peopleBody").querySelectorAll("[data-invdel]").forEach(b => b.onclick = async () => {
-    const { error } = await db.from("invites").delete().eq("code", b.dataset.invdel); if (error) return toast(error.message, true); toast("Invite cancelled"); renderPeople(); });
+  $("mgrInv").querySelectorAll("[data-invcopy]").forEach(x => x.onclick = () => shareInvite(x.dataset.invcopy));
+  $("mgrInv").querySelectorAll("[data-invdel]").forEach(x => x.onclick = async () => {
+    const { error } = await db.from("invites").delete().eq("code", x.dataset.invdel); if (error) return toast(error.message, true); toast("Invite cancelled"); renderManager(); });
 }
 async function shareInvite(code, note) {
   const url = location.origin + location.pathname + "?invite=" + code, text = "Here's your invite to Headroom, the budget app I use. It works once:";
@@ -3844,8 +3926,8 @@ async function shareInvite(code, note) {
 // ---------- your account ----------
 function renderAccount() {
   const el = $("acctBody"); if (!el) return;
-  el.innerHTML = `<div class="optrow" style="border-top:0"><div><div class="t">Signed in as</div><div class="d">${esc((S.user && S.user.email) || "")}</div></div><button class="mini" id="acctOut">Sign out</button></div>
-    ${S.isAdmin ? "" : `<div class="optrow"><div><div class="t">Delete my account</div><div class="d">Disconnects your banks and permanently erases everything you've added to Headroom.</div></div><button class="mini danger" id="acctDel">Delete</button></div>`}`;
+  el.innerHTML = `<div class="optrow" style="border-top:0"><div><div class="t">Signed in as</div><div class="d">${esc((S.user && S.user.email) || "")}</div></div><button class="mini" id="acctOut">Sign out</button></div>`;
+  $("acctDanger").innerHTML = S.isAdmin ? "" : `<div class="optrow"><div><div class="t">Delete my account</div><div class="d">Disconnects your banks and permanently erases everything you've added to Headroom.</div></div><button class="mini danger" id="acctDel">Delete</button></div>`;
   $("acctOut").onclick = signOut;
   if ($("acctDel")) $("acctDel").onclick = async () => {
     if (!confirm("Delete your Headroom account? Your banks are disconnected and all your data is erased. This can't be undone.")) return;
@@ -3856,7 +3938,7 @@ function renderAccount() {
 }
 
 function renderSettings() {
-  renderAccount(); if (!S._peopleShown) { S._peopleShown = true; renderPeople(); }
+  renderAccount(); $("mgrLink").hidden = !S.isAdmin; $("mgrTab").hidden = !S.isAdmin;
   const { min } = coverage();
   $("setInfo").textContent = `${S.accts.length} accounts linked · ${S.tx.length} transactions` + (min ? ` · history from ${shortDate(min)}` : "");
   $("optInTr").checked = S.settings.income_transfers !== false;
@@ -3895,6 +3977,9 @@ function applyTheme() {
 }
 function setHide(on) { S.hide = on; store.set("hr_hide", on); $("hideAmt").checked = on; redrawCharts(); toast(on ? "Amounts hidden" : "Amounts showing"); }
 document.querySelectorAll("#themeSeg button").forEach(b => b.onclick = () => { store.set("hr_theme", b.dataset.th); applyTheme(); });
+document.querySelectorAll("#setNav [data-sg]").forEach(b => b.onclick = () => { const el = $(b.dataset.sg); if (!el) return;
+  const top = el.getBoundingClientRect().top + scrollY - (isMobile() ? 64 : 12); scrollTo({ top, behavior: RM ? "auto" : "smooth" }); });
+$("mgrLink").onclick = () => go("manager");
 $("hideAmt").checked = S.hide; $("hideAmt").onchange = e => setHide(e.target.checked);
 try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme); } catch (e) {}
 applyTheme();
