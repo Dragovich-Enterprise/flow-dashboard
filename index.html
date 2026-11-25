@@ -3023,7 +3023,7 @@ function goalEvents(ev, until) {
     for (let m = addMonths(cur, 1); m + "-01" <= until; m = addMonths(m, 1)) {
       let amt;
       if (goalMode(g) === "fixed") amt = goalMonthly(g);
-      else { const sp = goalSpread(g); if (!sp || sp.late || m > sp.to) break; const was = goalAuto(g).amt, gone = Math.min(sp.left, was * monthsApart(cur, m));
+      else { const sp = goalSpread(g); if (!sp || sp.bad || sp.late || m > sp.to) break; const was = goalAuto(g).amt, gone = Math.min(sp.left, was * monthsApart(cur, m));
         const rest = Math.max(0, sp.left - gone), n = monthsApart(m, sp.to) + 1; amt = rest ? Math.ceil(rest / n) : 0; }
       if (!(amt > 0)) continue;
       const pay = ev.find(e => e.kind === "pay" && e.d.slice(0, 7) === m), d = pay ? pay.d : m + "-01";
@@ -3303,6 +3303,11 @@ const planIncome = () => { const v = S.settings.plan_income; return v == null ||
  *  the person typed) or null (not in the plan). Before the server update there's no plan_mode, so a monthly amount means fixed. */
 const goalMode = g => g.plan_mode === "auto" || g.plan_mode === "fixed" ? g.plan_mode : g.monthly_amount != null && g.monthly_amount !== "" ? "fixed" : null;
 const goalLeft = g => Math.max(0, Number(g.target_amount || 0) - goalSaved(g));
+/** A goal date that can be real: a full date between 2000 and 100 years from now. A mistyped year (0021) or a
+ *  half-typed one isn't, so it's never saved and never spread. */
+const goalDateOk = d => /^\d{4}-\d{2}-\d{2}$/.test(d || "") && Number(d.slice(0, 4)) >= 2000 && Number(d.slice(0, 4)) <= new Date().getFullYear() + 100 && !isNaN(dnum(d));
+/** Why a goal date can't be saved, or "" when it can. Clearing the date is fine. */
+const goalDateProblem = d => !d ? "" : !goalDateOk(d) ? "That date doesn't look right. Pick the month, day and year again." : d < todayISO() ? "Pick a date from today on." : "";
 const monthsApart = (a, b) => (Number(b.slice(0, 4)) - Number(a.slice(0, 4))) * 12 + Number(b.slice(5, 7)) - Number(a.slice(5, 7));
 const mShort = m => new Date(m + "-15T12:00:00").toLocaleString("en-US", { month: "short" });
 /** What's left of a goal, spread evenly from this month through the month of its date. If the date falls in the first week of
@@ -3310,6 +3315,7 @@ const mShort = m => new Date(m + "-15T12:00:00").toLocaleString("en-US", { month
 function goalSpread(g) {
   if (!g.target_date || !(Number(g.target_amount) > 0)) return null;
   const cur = todayISO().slice(0, 7), d = String(g.target_date).slice(0, 10), left = goalLeft(g);
+  if (!goalDateOk(d)) return { left, months: 0, from: cur, to: cur, late: false, bad: true, amt: 0 };   // a mistyped year (0021) isn't a real date
   let last = d.slice(0, 7); if (Number(d.slice(8, 10)) <= 7) last = addMonths(last, -1);
   const late = monthsApart(cur, last) < 0, months = late ? 1 : monthsApart(cur, last) + 1;
   return { left, months, from: cur, to: late ? cur : last, late, amt: left ? Math.ceil(left / months) : 0 };
@@ -3327,7 +3333,7 @@ function goalMonthly(g) {
   const m = goalMode(g); if (m === "fixed") return Math.max(0, Number(g.monthly_amount) || 0);
   if (m === "auto") { const a = goalAuto(g); return a ? a.amt : 0; } return 0;
 }
-const spreadNote = a => !a.left ? "reached" : a.late ? `its date has passed, so the ${money(a.left)} left is in this month` : a.months === 1 ? `all in ${mShort(a.from)} to reach it on time` : `spread over ${mShort(a.from)}–${mShort(a.to)} (${a.months} months)`;
+const spreadNote = a => a.bad ? "its date looks wrong, pick it again" : !a.left ? "reached" : a.late ? `its date has passed, so the ${money(a.amt)} left is in this month` : a.months === 1 ? `all in ${mShort(a.from)} to reach it on time` : `spread over ${mShort(a.from)}–${mShort(a.to)} (${a.months} months)`;
 /** Remember this month's amount for each evenly spread goal (see goalAuto). Saved only when it changes. */
 function saveGoalSnap() {
   if (!S.loaded) return; const m = todayISO().slice(0, 7), old = S.settings.goal_plan, keep = old && old.month === m ? old.goals || {} : {}, goals = {};
@@ -3390,9 +3396,9 @@ function openPlan() {
       <div class="mute">${L.left < 0 ? `Spending is ahead of ${L.mode === "income" ? "income" : "your budget"} this month` : `${money(L.left)} left for the rest of ${name} · ${L.daysLeft} day${L.daysLeft === 1 ? "" : "s"}`}</div></div>`;
   const goalRows = P.goals.map(x => { const id = esc(x.g.id), rm = `<button class="mini ghost" data-grm="${id}" aria-label="Take ${esc(x.g.name)} out of the plan" title="Take out of the plan">×</button>`;
     const note = x.mode === "auto" ? (x.sp ? spreadNote(x.sp) : "add a date to spread it") : x.mode === "fixed" ? `your amount${x.sp && x.sp.amt && x.sp.amt !== x.amt ? ` · ${money(x.sp.amt)}/mo reaches it on time` : ""}`
-      : x.sp && x.sp.amt ? spreadNote(x.sp) : x.sp ? "reached" : "not in the plan";
+      : x.sp && (x.sp.amt || x.sp.bad) ? spreadNote(x.sp) : x.sp ? "reached" : "not in the plan";
     const right = x.mode ? `<span style="white-space:nowrap">${money(x.amt)} ${rm}</span>`
-      : x.sp && x.sp.amt ? `<button class="mini" data-gadd="${id}">Add ${money(x.sp.amt)}/mo</button>` : x.sp ? "" : `<a class="link" data-ggo="1">Set it up</a>`;
+      : x.sp && x.sp.bad ? `<a class="link" data-ggo="1">Fix the date</a>` : x.sp && x.sp.amt ? `<button class="mini" data-gadd="${id}">Add ${money(x.sp.amt)}/mo</button>` : x.sp ? "" : `<a class="link" data-ggo="1">Set it up</a>`;
     return `<div><span>🎯 ${esc(x.g.name)} <span class="mute">· ${esc(note)}</span></span><span>${right}</span></div>`; }).join("");
   openModal(`${name} plan`, `${monthLong(P.m)} · ${P.daysLeft} day${P.daysLeft === 1 ? "" : "s"} left`, `
     ${head}
@@ -4321,6 +4327,9 @@ function goalSaved(g) {
   return Number(g.current_amount || 0);
 }
 function renderGoals() {
+  // don't redraw under someone picking a date: the picker would lose its place and the date would jump
+  const fe = document.activeElement; if (fe && fe.classList && fe.classList.contains("g-date") && $("goals").contains(fe)) { S._goalsStale = true; return; }
+  S._goalsStale = false;
   if (!S.goals.length) { $("goals").innerHTML = `<div class="empty">No goals yet. Add one to start tracking.</div>`; return; }
   $("goals").innerHTML = S.goals.map(g => {
     const saved = goalSaved(g), target = Number(g.target_amount || 0);
@@ -4334,13 +4343,14 @@ function renderGoals() {
     const mode = goalMode(g), sp = goalAuto(g);
     if (mode === "auto" && left > 0) pace = sp ? `${money(sp.amt)}/month in your plan, ${spreadNote(sp)}.` : "In your plan, spread evenly once it has a date.";
     if (mode === "fixed" && left > 0) pace = `${money(goalMonthly(g))}/month set aside in your plan` + (sp && sp.amt ? (goalMonthly(g) + .5 >= sp.amt ? " · on track for " + shortDate(g.target_date) : ` · ${money(sp.amt)}/month reaches it by ${shortDate(g.target_date)}`) : "") + ".";
+    if (g.target_date && !goalDateOk(String(g.target_date).slice(0, 10))) pace = "The date you want it by looks wrong. Pick it again.";
     return `<div class="goalcard ${(S._gEd || new Set()).has(String(g.id)) ? "ed" : ""}" data-id="${g.id}">
       <div class="goalhead"><input class="g-name" value="${esc(g.name)}" style="font-size:16px;font-weight:600;flex:1;min-width:140px" aria-label="Goal name">
         <button class="mini mobonly g-tog">${(S._gEd || new Set()).has(String(g.id)) ? "Done" : "Edit"}</button><button class="mini danger g-del" title="Delete this goal">Delete</button></div>
       <div class="fields">
         <div><label class="lbl">Amount saved so far</label><input class="g-cur" type="number" step="1" inputmode="decimal" value="${saved}" ${g.account_id ? "disabled" : ""}></div>
         <div><label class="lbl">Total you need</label><input class="g-tgt" type="number" step="1" inputmode="decimal" value="${g.target_amount ?? ""}"></div>
-        <div><label class="lbl">Date you want it by</label><input class="g-date" type="date" value="${g.target_date ?? ""}"></div>
+        <div><label class="lbl">Date you want it by</label><input class="g-date" type="date" value="${g.target_date ?? ""}" min="${todayISO()}" max="${new Date().getFullYear() + 100}-12-31"></div>
         <div><label class="lbl">In my monthly plan</label><div class="gplan"><select class="g-plan" aria-label="In my monthly plan"><option value="" ${!mode ? "selected" : ""}>No</option>
             <option value="auto" ${mode === "auto" ? "selected" : ""}>Spread evenly to the date</option><option value="fixed" ${mode === "fixed" ? "selected" : ""}>A set amount each month</option></select>
           <input class="g-mon" type="number" step="5" min="0" inputmode="numeric" aria-label="Amount each month" value="${mode === "fixed" ? g.monthly_amount ?? "" : ""}" placeholder="${sp && sp.amt ? Math.round(sp.amt) : "per month"}" ${mode === "fixed" ? "" : "hidden"}></div></div>
@@ -4356,11 +4366,18 @@ function renderGoals() {
   $("goals").querySelectorAll(".goalcard").forEach(el => {
     const id = el.dataset.id;
     el.querySelector(".g-tog").onclick = e => { S._gEd = S._gEd || new Set(); const on = el.classList.toggle("ed"); on ? S._gEd.add(id) : S._gEd.delete(id); e.target.textContent = on ? "Done" : "Edit"; };
-    const save = async () => {
-      const acct = el.querySelector(".g-acct").value || null;
+    const dateEl = el.querySelector(".g-date");
+    /** Save the card. The date only counts once it's committed (the field loses focus), so a date that's half typed or
+     *  mid-scroll on a phone's picker is never saved, and a mistyped or past date is refused. */
+    const save = async withDate => {
+      const acct = el.querySelector(".g-acct").value || null, old = S.goals.find(g => String(g.id) === id);
+      let tdate = old.target_date ?? null;
+      if (withDate) { const v = dateEl.value || null, bad = goalDateProblem(v);
+        if (bad) { dateEl.value = old.target_date ?? ""; if (S._goalsStale) renderGoals(); return toast(bad, true); }
+        if (v === (old.target_date ?? null)) { if (S._goalsStale) renderGoals(); return; } tdate = v; }
       const patch = { name: el.querySelector(".g-name").value.trim() || "Untitled goal", current_amount: Number(el.querySelector(".g-cur").value) || 0,
-        target_amount: el.querySelector(".g-tgt").value === "" ? null : Number(el.querySelector(".g-tgt").value), target_date: el.querySelector(".g-date").value || null, account_id: acct };
-      const old = S.goals.find(g => String(g.id) === id), mode = el.querySelector(".g-plan").value || null, monEl = el.querySelector(".g-mon");
+        target_amount: el.querySelector(".g-tgt").value === "" ? null : Number(el.querySelector(".g-tgt").value), target_date: tdate, account_id: acct };
+      const mode = el.querySelector(".g-plan").value || null, monEl = el.querySelector(".g-mon");
       if (mode === "auto" && !patch.target_date) { el.querySelector(".g-plan").value = goalMode(old) || ""; return toast("Add the date you want it by, then it can be spread evenly", true); }
       if (mode === "fixed" && monEl.value === "") { const sp = goalSpread({ ...old, ...patch }); monEl.value = sp && sp.amt ? sp.amt : ""; }
       const mon = mode === "fixed" ? (monEl.value === "" ? null : Math.max(0, Math.round(Number(monEl.value)))) : null;
@@ -4371,7 +4388,11 @@ function renderGoals() {
       if (error) return toast(/plan_mode|monthly_amount/.test(error.message) ? "This needs the latest Headroom update on the server." : error.message, true);
       Object.assign(old, patch); renderAll(); toast(!("plan_mode" in patch) ? "Goal saved" : mode ? "Goal saved to your plan" : "Taken out of your plan");
     };
-    el.querySelectorAll("input, select").forEach(i => i.onchange = save);
+    el.querySelectorAll("input, select").forEach(i => { if (i !== dateEl) i.onchange = () => save(false); });
+    dateEl.onblur = () => save(true);
+    dateEl.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); dateEl.blur(); } };
+    // a pick made while the field isn't focused (some pickers) still counts once it's a whole date
+    dateEl.onchange = () => { if (document.activeElement !== dateEl && goalDateOk(dateEl.value)) save(true); };
     el.querySelector(".g-plan").addEventListener("change", e => { el.querySelector(".g-mon").hidden = e.target.value !== "fixed"; });
     el.querySelector(".g-del").onclick = async () => {
       if (!confirm("Delete this goal?")) return;
@@ -4381,6 +4402,8 @@ function renderGoals() {
     };
   });
 }
+// leaving the app with a goal date still focused commits it, rather than losing the pick
+document.addEventListener("visibilitychange", () => { const fe = document.activeElement; if (document.hidden && fe && fe.classList && fe.classList.contains("g-date")) fe.blur(); });
 $("addGoal").onclick = async () => {
   const { data, error } = await db.from("goals").insert({ name: "New goal", target_amount: 1000 }).select().single();
   if (error) return toast(error.message, true); S.goals.push(data); renderGoals();
