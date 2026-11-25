@@ -100,6 +100,7 @@ tr.tap:hover td{background:var(--card2)}td.tap{color:var(--accent-d)}td.tap:hove
 .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
 .fields input,.fields select{width:100%}
 .goalcard{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--card2)}
+.gplan{display:flex;gap:6px}.gplan select{flex:1;min-width:0}.gplan input{width:88px;flex:none}
 .goalhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
 .gsum{margin-top:10px;font-size:13px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;flex-wrap:nowrap;background:#fff}
@@ -1430,7 +1431,7 @@ function renderAll() {
   classify(); S._ver = (S._ver || 0) + 1; S.flags = computeFlags();
   $("rangeLbl").textContent = rangeLabel(); $("rangeBtn").title = rangeSub();
   renderOverview(); renderStrip(); renderTrends(); renderRecurring(); renderBudget();
-  renderTxns(); renderAccts(); renderAcSum(); renderInvest(); renderGoals(); renderSettings(); renderPush(); renderInstallHint(); renderTags(); saveSchedule(); saveCarry(); saveDigest(); renderAiCard(); renderAiSettings(); renderWelcome(); renderLeft(); renderRecap(); renderSetupCards(); renderForecast(); renderHistCard(); renderHistory();
+  renderTxns(); renderAccts(); renderAcSum(); renderInvest(); renderGoals(); renderSettings(); renderPush(); renderInstallHint(); renderTags(); saveSchedule(); saveCarry(); saveGoalSnap(); saveDigest(); renderAiCard(); renderAiSettings(); renderWelcome(); renderLeft(); renderRecap(); renderSetupCards(); renderForecast(); renderHistCard(); renderHistory();
   if (S.drill) refreshDrill();
 }
 
@@ -2994,6 +2995,7 @@ function cashForecast(days = 30, dailyOverride) {
   const chk = S.accts.filter(a => a.type === "depository" && (a.subtype === "checking" || !a.subtype) && !hidden.has(a.account_id));
   if (!chk.length) return null;
   const today = todayISO(), start = chk.reduce((s, a) => s + Number(a.current_balance || 0), 0), ev = upcoming(days + 1);
+  goalEvents(ev, dstr(dnum(today) + days + 1)).forEach(e => ev.push(e)); ev.sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : 0);
   const since = fullSince(), full = coverage().fullMonths, solid = full.filter(m => !since || m + "-01" >= since), months = (solid.length >= 2 ? solid : full).slice(0, 3);
   const avgSp = months.length ? months.reduce((s, m) => s + monthStats(m).sp, 0) / months.length : 0;
   const recMonthly = recurringList().live.reduce((s, r) => s + (Number(r.cadence) === 30 ? r.amount : r.amount * 30.44 / (Number(r.cadence) || 30)), 0);
@@ -3013,6 +3015,23 @@ function cashForecast(days = 30, dailyOverride) {
     ev: ev.filter(e => e.d <= dstr(dnum(today) + days)), accts: chk, nextPay, months: months.length };
 }
 const lowLimit = () => Number((S.settings.notify || {}).lowAmt) || 500;
+/** Goals in the plan, as money set aside on the first payday of each coming month (or the 1st, with no payday that month).
+ *  This month's is left out: Headroom can't tell whether it's already been moved. */
+function goalEvents(ev, until) {
+  const out = [], cur = todayISO().slice(0, 7);
+  S.goals.filter(g => goalMode(g)).forEach(g => {
+    for (let m = addMonths(cur, 1); m + "-01" <= until; m = addMonths(m, 1)) {
+      let amt;
+      if (goalMode(g) === "fixed") amt = goalMonthly(g);
+      else { const sp = goalSpread(g); if (!sp || sp.late || m > sp.to) break; const was = goalAuto(g).amt, gone = Math.min(sp.left, was * monthsApart(cur, m));
+        const rest = Math.max(0, sp.left - gone), n = monthsApart(m, sp.to) + 1; amt = rest ? Math.ceil(rest / n) : 0; }
+      if (!(amt > 0)) continue;
+      const pay = ev.find(e => e.kind === "pay" && e.d.slice(0, 7) === m), d = pay ? pay.d : m + "-01";
+      if (d <= until) out.push({ d, name: g.name, amt, kind: "goal" });
+    }
+  });
+  return out;
+}
 function renderForecast() {
   const el = $("fcCard"), F = cashForecast(); el.hidden = !F; if (!F) return;
   const lim = lowLimit(), dip = F.low.v < lim && F.low.d !== todayISO(), neg = F.low.v < 0;
@@ -3040,7 +3059,7 @@ function openForecast() {
   const safeLine = F.safe >= 1 ? `You can spend up to <b>${money(F.safe)} a day</b> on everyday things and keep checking above ${money(lim)} for the next 30 days.`
     : F.under ? `Checking is already under ${money(lim)}, so there's no room for everyday spending until more money comes in.`
     : `Even at $0 a day, bills alone take checking under ${money(lim)} around <b>${esc(shortDate(F.billsDip))}</b>.`;
-  const rows = F.ev.map(e => `<div class="rowline"><span>${e.kind === "pay" ? "💰" : "📅"} ${esc(e.name)} <span class="mute" style="white-space:nowrap">· ${esc(shortDate(e.d))}</span></span><span class="${e.kind === "pay" ? "pos" : ""}" style="font-weight:600">${e.kind === "pay" ? "+" : "−"}${money(e.amt)}</span></div>`);
+  const rows = F.ev.map(e => `<div class="rowline"><span>${e.kind === "pay" ? "💰" : e.kind === "goal" ? "🎯" : "📅"} ${esc(e.name)} <span class="mute" style="white-space:nowrap">· ${e.kind === "goal" ? "set aside, " : ""}${esc(shortDate(e.d))}</span></span><span class="${e.kind === "pay" ? "pos" : ""}" style="font-weight:600">${e.kind === "pay" ? "+" : "−"}${money(e.amt)}</span></div>`);
   openModal("Cash forecast", "Checking, next 30 days", `
     <div class="fssafe ${F.safe >= 1 ? "" : "warn"}">${safeLine}</div>
     <div class="fsrow"><span class="fslbl">Everyday spending</span>
@@ -3053,7 +3072,7 @@ function openForecast() {
     <div class="btns fsbtns" id="fsBtns"></div>
     <h3 class="inch">How this works</h3>
     <p class="rnote">Starts with what's in ${acct} today (${money(F.start)}), adds expected paychecks, subtracts recurring bills on their dates, and subtracts everyday spending each day: everything that isn't a recurring bill, like groceries, gas and eating out.${F.months ? ` Your usual (${money(F.usual)} a day) comes from your last ${F.months === 1 ? "full month" : F.months + " full months"}.` : ""}</p>
-    <p class="rnote mute" style="font-size:13px">Card purchases count when they happen, and transfers to savings aren't included. Treat it as a heads-up, not an exact balance.</p>
+    <p class="rnote mute" style="font-size:13px">Goals in your monthly plan come out on the first payday of each coming month. Card purchases count when they happen, and other transfers to savings aren't included. Treat it as a heads-up, not an exact balance.</p>
     <h3 class="inch">Expected in the next 30 days</h3>${rows.join("") || `<div class="mute">No paychecks or bills found.</div>`}
   `);
   const btns = () => {
@@ -3280,12 +3299,42 @@ function billSchedule(m) {
 // ---------- monthly plan: income, then bills, goals and budgets, then what's unplanned ----------
 /** The monthly income the person typed for planning, or null to use what Headroom sees coming in. */
 const planIncome = () => { const v = S.settings.plan_income; return v == null || v === "" || !isFinite(Number(v)) ? null : Math.max(0, Number(v)); };
-/** What a goal takes from the plan each month: only the amount the person set (a suggestion is offered, never counted on its own). */
-const goalMonthly = g => g.monthly_amount == null || g.monthly_amount === "" ? 0 : Math.max(0, Number(g.monthly_amount) || 0);
-/** What it takes each month to reach a goal by its date. */
-function goalSuggest(g) {
-  const left = Math.max(0, Number(g.target_amount || 0) - goalSaved(g)); if (!left || !g.target_date) return null;
-  const months = Math.max(1, Math.ceil((dnum(g.target_date) - dnum(todayISO())) / 30.44)); return Math.ceil(left / months / 5) * 5;
+/** How a goal sits in the monthly plan: "auto" (what's left, spread evenly over the months up to its date), "fixed" (an amount
+ *  the person typed) or null (not in the plan). Before the server update there's no plan_mode, so a monthly amount means fixed. */
+const goalMode = g => g.plan_mode === "auto" || g.plan_mode === "fixed" ? g.plan_mode : g.monthly_amount != null && g.monthly_amount !== "" ? "fixed" : null;
+const goalLeft = g => Math.max(0, Number(g.target_amount || 0) - goalSaved(g));
+const monthsApart = (a, b) => (Number(b.slice(0, 4)) - Number(a.slice(0, 4))) * 12 + Number(b.slice(5, 7)) - Number(a.slice(5, 7));
+const mShort = m => new Date(m + "-15T12:00:00").toLocaleString("en-US", { month: "short" });
+/** What's left of a goal, spread evenly from this month through the month of its date. If the date falls in the first week of
+ *  its month, the month before is the last one to save in ("$1,000 by Feb 1" saves Nov, Dec and Jan). A passed date puts it all in this month. */
+function goalSpread(g) {
+  if (!g.target_date || !(Number(g.target_amount) > 0)) return null;
+  const cur = todayISO().slice(0, 7), d = String(g.target_date).slice(0, 10), left = goalLeft(g);
+  let last = d.slice(0, 7); if (Number(d.slice(8, 10)) <= 7) last = addMonths(last, -1);
+  const late = monthsApart(cur, last) < 0, months = late ? 1 : monthsApart(cur, last) + 1;
+  return { left, months, from: cur, to: late ? cur : last, late, amt: left ? Math.ceil(left / months) : 0 };
+}
+const spreadKey = g => `${Number(g.target_amount)}|${String(g.target_date).slice(0, 10)}`;
+/** An evenly spread goal keeps the amount it had when the month started (or when it joined the plan), so moving this month's
+ *  money into it doesn't shrink this month's set-aside. It's worked out again each month, or when the goal's amount or date changes. */
+function goalAuto(g) {
+  const sp = goalSpread(g); if (!sp) return null;
+  const snap = S.settings.goal_plan, s = snap && snap.month === sp.from && snap.goals ? snap.goals[g.id] : null;
+  return s && s.k === spreadKey(g) && isFinite(Number(s.amt)) ? { ...sp, amt: Number(s.amt) } : sp;
+}
+/** What a goal takes from the plan each month. */
+function goalMonthly(g) {
+  const m = goalMode(g); if (m === "fixed") return Math.max(0, Number(g.monthly_amount) || 0);
+  if (m === "auto") { const a = goalAuto(g); return a ? a.amt : 0; } return 0;
+}
+const spreadNote = a => !a.left ? "reached" : a.late ? `its date has passed, so the ${money(a.left)} left is in this month` : a.months === 1 ? `all in ${mShort(a.from)} to reach it on time` : `spread over ${mShort(a.from)}–${mShort(a.to)} (${a.months} months)`;
+/** Remember this month's amount for each evenly spread goal (see goalAuto). Saved only when it changes. */
+function saveGoalSnap() {
+  if (!S.loaded) return; const m = todayISO().slice(0, 7), old = S.settings.goal_plan, keep = old && old.month === m ? old.goals || {} : {}, goals = {};
+  S.goals.filter(g => goalMode(g) === "auto").forEach(g => { const k = spreadKey(g), o = keep[g.id];
+    if (o && o.k === k) goals[g.id] = o; else { const sp = goalSpread(g); if (sp) goals[g.id] = { k, amt: sp.amt }; } });
+  const next = Object.keys(goals).length ? { month: m, goals } : null;
+  if (JSON.stringify(old || null) !== JSON.stringify(next)) saveSetting("goal_plan", next);
 }
 /** This month, top to bottom: income − bills − goals − everyday budgets = unplanned. A category budget that already holds
  *  bills (rent inside Home & Utilities) counts only the part above those bills, so nothing is taken out twice. */
@@ -3293,7 +3342,7 @@ function monthPlan() {
   const m = todayISO().slice(0, 7), today = todayISO(), daysLeft = dnum(endOfMonth(m)) - dnum(today) + 1;
   const mi = monthIncome(), own = planIncome(), income = own != null ? own : mi.total;
   const sched = billSchedule(m), billsPaid = sched.filter(b => b.paid).reduce((s, b) => s + b.amt, 0), billsDue = sched.filter(b => !b.paid).reduce((s, b) => s + b.amt, 0);
-  const goals = S.goals.map(g => ({ g, amt: goalMonthly(g), sug: goalSuggest(g) })), goalsTot = goals.reduce((s, x) => s + x.amt, 0);
+  const goals = S.goals.map(g => ({ g, mode: goalMode(g), amt: goalMonthly(g), sp: goalAuto(g) })), goalsTot = goals.reduce((s, x) => s + x.amt, 0);
   const budgeted = new Set(S.budgets.filter(b => Number(b.monthly_amount) > 0).map(b => b.category)), billIn = {};
   sched.forEach(b => { const c = budgeted.has(b.cat) ? b.cat : "__OTHER"; billIn[c] = (billIn[c] || 0) + b.amt; });
   const buds = S.budgets.filter(b => Number(b.monthly_amount) > 0 && !NOT_SPENDING.includes(b.category))
@@ -3339,8 +3388,12 @@ function openPlan() {
   const head = !L ? `<div class="incsum"><div class="mute">Add your income or a budget to see what's left to spend.</div></div>`
     : `<div class="incsum"><div class="mute">Headroom today</div><div class="big ${L.left < 0 ? "neg" : "pos"}">${L.left < 0 ? "Over by " + money(-L.left) : money(L.perDay) + " a day"}</div>
       <div class="mute">${L.left < 0 ? `Spending is ahead of ${L.mode === "income" ? "income" : "your budget"} this month` : `${money(L.left)} left for the rest of ${name} · ${L.daysLeft} day${L.daysLeft === 1 ? "" : "s"}`}</div></div>`;
-  const goalRows = P.goals.map(x => `<div><span>🎯 ${esc(x.g.name)}${!x.amt && x.sug ? ` <span class="mute">· ${money(x.sug)}/mo reaches it by ${esc(shortDate(x.g.target_date))}</span>` : ""}</span>
-      <span>${x.amt ? money(x.amt) : x.sug ? `<button class="mini" data-gadd="${esc(x.g.id)}" data-v="${x.sug}">Add ${money(x.sug)}/mo</button>` : `<a class="link" data-ggo="1">Set an amount</a>`}</span></div>`).join("");
+  const goalRows = P.goals.map(x => { const id = esc(x.g.id), rm = `<button class="mini ghost" data-grm="${id}" aria-label="Take ${esc(x.g.name)} out of the plan" title="Take out of the plan">×</button>`;
+    const note = x.mode === "auto" ? (x.sp ? spreadNote(x.sp) : "add a date to spread it") : x.mode === "fixed" ? `your amount${x.sp && x.sp.amt && x.sp.amt !== x.amt ? ` · ${money(x.sp.amt)}/mo reaches it on time` : ""}`
+      : x.sp && x.sp.amt ? spreadNote(x.sp) : x.sp ? "reached" : "not in the plan";
+    const right = x.mode ? `<span style="white-space:nowrap">${money(x.amt)} ${rm}</span>`
+      : x.sp && x.sp.amt ? `<button class="mini" data-gadd="${id}">Add ${money(x.sp.amt)}/mo</button>` : x.sp ? "" : `<a class="link" data-ggo="1">Set it up</a>`;
+    return `<div><span>🎯 ${esc(x.g.name)} <span class="mute">· ${esc(note)}</span></span><span>${right}</span></div>`; }).join("");
   openModal(`${name} plan`, `${monthLong(P.m)} · ${P.daysLeft} day${P.daysLeft === 1 ? "" : "s"} left`, `
     ${head}
     <h3 class="inch">The plan</h3>
@@ -3376,12 +3429,15 @@ function openPlan() {
   if ($("plIncAuto")) $("plIncAuto").onclick = async () => { if (await saveSetting("plan_income", null)) { renderAll(); openPlan(); toast("Planning with what you're paid"); } };
   if ($("plSpent")) $("plSpent").onclick = () => { closeModal(); setTimeout(() => drillTx("Spent this month", monthLong(P.m), () => monthTx(P.m).filter(isSpendish), "amt"), 220); };
   $("mBody").querySelectorAll("[data-ggo]").forEach(a => a.onclick = () => { closeModal(); go("goals"); });
-  $("mBody").querySelectorAll("[data-gadd]").forEach(b => b.onclick = async () => { b.disabled = true; if (await setGoalMonthly(b.dataset.gadd, Number(b.dataset.v))) { renderAll(); openPlan(); toast("Added to the plan"); } else b.disabled = false; });
+  $("mBody").querySelectorAll("[data-gadd]").forEach(b => b.onclick = async () => { b.disabled = true; if (await setGoalPlan(b.dataset.gadd, "auto")) { renderAll(); openPlan(); toast("Added to the plan, spread evenly"); } else b.disabled = false; });
+  $("mBody").querySelectorAll("[data-grm]").forEach(b => b.onclick = async () => { b.disabled = true; if (await setGoalPlan(b.dataset.grm, null)) { renderAll(); openPlan(); toast("Taken out of the plan"); } else b.disabled = false; });
 }
-async function setGoalMonthly(id, v) {
-  const { error } = await db.from("goals").update({ monthly_amount: v }).eq("id", id);
-  if (error) { toast(/monthly_amount/.test(error.message) ? "This needs the latest Headroom update on the server." : error.message, true); return false; }
-  const g = S.goals.find(x => String(x.id) === String(id)); if (g) g.monthly_amount = v; return true;
+/** Put a goal in the plan ("auto" spreads it evenly, "fixed" uses amt each month) or take it out (null). */
+async function setGoalPlan(id, mode, amt) {
+  const patch = { plan_mode: mode, monthly_amount: mode === "fixed" ? Math.max(0, Math.round(Number(amt) || 0)) : null };
+  const { error } = await db.from("goals").update(patch).eq("id", id);
+  if (error) { toast(/plan_mode|monthly_amount/.test(error.message) ? "This needs the latest Headroom update on the server." : error.message, true); return false; }
+  const g = S.goals.find(x => String(x.id) === String(id)); if (g) Object.assign(g, patch); return true;
 }
 /** Budget tab: the month's plan as one bar and five lines. */
 function renderPlan() {
@@ -4275,7 +4331,9 @@ function renderGoals() {
       const months = Math.max(0, (dnum(g.target_date) - dnum(todayISO())) / 30.44);
       pace = months >= 0.5 ? `Save ${money(left / months)}/month to hit this by ${shortDate(g.target_date)}.` : `Target date ${shortDate(g.target_date)} is here — ${money(left)} still to go.`;
     } else if (left === 0 && target) pace = "Goal reached 🎉";
-    if (goalMonthly(g) && left > 0) pace = `${money(goalMonthly(g))}/month set aside in your plan` + (g.target_date ? (goalMonthly(g) + .5 >= (goalSuggest(g) || 0) ? " · on track for " + shortDate(g.target_date) : ` · ${money(goalSuggest(g))}/month reaches it by ${shortDate(g.target_date)}`) : "");
+    const mode = goalMode(g), sp = goalAuto(g);
+    if (mode === "auto" && left > 0) pace = sp ? `${money(sp.amt)}/month in your plan, ${spreadNote(sp)}.` : "In your plan, spread evenly once it has a date.";
+    if (mode === "fixed" && left > 0) pace = `${money(goalMonthly(g))}/month set aside in your plan` + (sp && sp.amt ? (goalMonthly(g) + .5 >= sp.amt ? " · on track for " + shortDate(g.target_date) : ` · ${money(sp.amt)}/month reaches it by ${shortDate(g.target_date)}`) : "") + ".";
     return `<div class="goalcard ${(S._gEd || new Set()).has(String(g.id)) ? "ed" : ""}" data-id="${g.id}">
       <div class="goalhead"><input class="g-name" value="${esc(g.name)}" style="font-size:16px;font-weight:600;flex:1;min-width:140px" aria-label="Goal name">
         <button class="mini mobonly g-tog">${(S._gEd || new Set()).has(String(g.id)) ? "Done" : "Edit"}</button><button class="mini danger g-del" title="Delete this goal">Delete</button></div>
@@ -4283,7 +4341,9 @@ function renderGoals() {
         <div><label class="lbl">Amount saved so far</label><input class="g-cur" type="number" step="1" inputmode="decimal" value="${saved}" ${g.account_id ? "disabled" : ""}></div>
         <div><label class="lbl">Total you need</label><input class="g-tgt" type="number" step="1" inputmode="decimal" value="${g.target_amount ?? ""}"></div>
         <div><label class="lbl">Date you want it by</label><input class="g-date" type="date" value="${g.target_date ?? ""}"></div>
-        <div><label class="lbl">Set aside each month <span class="mute">(in your plan)</span></label><input class="g-mon" type="number" step="5" min="0" inputmode="numeric" value="${g.monthly_amount ?? ""}" placeholder="${goalSuggest(g) ? "e.g. " + Math.round(goalSuggest(g)) : "optional"}"></div>
+        <div><label class="lbl">In my monthly plan</label><div class="gplan"><select class="g-plan" aria-label="In my monthly plan"><option value="" ${!mode ? "selected" : ""}>No</option>
+            <option value="auto" ${mode === "auto" ? "selected" : ""}>Spread evenly to the date</option><option value="fixed" ${mode === "fixed" ? "selected" : ""}>A set amount each month</option></select>
+          <input class="g-mon" type="number" step="5" min="0" inputmode="numeric" aria-label="Amount each month" value="${mode === "fixed" ? g.monthly_amount ?? "" : ""}" placeholder="${sp && sp.amt ? Math.round(sp.amt) : "per month"}" ${mode === "fixed" ? "" : "hidden"}></div></div>
         <div><label class="lbl">Track balance from</label>
           <select class="g-acct"><option value="">Type the amount myself</option>
             ${S.accts.filter(a => ["depository", "investment"].includes(a.type)).map(a => `<option value="${esc(a.account_id)}" ${g.account_id === a.account_id ? "selected" : ""}>${esc(a.nickname || a.name)} ${a.mask ? "••" + esc(a.mask) : ""}</option>`).join("")}</select></div>
@@ -4300,19 +4360,24 @@ function renderGoals() {
       const acct = el.querySelector(".g-acct").value || null;
       const patch = { name: el.querySelector(".g-name").value.trim() || "Untitled goal", current_amount: Number(el.querySelector(".g-cur").value) || 0,
         target_amount: el.querySelector(".g-tgt").value === "" ? null : Number(el.querySelector(".g-tgt").value), target_date: el.querySelector(".g-date").value || null, account_id: acct };
-      const mon = el.querySelector(".g-mon").value, old = S.goals.find(g => String(g.id) === id);
-      // only sent when it changes, so editing a goal works the same before the server update
-      if ((mon === "" ? null : Math.max(0, Number(mon))) !== (old && old.monthly_amount != null ? Number(old.monthly_amount) : null)) patch.monthly_amount = mon === "" ? null : Math.max(0, Number(mon));
+      const old = S.goals.find(g => String(g.id) === id), mode = el.querySelector(".g-plan").value || null, monEl = el.querySelector(".g-mon");
+      if (mode === "auto" && !patch.target_date) { el.querySelector(".g-plan").value = goalMode(old) || ""; return toast("Add the date you want it by, then it can be spread evenly", true); }
+      if (mode === "fixed" && monEl.value === "") { const sp = goalSpread({ ...old, ...patch }); monEl.value = sp && sp.amt ? sp.amt : ""; }
+      const mon = mode === "fixed" ? (monEl.value === "" ? null : Math.max(0, Math.round(Number(monEl.value)))) : null;
+      if (mode === "fixed" && mon == null) { monEl.hidden = false; monEl.focus(); return toast("Type how much to set aside each month", true); }
+      // the plan fields are only sent when they change, so editing a goal works the same before the server update
+      if (mode !== goalMode(old) || (mode === "fixed" && mon !== Number(old.monthly_amount))) { patch.plan_mode = mode; patch.monthly_amount = mon; }
       const { error } = await db.from("goals").update(patch).eq("id", id);
-      if (error) return toast(/monthly_amount/.test(error.message) ? "This needs the latest Headroom update on the server." : error.message, true);
-      Object.assign(S.goals.find(g => String(g.id) === id), patch); if ("monthly_amount" in patch) renderAll(); else renderGoals(); toast("Goal saved");
+      if (error) return toast(/plan_mode|monthly_amount/.test(error.message) ? "This needs the latest Headroom update on the server." : error.message, true);
+      Object.assign(old, patch); renderAll(); toast(!("plan_mode" in patch) ? "Goal saved" : mode ? "Goal saved to your plan" : "Taken out of your plan");
     };
     el.querySelectorAll("input, select").forEach(i => i.onchange = save);
+    el.querySelector(".g-plan").addEventListener("change", e => { el.querySelector(".g-mon").hidden = e.target.value !== "fixed"; });
     el.querySelector(".g-del").onclick = async () => {
       if (!confirm("Delete this goal?")) return;
       const { error } = await db.from("goals").update({ active: false }).eq("id", id);
       if (error) return toast(error.message, true);
-      S.goals = S.goals.filter(g => String(g.id) !== id); renderGoals(); toast("Goal deleted");
+      S.goals = S.goals.filter(g => String(g.id) !== id); renderAll(); toast("Goal deleted");
     };
   });
 }
