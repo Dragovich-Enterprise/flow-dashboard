@@ -289,7 +289,7 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
 .fccard{cursor:pointer}.fchead{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}.fchead div{display:flex;flex-direction:column}
 .fchead .mute{font-size:12px}.fchead b{font-size:19px;letter-spacing:-.01em}.warnc{color:var(--warn)}
 .fcbox{height:150px;position:relative}.fcfoot{font-size:13.5px;color:var(--mute);margin-top:8px;line-height:1.45}
-.setupcard[hidden],.leftcard[hidden],.recapcard[hidden],.fccard[hidden]{display:none!important}
+.gicard[hidden],.setupcard[hidden],.leftcard[hidden],.recapcard[hidden],.fccard[hidden]{display:none!important}
 .histcard .hcb{display:flex;gap:6px;align-items:center;flex:0 0 auto}.histcard.loading{border-color:var(--line);background:var(--card)}
 .hbank{padding:10px 0;border-top:1px solid var(--line)}.hbank:first-child{border-top:0;padding-top:0}
 .hb1{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.hb1 .mute{font-size:13px}.hok{font-size:13px;font-weight:600}
@@ -423,6 +423,32 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
 .sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.8),transparent);animation:shim 1.2s infinite}
 @keyframes shim{to{transform:translateX(100%)}}
 .empty{text-align:center;color:var(--mute);padding:28px 10px}
+/* Home: goals & investing at a glance, each part opens its own page */
+.gicard{padding:0!important;overflow:hidden}
+.gicard .gih{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 4px}
+.gicard .gih b{font-size:12px;letter-spacing:.08em;color:var(--mute);font-weight:600}
+.gicols{display:grid;grid-template-columns:1fr}
+.gisec{padding:4px 0 2px}
+.girow{display:block;padding:11px 16px;cursor:pointer;border-top:1px solid var(--line)}
+.gisec>.girow:first-child{border-top:0}
+.girow .g1{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:15px}
+.girow .g1 span:first-child{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.girow .g1 span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:13.5px;color:var(--mute)}
+.girow .bar{height:6px;margin-top:7px}
+.giinv{display:flex;align-items:center;gap:12px}
+.giinv .ic{width:34px;height:34px;border-radius:10px;background:var(--soft);display:grid;place-items:center;color:var(--brand);flex:0 0 auto}.giinv .ic svg{width:19px;height:19px}
+.giinv .gt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.giinv .gt b{font-size:15px;font-weight:500}.giinv .gt .mute{font-size:12.5px}
+.giinv .gv{font-weight:600;font-size:16px;font-variant-numeric:tabular-nums}
+.giinv .spark{width:56px;height:22px;flex:0 0 56px}
+.gimore{display:flex;justify-content:flex-end;padding:6px 16px 10px;font-size:13.5px;font-weight:600;color:var(--accent-d);cursor:pointer;background:none;border:0;width:100%}
+.giempty{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--line)}
+.gisec>.giempty:first-child{border-top:0}
+.giempty .em{font-size:22px;flex:0 0 auto}
+.giempty .gt{flex:1;min-width:0}.giempty .gt b{font-size:15px;font-weight:600;display:block}.giempty .gt .mute{font-size:13px;line-height:1.35;margin-top:2px}
+.giempty .gb{display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex:0 0 auto}
+.giempty .gx{background:none;border:0;padding:2px 0;font-size:12.5px;color:var(--mute)}
+@media (min-width:761px){.gicols{grid-template-columns:1fr 1fr}.gicols>.gisec+.gisec{border-left:1px solid var(--line)}}
+@media (max-width:760px){.gicard{border-radius:18px}}
 @media (max-width:760px){
   .wrap{padding:calc(10px + env(safe-area-inset-top,0px)) 10px calc(96px + var(--safe-b))}
   .tabs,.desk{display:none!important}
@@ -698,6 +724,7 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
     <div class="card setupcard" id="homeSetup" hidden></div>
     <div class="card setupcard histcard" id="histCard" hidden></div>
     <div id="mobTop"><div class="swipe" id="swipe"></div><div class="dots" id="swipeDots"></div><div class="card acsum" id="acSum"></div></div>
+    <div class="card gicard" id="giCard" hidden></div>
     <div class="card aicard" id="aiCard"></div>
     <div class="strip" id="strip"></div>
     <div class="grid">
@@ -1213,7 +1240,7 @@ $("forgot").onclick = async () => {
   $("err").textContent = error ? error.message : "Check your email for a reset link.";
 };
 /** Sign out and leave nothing of this person's behind on the device (the next person may share the phone). */
-const PERSONAL_KEYS = ["hr_chat", "plaid_link_token", "plaid_link_item", "hr_lock", "hr_pk_offered", "hr_slide", "hr_hist_hide", "hr_recap_seen", "hr_invhist", "hr_inv_range"];
+const PERSONAL_KEYS = ["hr_chat", "plaid_link_token", "plaid_link_item", "hr_lock", "hr_pk_offered", "hr_slide", "hr_hist_hide", "hr_recap_seen", "hr_invhist", "hr_inv_range", "hr_gi_hide"];
 function forgetLocal() { PERSONAL_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} }); }
 const signOut = async () => {
   try { const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); const sub = reg && reg.pushManager && await reg.pushManager.getSubscription();
@@ -1238,7 +1265,7 @@ function clampList(box, n, noun) {
   b.onclick = () => { (S._open = S._open || new Set()).add(box.id); kids.forEach(el => el.classList.remove("clamped")); b.remove(); };
   box.appendChild(b);
 }
-const MORE = [["ask", "Ask Headroom", "✨"], ["recurring", "Recurring", "🔁"], ["accts", "Accounts", "🏦"], ["invest", "Investments", "📈"], ["goals", "Goals", "🎯"], ["settings", "Settings", "⚙️"], ["manager", "Manager", "👥"]];
+const MORE = [["goals", "Goals", "🎯"], ["invest", "Investments", "📈"], ["ask", "Ask Headroom", "✨"], ["recurring", "Recurring", "🔁"], ["accts", "Accounts", "🏦"], ["settings", "Settings", "⚙️"], ["manager", "Manager", "👥"]];
 function go(t) {
   if (t === "more") { openModal("More", "", `<div class="pgrid">${MORE.filter(([k]) => (k !== "ask" || !document.body.classList.contains("no-ai")) && (k !== "manager" || S.isAdmin)).map(([k, l, e]) => `<button data-go="${k}" class="${S.tab === k ? "on" : ""}">${e}&nbsp; ${l}</button>`).join("")}<button data-go="__hide">${S.hide ? "👁&nbsp; Show amounts" : "🙈&nbsp; Hide amounts"}</button></div>
       <div class="morefoot"><span class="mute">${esc(S.user && S.user.email ? "Signed in as " + S.user.email : "")}</span><button class="danger" id="moreOut">Sign out</button></div>`);
@@ -1431,7 +1458,7 @@ function renderAll() {
   classify(); S._ver = (S._ver || 0) + 1; S.flags = computeFlags();
   $("rangeLbl").textContent = rangeLabel(); $("rangeBtn").title = rangeSub();
   renderOverview(); renderStrip(); renderTrends(); renderRecurring(); renderBudget();
-  renderTxns(); renderAccts(); renderAcSum(); renderInvest(); renderGoals(); renderSettings(); renderPush(); renderInstallHint(); renderTags(); saveSchedule(); saveCarry(); saveGoalSnap(); saveDigest(); renderAiCard(); renderAiSettings(); renderWelcome(); renderLeft(); renderRecap(); renderSetupCards(); renderForecast(); renderHistCard(); renderHistory();
+  renderTxns(); renderAccts(); renderAcSum(); renderInvest(); renderGoals(); renderGI(); renderSettings(); renderPush(); renderInstallHint(); renderTags(); saveSchedule(); saveCarry(); saveGoalSnap(); saveDigest(); renderAiCard(); renderAiSettings(); renderWelcome(); renderLeft(); renderRecap(); renderSetupCards(); renderForecast(); renderHistCard(); renderHistory();
   if (S.drill) refreshDrill();
 }
 
@@ -1681,12 +1708,13 @@ function renderAcSum() {
     if (!list.length && !always) return "";
     const v = sum(list), open = S._acOpen.has(k);
     return `<div class="arow ${open ? "open" : ""}" data-k="${k}"><span class="ic">${svgI(ic)}</span><span class="an">${name}</span><span class="av">${money(v)}</span><span class="cv">⌄</span></div>`
-      + (open ? `<div class="asub">${list.length ? list.map(a => `<div data-id="${esc(a.account_id)}"><span>${esc(a.nickname || a.name)}${a.mask ? " ••" + esc(a.mask) : ""}</span><span>${money2(bal(a))}</span></div>`).join("") : `<div><span>No accounts linked</span></div>`}</div>` : "");
+      + (open ? `<div class="asub">${list.length ? list.map(a => `<div data-id="${esc(a.account_id)}"><span>${esc(a.nickname || a.name)}${a.mask ? " ••" + esc(a.mask) : ""}</span><span>${money2(bal(a))}</span></div>`).join("") : `<div><span>No accounts linked</span></div>`}${k === "inv" && invAccts().length ? `<div data-go="invest"><span style="color:var(--accent-d);font-weight:600">See holdings and growth</span><span>›</span></div>` : ""}</div>` : "");
   }).join("") + `<div class="afoot"><span>${last ? "Synced " + timeAgo(last) : "Not synced yet"}</span><span>|</span><button id="acSync">Sync now</button></div>`;
   $("acSum").querySelectorAll(".arow").forEach(r => r.onclick = () => { const k = r.dataset.k;
     if (k === "net") return toast(`Checking (${money(chk)}) minus what you owe on cards (${money(crd)}): what's left if every card were paid off today.`);
     S._acOpen.has(k) ? S._acOpen.delete(k) : S._acOpen.add(k); renderAcSum(); });
   $("acSum").querySelectorAll(".asub [data-id]").forEach(d => d.onclick = () => acctDetail(d.dataset.id));
+  $("acSum").querySelectorAll(".asub [data-go]").forEach(d => d.onclick = () => go(d.dataset.go));
   $("acSync").onclick = doSync; $("acAdd").onclick = addAccountMenu;
 }
 $("paceFoot").onclick = () => openIncome();
@@ -4117,7 +4145,7 @@ async function loadInvHistory(force) {
     const r = await fetch(`${SUPABASE_URL}/functions/v1/invhistory`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token, apikey: SUPABASE_KEY }, body: "{}" });
     const j = await r.json().catch(() => ({})); if (!r.ok || j.error) throw new Error(j.error || r.statusText);
     S.invHist = { at: j.at, day: todayISO(), uid, accounts: j.accounts || [] }; store.set("hr_invhist", S.invHist);
-    renderInvest(); if (S.tab === "overview") drawNetWorth();
+    renderInvest(); renderGI(); if (S.tab === "overview") drawNetWorth();
   } catch (e) { S.invHistErr = e.message; } finally { S._invLoading = false; }
 }
 /** One account's daily values: rebuilt history, recorded balances from the first day one was saved, and any past values
@@ -4412,9 +4440,45 @@ function renderGoals() {
 document.addEventListener("visibilitychange", () => { const fe = document.activeElement; if (document.hidden && fe && fe.classList && fe.classList.contains("g-date")) fe.blur(); });
 $("addGoal").onclick = async () => {
   const { data, error } = await db.from("goals").insert({ name: "New goal", target_amount: 1000 }).select().single();
-  if (error) return toast(error.message, true); S.goals.push(data); renderGoals();
+  if (error) return toast(error.message, true); S.goals.push(data); renderGoals(); renderGI();
   const last = $("goals").lastElementChild; if (last) { last.scrollIntoView({ behavior: RM ? "auto" : "smooth", block: "center" }); last.querySelector(".g-name").select(); }
 };
+
+// ---------- Home: goals & investing at a glance ----------
+/** Two short sections on Home so Goals and Investments aren't only reachable from More: the closest goals with their
+ *  progress, and the invested total with its month. Empty parts become a one-line prompt that can be put away. */
+function renderGI() {
+  const el = $("giCard"); if (!el) return;
+  const hide = store.get("hr_gi_hide") || {}, goals = S.goals || [], inv = invAccts();
+  const showG = goals.length || !hide.goals, showI = inv.length || !hide.inv;
+  el.hidden = !showG && !showI; if (el.hidden) return;
+  const empty = (k, em, t, sub, btn) => `<div class="giempty"><span class="em">${em}</span><div class="gt"><b>${t}</b><div class="mute">${sub}</div></div>
+    <div class="gb"><button class="mini primary" data-gi="${k}">${btn}</button><button class="gx" data-gx="${k}">Not now</button></div></div>`;
+  let gHTML = "";
+  if (goals.length) {
+    // unfinished goals first, closest to done at the top
+    const rows = goals.map(g => { const sv = goalSaved(g), tg = Number(g.target_amount || 0); return { g, sv, tg, pct: tg ? Math.min(100, sv / tg * 100) : 0 }; })
+      .sort((a, b) => (a.pct >= 100) - (b.pct >= 100) || b.pct - a.pct).slice(0, 3);
+    gHTML = rows.map(r => `<div class="girow" data-gt="goals"><div class="g1"><span>${esc(r.g.name || "Untitled goal")}</span><span>${money(r.sv)}${r.tg ? " of " + money(r.tg) : ""}${r.pct >= 100 ? " ✓" : ""}</span></div>
+      <div class="bar"><i data-w="${r.pct.toFixed(1)}"></i></div></div>`).join("")
+      + `<button class="gimore" data-gt="goals">${goals.length > 3 ? `See all ${goals.length} goals` : "Open Goals"} ›</button>`;
+  } else if (showG) gHTML = empty("goals", "🎯", "Saving for something?", "Set a goal and Headroom fits it into your monthly number.", "Add a goal");
+  let iHTML = "";
+  if (inv.length) {
+    const total = inv.reduce((s, a) => s + Number(a.current_balance || 0), 0), D = invData(), n = D.vals.length;
+    const i0 = Math.max(0, n - 31), ch = n > 1 ? D.vals[n - 1] - D.vals[i0] : 0, days = n - 1 - i0;
+    const sub = days >= 7 ? `<span class="${ch < 0 ? "neg" : "pos"}">${ch < 0 ? "−" : "+"}${money(Math.abs(ch))}</span> in ${days >= 28 ? "the last month" : days + " days"}` : `${inv.length} account${inv.length === 1 ? "" : "s"}`;
+    iHTML = `<div class="girow giinv" data-gt="invest"><span class="ic">${svgI("inv")}</span><span class="gt"><b>Investments</b><span class="mute">${sub}</span></span>
+      ${n > 2 ? sparkSVG(D.vals.slice(i0)) : ""}<span class="gv">${money(total)}</span></div>
+      <button class="gimore" data-gt="invest">Holdings and growth ›</button>`;
+  } else if (showI) iHTML = empty("inv", "📈", "See your investments grow", "Link a brokerage, 401(k) or IRA to track it next to your budget.", "Link one");
+  el.innerHTML = `<div class="gih"><b>GOALS &amp; INVESTING</b></div><div class="gicols">${gHTML ? `<div class="gisec">${gHTML}</div>` : ""}${iHTML ? `<div class="gisec">${iHTML}</div>` : ""}</div>`;
+  growBars(el);
+  el.querySelectorAll("[data-gt]").forEach(x => x.onclick = () => go(x.dataset.gt));
+  el.querySelectorAll("[data-gi]").forEach(x => x.onclick = () => { if (x.dataset.gi === "inv") return startLink(true); go("goals"); $("addGoal").click(); });
+  el.querySelectorAll("[data-gx]").forEach(x => x.onclick = () => { const h = store.get("hr_gi_hide") || {}; h[x.dataset.gx] = true; store.set("hr_gi_hide", h); renderGI();
+    toast(x.dataset.gx === "inv" ? "Hidden. Investments stays under More." : "Hidden. Goals stays under More."); });
+}
 
 // ---------- settings + Plaid ----------
 // ---------- manager (the app's owner only; the assistant function checks this again on the server) ----------
