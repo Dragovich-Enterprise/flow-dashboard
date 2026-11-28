@@ -668,7 +668,6 @@ button.sr.add{border-style:dashed;font:inherit;color:inherit;padding:10px 12px}b
 .savtbl .sth span:not(:first-child),.savtbl .str span:not(:first-child),.savtbl .str b{text-align:right}
 .svpart{margin-top:10px}.svpart .rnote{margin-top:0}.svrow{display:flex;gap:8px;align-items:center}.svrow input{flex:1;min-width:0;height:44px}.svd{font-weight:600;color:var(--mute)}
 .svhelp{font-size:12.5px;margin-top:6px;line-height:1.4}
-#svCountRow{margin-top:14px}
 html.dark .s-match{background:#4338CA}html.dark .s-you,html.dark .stb i.t{background:#818CF8}
 html.dark .sr.all .k i{background:linear-gradient(90deg,#818CF8 50%,var(--accent) 50%)}
 html.dark{color-scheme:dark;--bg:#0E1513;--card:#161E1C;--card2:#1B2421;--line:#27312E;--line2:#3A4642;--text:#E8EEEC;--mute:#98A4A0;--soft:#1F2826;
@@ -1964,7 +1963,7 @@ function chatContext() {
     (() => { const P = monthPlan(); return P.income ? `This month's plan: income ${rawMoney(P.income)}${P.own != null ? " (the person's own planned figure)" : ""}, bills ${rawMoney(P.bills)}, goals set aside ${rawMoney(P.goalsTot)}, everyday budgets ${rawMoney(P.budTot)}, unplanned ${rawMoney(P.unplanned)}. Left to spend this month ${rawMoney(P.left)}.` : ""; })(),
     S.budgets.some(b => b.rollover) ? `Rollover budgets (leftover carries into next month): ${S.budgets.filter(b => b.rollover).map(b => `${pretty(b.category)} (${b.rollover === "both" ? "leftover and overspending" : "leftover only"}, carried into this month ${rawMoney(carryWith(b, todayISO().slice(0, 7)))})`).join(", ")}.` : "",
     liveTags().length ? `Tags (trips and events across categories): ${liveTags().map(g => { const st = tagStats(g); return `${g.name} spent ${rawMoney(st.spent)}${st.b != null ? ` of a ${rawMoney(st.b)} budget` : ""}`; }).join("; ")}.` : "",
-    (() => { const cur = todayISO().slice(0, 7), line = v => `${monthLong(v.m)}${v.partial ? " so far" : ""}: kept ${rawMoney(v.cash)} of ${rawMoney(v.take)} take-home (cash savings rate ${pctTxt(v.cashRate)})${v.on ? `; with the 401(k) (the person's ${rawMoney(v.you)}${v.matchAll > 0.5 ? ` plus a ${rawMoney(v.matchAll)} employer match${v.p.c.countMatch ? "" : ", which they leave out of the rate"}` : ""}) saved ${rawMoney(v.saved)}, ${pctTxt(v.totalRate)} of all pay` : ""}`;
+    (() => { const cur = todayISO().slice(0, 7), line = v => `${monthLong(v.m)}${v.partial ? " so far" : ""}: kept ${rawMoney(v.cash)} of ${rawMoney(v.take)} take-home (cash savings rate ${pctTxt(v.cashRate)})${v.on ? `; with the 401(k) (${rawMoney(v.you)} in contributions, employer match included) saved ${rawMoney(v.saved)}, ${pctTxt(v.totalRate)} of all pay` : ""}`;
       const a = savingsFor(cur), b = savingsFor(addMonths(cur, -1)); return `Savings: ${[a, b].filter(v => v.take > 0).map(line).join(". ")}.${a.on ? " 401(k) money leaves pay before it reaches the bank, so the total rate counts it as both pay and savings." : " No 401(k) is counted (they can add it in Settings)."}`; })(),
     `Regular income: ${inc.map(x => `${x.name} about ${rawMoney(x.amount)} every ${x.gap} days`).join("; ") || "not detected"}.`,
     `History starts: ${Object.entries(firstByBank).map(([b, d]) => `${b} ${d}`).join(", ")}. Months before a bank's start date are missing that bank's activity.`,
@@ -3342,7 +3341,7 @@ function openRecap(m) {
   openModal(`${name} in review`, monthLong(m), `
     <div class="rgrid"><div><span class="mute">Earned</span><b class="pos">${money(r.st.inc)}</b></div><div><span class="mute">Spent</span><b>${money(r.st.sp)}</b></div>
       <div><span class="mute">Kept</span><b class="${r.st.net < 0 ? "neg" : "pos"}">${money(r.st.net)}</b>${r.rate != null ? `<span class="mute">${Math.round(r.rate * 100)}%</span>` : ""}</div></div>
-    ${(sv => sv.on && sv.totalRate != null ? `<p class="rnote">With your 401(k)${sv.match > 0.5 ? " and match" : ""}, you saved <b>${money(sv.saved)}</b>, ${pctTxt(sv.totalRate)} of all your pay. <a class="link" id="recapSav">See savings</a></p>` : "")(savingsFor(m))}
+    ${(sv => sv.on && sv.totalRate != null ? `<p class="rnote">With your 401(k), you saved <b>${money(sv.saved)}</b>, ${pctTxt(sv.totalRate)} of all your pay. <a class="link" id="recapSav">See savings</a></p>` : "")(savingsFor(m))}
     ${r.avgSp ? `<p class="rnote">${Math.abs(r.st.sp - r.avgSp) / r.avgSp < .05 ? "Spending was about the same as your usual month." : `Spending was <b>${money(Math.abs(r.st.sp - r.avgSp))} ${r.st.sp > r.avgSp ? "more" : "less"}</b> than your usual ${money(r.avgSp)}.`}${r.nw != null ? ` Net worth ${r.nw >= 0 ? "grew" : "fell"} ${money(Math.abs(r.nw))}.` : ""}</p>` : ""}
     ${r.ups.length ? `<h3 class="inch">Spent more on</h3>${r.ups.map(x => li(x, true)).join("")}` : ""}
     ${r.downs.length ? `<h3 class="inch">Spent less on</h3>${r.downs.map(x => li(x, false)).join("")}` : ""}
@@ -4512,14 +4511,14 @@ function savCfg() {
   let src = c.src || (linked ? "linked" : "none");
   if (src === "linked" && !linked) src = posNum(c.you) ? "manual" : "none";
   return { src, linked, saved: !!S.settings.savings_rate, you: posNum(c.you), youPer: c.you_per === "month" ? "month" : "check",
-    match: posNum(c.match), matchPer: c.match_per === "month" ? "month" : "check", countMatch: c.count_match !== false };
+    match: 0, matchPer: "check", countMatch: true };   // the whole contribution counts; it isn't split into yours and the employer's
 }
 /** Paychecks that landed in month m: the main paycheck's deposits, or any deposit of $200+ marked Income when no paycheck pattern is found. */
 function paychecksIn(m) {
   const st = incomeStreams()[0], inc = monthTx(m).filter(t => t._k === "income");
   return new Set((st ? inc.filter(t => mk(t) === st.key) : inc.filter(t => eff(t) === "INCOME" && -t.amount >= 200)).map(t => t.date)).size;
 }
-/** Month m's 401(k): what came out of pay (you) and what the employer added (match). take is the month's take-home, for "so far". */
+/** Month m's 401(k) contributions, in full (any employer match included). take is the month's take-home, for "so far". */
 function plan401(m, take) {
   const c = savCfg(), out = { c, on: c.src === "linked" || c.src === "manual", you: 0, match: 0, n: 0, how: "" };
   if (!out.on) return out;
@@ -4528,12 +4527,11 @@ function plan401(m, take) {
   const monthPart = () => cur ? Math.min(1, take / Math.max(1, monthIncome().total || expectedIncome() || take || 1)) : 1;
   if (c.src === "linked") {
     const dep = planDeposits(m), total = dep.reduce((s, t) => s + Math.abs(Number(t.amount)), 0), n = new Set(dep.map(t => t.date)).size;
-    const match = Math.min(total, c.matchPer === "month" ? (n ? c.match : 0) : c.match * n);
     const names = [...new Set(dep.map(t => invName(acctOf(t.account_id) || {})).filter(Boolean))];
-    return { ...out, you: total - match, match, n, how: `${names.join(", ") || "Your linked plan"} · ${n} deposit${n === 1 ? "" : "s"}` };
+    return { ...out, you: total, match: 0, n, how: `${names.join(", ") || "Your linked plan"} · ${n} deposit${n === 1 ? "" : "s"}` };
   }
   const n = paychecksIn(m), per = (amt, unit) => unit === "month" ? amt * monthPart() : amt * n;
-  return { ...out, you: per(c.you, c.youPer), match: per(c.match, c.matchPer), n,
+  return { ...out, you: per(c.you, c.youPer), match: 0, n,
     how: c.youPer === "month" ? `${money(c.you)} a month, as you entered it` : `${money(c.you)} a paycheck × ${n}, as you entered it` };
 }
 /** Everything the savings card and sheet show for month m. */
@@ -4568,7 +4566,7 @@ const monthName = m => new Date(m + "-15").toLocaleString("en-US", m.slice(0, 4)
  *  A bracket over take-home carries the cash rate, one under everything saved carries the total rate. */
 function savBarHTML(v) {
   const over = Math.max(0, -v.cash), kept = Math.max(0, v.cash), spentIn = Math.min(v.spent > 0 ? v.spent : 0, v.take);
-  const segs = [["match", v.match, "Employer match"], ["you", v.you, "Your 401(k)"], ["cash", kept, "Kept"], ["spent", spentIn, "Spent"], ["over", over, "Spent more than came in"]].filter(x => x[1] > 0.5);
+  const segs = [["match", v.match, "Employer match"], ["you", v.you, "401(k)"], ["cash", kept, "Kept"], ["spent", spentIn, "Spent"], ["over", over, "Spent more than came in"]].filter(x => x[1] > 0.5);
   const W = segs.reduce((s, x) => s + x[1], 0) || 1, pc = x => x / W * 100;
   const preW = pc(v.pre), takeW = pc(v.take), savedW = pc(v.pre + kept);
   const top = (v.on && v.pre > 0.5 ? `<span class="bk l" style="left:0;width:${preW.toFixed(2)}%"><em>Before your paycheck</em></span>` : "")
@@ -4600,7 +4598,7 @@ function renderSav() {
     const t2 = v.on ? `<div class="sr all"><span class="k"><i></i>With 401(k)</span><b>${pctTxt(v.totalRate)}</b><span class="mute">${money(v.saved)} of ${money(v.all)} pay</span></div>`
       : `<button class="sr add" id="savAdd"><span class="k">With 401(k)</span><b>Add it</b><span class="mute">Count what comes out of your pay</span></button>`;
     el.innerHTML = head + `<div class="savtop"><span class="savbig ${v.saved < 0 ? "neg" : ""}">${v.saved < 0 ? "−" : ""}${money(Math.abs(v.on ? v.saved : v.cash))}</span>
-      <span class="mute">${v.on ? (v.pre > 0.5 ? `${money(Math.max(0, v.cash))} cash + ${money(v.pre)} in your 401(k)` : "cash and 401(k)") : (v.cash < 0 ? "more spent than came in" : "kept from your paychecks")}</span></div>
+      <span class="mute">${v.on ? (v.pre > 0.5 ? `${money(Math.max(0, v.cash))} cash + ${money(v.pre)} to your 401(k)` : "cash and 401(k)") : (v.cash < 0 ? "more spent than came in" : "kept from your paychecks")}</span></div>
       ${savBarHTML(v)}
       <div class="savrates"><div class="sr cash"><span class="k"><i></i>Cash</span><b class="${v.cash < 0 ? "neg" : ""}">${pctTxt(v.cashRate)}</b><span class="mute">${money(v.cash)} of ${money(v.take)} take-home</span></div>${t2}</div>
       ${savTrendHTML(m)}`;
@@ -4611,8 +4609,8 @@ function renderSav() {
   el.onclick = () => openSav(S.savM);
   // Settings row
   if ($("savSetD")) { const c = savCfg();
-    $("savSetD").textContent = c.src === "linked" ? `From your linked ${planAccts().map(invName).join(", ")}${c.match ? `, employer match ${money(c.match)} ${c.matchPer === "month" ? "a month" : "a paycheck"}` : ""}.`
-      : c.src === "manual" ? `${money(c.you)} ${c.youPer === "month" ? "a month" : "a paycheck"}${c.match ? ` plus a ${money(c.match)} match` : ""}, as you entered it.` : "Not counted yet. Add it so your total savings rate includes the 401(k).";
+    $("savSetD").textContent = c.src === "linked" ? `From your linked ${planAccts().map(invName).join(", ")}, each full deposit.`
+      : c.src === "manual" ? `${money(c.you)} ${c.youPer === "month" ? "a month" : "a paycheck"}, as you entered it.` : "Not counted yet. Add it so your total savings rate includes the 401(k).";
     $("savSetB").textContent = c.src === "none" || c.src === "off" ? "Set up" : "Change"; }
 }
 /** The month in full: take-home minus spending, then what left before the paycheck, then the total. */
@@ -4634,51 +4632,44 @@ function openSav(m) {
     ${planLine(`<b>${v.cash < 0 ? "Spent more than came in" : "Kept"}</b> <span class="mute">· ${pctTxt(v.cashRate)} of take-home</span>`, (v.cash < 0 ? "−" : "") + money(Math.abs(v.cash)), v.cash < 0 ? "neg" : "pos")}
     ${where}
     <h3 class="inch">Before your paycheck</h3>
-    ${v.on ? `${planLine(`🏦 Your 401(k) <span class="mute">· ${esc(v.p.how)}</span>`, money(v.you))}
-      ${v.matchAll > 0.5 || c.match ? planLine(`🤝 Employer match${c.countMatch ? "" : ` <span class="mute">· not counted in your rate</span>`}`, money(v.matchAll), c.countMatch ? "" : "mute") : ""}
+    ${v.on ? `${planLine(`🏦 401(k) contributions <span class="mute">· ${esc(v.p.how)}</span>`, money(v.you))}
       ${planLine(`<b>Total saved</b> <span class="mute">· ${pctTxt(v.totalRate)} of ${money(v.all)} pay</span>`, (v.saved < 0 ? "−" : "") + money(Math.abs(v.saved)), v.saved < 0 ? "neg" : "pos")}
       <p class="rnote mute" style="font-size:13px">Your 401(k) counts as pay and as savings, since it came out of your paycheck before it reached the bank. ${c.src === "linked" ? "The amount comes from your linked plan's deposits." : ""}</p>`
       : `<p class="rnote">Money that goes to a 401(k) never reaches your bank, so Headroom can't see it yet. Add it to get a second rate that counts it.</p>`}
     ${hist.length > 1 ? `<h3 class="inch">Last ${hist.length} months</h3>
       <div class="savtbl"><div class="sth"><span></span><span>Cash</span><span>With 401(k)</span><span>Saved</span></div>
       ${hist.map(x => `<div class="str ${x.m === m ? "on" : ""}" data-sm="${x.m}"><span>${esc(monthShort(x.m))}${x.partial ? " so far" : ""}</span><span>${pctTxt(x.cashRate)}</span><span>${x.on ? pctTxt(x.totalRate) : "–"}</span><b>${money(x.on ? x.saved : x.cash)}</b></div>`).join("")}</div>` : ""}
-    <div class="btns" style="margin-top:14px"><button id="svSet">${c.src === "linked" || c.src === "manual" ? "401(k) and match settings" : "Add your 401(k)"}</button></div>`);
+    <div class="btns" style="margin-top:14px"><button id="svSet">${c.src === "linked" || c.src === "manual" ? "401(k) settings" : "Add your 401(k)"}</button></div>`);
   $("svInc").onclick = () => { closeModal(); setTimeout(() => drillTx("Take-home pay", monthLong(m), () => monthTx(m).filter(isIncome)), 220); };
   $("svSp").onclick = () => { closeModal(); setTimeout(() => drillTx("Spent", monthLong(m), () => monthTx(m).filter(isSpendish), "amt"), 220); };
   $("mBody").querySelectorAll("[data-sm]").forEach(r => r.onclick = () => { S.savM = r.dataset.sm; renderSav(); openSav(r.dataset.sm); });
   $("svSet").onclick = () => openSavSetup();
 }
-/** Where the 401(k) number comes from, and the employer match. Saved to the person's own settings. */
+/** Where the 401(k) number comes from. Saved to the person's own settings. */
 function openSavSetup() {
   const c = savCfg(), plans = planAccts(), dep = planDeposits().sort((a, b) => a.date < b.date ? 1 : -1), last = dep[0];
-  let src = c.src === "none" || c.src === "off" ? (c.linked ? "linked" : "manual") : c.src, youPer = c.youPer, matchPer = c.matchPer;
+  let src = c.src === "none" || c.src === "off" ? (c.linked ? "linked" : "manual") : c.src, youPer = c.youPer;
   const per = (id, on) => `<div class="seg" id="${id}"><button data-p="check" class="${on === "check" ? "on" : ""}">a paycheck</button><button data-p="month" class="${on === "month" ? "on" : ""}">a month</button></div>`;
-  openLayer("sheet", "401(k) and match", "For your savings rate. Only you see this.", `
+  openLayer("sheet", "Your 401(k)", "For your savings rate. Only you see this.", `
     <div class="seg segfull" id="svSrc">${c.linked ? `<button data-s="linked">From my linked plan</button>` : ""}<button data-s="manual">I'll enter it</button><button data-s="off">Leave it out</button></div>
     <div id="svLinked" class="svpart">${last ? `<p class="rnote">${esc(plans.map(invName).join(", "))}: ${money(Math.abs(Number(last.amount)))} on ${esc(shortDate(last.date))}, ${dep.length} deposit${dep.length === 1 ? "" : "s"} so far.</p>` : ""}
-      <label class="lbl" for="svLMatch">Employer's part of each deposit (optional)</label>
-      <div class="svrow"><span class="svd">$</span><input id="svLMatch" type="number" inputmode="decimal" min="0" step="1" placeholder="0" value="${c.src === "linked" && c.match ? c.match : ""}"></div>
-      <div class="mute svhelp">Leave blank if your match arrives as its own deposit, or you don't get one. Check a paystub or your plan's site.</div></div>
+      <div class="mute svhelp">Each deposit counts in full, including any part your employer adds.</div></div>
     <div id="svManual" class="svpart">
-      <label class="lbl" for="svYou">You put in</label>
+      <label class="lbl" for="svYou">Goes into your 401(k)</label>
       <div class="svrow"><span class="svd">$</span><input id="svYou" type="number" inputmode="decimal" min="0" step="1" placeholder="0" value="${c.src === "manual" && c.you ? c.you : ""}">${per("svYouPer", youPer)}</div>
-      <label class="lbl" for="svMatch" style="margin-top:12px">Your employer adds (optional)</label>
-      <div class="svrow"><span class="svd">$</span><input id="svMatch" type="number" inputmode="decimal" min="0" step="1" placeholder="0" value="${c.src === "manual" && c.match ? c.match : ""}">${per("svMatchPer", matchPer)}</div>
-      <div class="mute svhelp">Your paystub shows both. "A paycheck" counts each payday Headroom sees that month.</div></div>
-    <div class="optrow" id="svCountRow"><div><div class="t">Count the employer match in my total rate</div><div class="d">It's money saved for you, though you didn't earn it as pay.</div></div>
-      <label class="sw"><input type="checkbox" id="svCount" ${c.countMatch ? "checked" : ""}><span></span></label></div>
+      <div class="mute svhelp">The full amount from your paystub, including any employer match. "A paycheck" counts each payday Headroom sees that month.</div></div>
     <div class="btns sheetbtns"><button class="primary" id="svSave">Save</button><button data-close="sheet" id="svCancel">Cancel</button></div>`);
   const show = () => { $("svSrc").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.s === src));
-    $("svLinked").hidden = src !== "linked"; $("svManual").hidden = src !== "manual"; $("svCountRow").hidden = src === "off"; };
+    $("svLinked").hidden = src !== "linked"; $("svManual").hidden = src !== "manual"; };
   show();
   $("svSrc").querySelectorAll("button").forEach(b => b.onclick = () => { src = b.dataset.s; show(); });
-  [["svYouPer", p => youPer = p], ["svMatchPer", p => matchPer = p]].forEach(([id, set]) => $(id).querySelectorAll("button").forEach(b => b.onclick = () => { set(b.dataset.p); $(id).querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); }));
+  [["svYouPer", p => youPer = p]].forEach(([id, set]) => $(id).querySelectorAll("button").forEach(b => b.onclick = () => { set(b.dataset.p); $(id).querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); }));
   $("svCancel").onclick = () => closeLayer("sheet");
   $("svSave").onclick = async () => {
     const amt = id => Math.round(posNum($(id).value) * 100) / 100;
     let val;
-    if (src === "manual") { if (!amt("svYou")) return toast("Type what you put in", true); val = { src, you: amt("svYou"), you_per: youPer, match: amt("svMatch"), match_per: matchPer, count_match: $("svCount").checked }; }
-    else if (src === "linked") val = { src, match: amt("svLMatch"), match_per: "check", count_match: $("svCount").checked };
+    if (src === "manual") { if (!amt("svYou")) return toast("Type what you put in", true); val = { src, you: amt("svYou"), you_per: youPer }; }
+    else if (src === "linked") val = { src };
     else val = { src: "off" };
     if (!(await saveSetting("savings_rate", val))) return;
     closeLayer("sheet"); renderSav(); renderRecap();
