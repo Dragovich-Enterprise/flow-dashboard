@@ -167,6 +167,28 @@ html,body,*{touch-action:manipulation}
 .ins .ii.warn{background:#FEF3C7}.ins .ii.bad{background:#FEE2E2}.ins .ii.ok{background:var(--mint)}.ins .ii.info{background:#E0F2FE}
 .ins .it{flex:1;min-width:0}.ins .t1{font-weight:500;font-size:14px}.ins .t2{font-size:12px;color:var(--mute);margin-top:1px}
 .ins .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+/* insights: a row of small cards you swipe through */
+.inswrap{margin-bottom:14px}.inswrap:has(.insrow:empty){display:none}
+.insh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 2px 8px}.insh h2{margin:0}
+.inscount{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:9px;background:var(--soft);color:var(--mute);font-size:11px;letter-spacing:0;vertical-align:1px}
+.insall{border:0;background:none;padding:2px 4px;color:var(--accent-d);font-weight:600;font-size:13px}
+.insrow{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 6px;margin:0 -2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.insrow::-webkit-scrollbar{display:none}
+.isc{flex:0 0 272px;scroll-snap-align:start;display:flex;flex-direction:column;gap:4px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--line2);border-radius:12px;padding:11px 12px;box-shadow:var(--shadow);min-width:0}
+.isc.warn{border-left-color:var(--warn)}.isc.bad{border-left-color:var(--bad)}.isc.ok{border-left-color:var(--accent)}.isc.info{border-left-color:#0EA5E9}
+.isc .ist{display:flex;gap:9px;align-items:flex-start}
+.isc .ii{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex:0 0 auto;font-size:13px}
+.isc .ii.warn{background:#FEF3C7}.isc .ii.bad{background:#FEE2E2}.isc .ii.ok{background:var(--mint)}.isc .ii.info{background:#E0F2FE}
+.isc .t1{font-weight:600;font-size:13.5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.isc .t2{font-size:12px;color:var(--mute);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.isc .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}.isc .acts .mini{padding:4px 9px;font-size:12px}
+.insrow.one .isc{flex:1 1 100%}
+.insrow.clear .isc{flex-direction:row;align-items:center;padding:9px 12px}.insrow.clear .t2{-webkit-line-clamp:1}
+/* Coming up and Top merchants share one card: tabs on a phone, side by side on a computer */
+.upcard .uptabs{display:none}
+.upanes{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px 28px}
+.upane{min-width:0}.upsum{font-size:13px;color:var(--mute);margin:-4px 0 10px}.upsum:empty{display:none}.upsum b{color:var(--text);font-weight:600}
+#upList{margin-top:10px}
+.fcrow:has(>#fcCard[hidden])>.card{grid-column:1/-1}
 .week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:4px}
 .day{border:1px solid var(--line);border-radius:10px;padding:7px 4px;text-align:center;font-size:11px;color:var(--mute);min-height:66px;background:#fff}
 .day b{display:block;font-size:15px;color:var(--text);margin:1px 0 3px}
@@ -503,6 +525,12 @@ body.is-empty .askfab, body.no-ai .askfab, body.no-ai #askBtn{display:none!impor
   /* Home: the swipe cards already carry these numbers */
   #p-overview>.strip,#p-overview>.grid,#p-overview .card:has(#recurring){display:none}
   #p-overview h2 .hint{display:none}
+  /* one card, two tabs: only the open one shows */
+  .upcard .uptabs{display:flex;width:100%;margin-bottom:12px}.upcard .uptabs button{flex:1;padding:8px 6px;font-size:13.5px}
+  .upanes{display:block}.upane{display:none}.upane.on{display:block}.upane>h2{display:none}
+  .upcard .upsum{margin:0 0 10px}
+  .isc{flex-basis:min(272px,80vw)}
+  .fcrow:has(>#fcCard[hidden]){display:none}
   /* "See all" for long lists */
   .clamped{display:none!important}
   .clampbtn{display:block;width:100%;margin-top:8px;padding:11px;border:0;border-top:1px solid var(--line);border-radius:0;background:none;color:var(--accent-d);font-weight:600;font-size:14px}
@@ -679,6 +707,7 @@ html.dark button.primary,html.dark .fab{background:#0F766E;border-color:#0F766E;
 html.dark .pill.ok,html.dark .seg button.on,html.dark .chip.on{color:#5EEAD4}html.dark .arow .ic{color:#5EEAD4}
 html.dark .day.today,html.dark .install,html.dark .pgrid button.on{background:var(--mint)}html.dark .install{border-color:#1F5F57}
 html.dark .pill.warn,html.dark .ins .ii.warn{background:#3A2E12;color:#FCD34D}html.dark .pill.bad,html.dark .ins .ii.bad{background:#3B1A1A;color:#FCA5A5}
+html.dark .isc .ii.warn{background:#3A2E12;color:#FCD34D}html.dark .isc .ii.bad{background:#3B1A1A;color:#FCA5A5}html.dark .isc .ii.info{background:#0E2A3A;color:#7DD3FC}
 html.dark .pill.blue,html.dark .ins .ii.info{background:#0E2A3A;color:#7DD3FC}
 html.dark .flagbox{background:#2E2610;border-color:#5C4A15}html.dark .msg.err{background:#3B1A1A;border-color:#7F1D1D;color:#FCA5A5}
 html.dark button.danger,html.dark .danger{border-color:#7F1D1D}html.dark #msg{background:#27312E}
@@ -765,6 +794,7 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
     <div class="card setupcard" id="homeSetup" hidden></div>
     <div class="card setupcard histcard" id="histCard" hidden></div>
     <div id="mobTop"><div class="swipe" id="swipe"></div><div class="dots" id="swipeDots"></div><div class="card acsum" id="acSum"></div></div>
+    <div class="inswrap" id="insWrap"><div class="insh"><h2>Insights <span class="inscount" id="insCount"></span></h2><button class="insall" id="insAll" hidden>See all</button></div><div class="insrow" id="insights"></div></div>
     <div class="card savcard" id="savCard" hidden></div>
     <div class="card gicard" id="giCard" hidden></div>
     <div class="card aicard" id="aiCard"></div>
@@ -786,19 +816,21 @@ html.dark .trchips button.on,html.dark #p-budget.editing #budEdit,html.dark .goa
           <div class="seg" id="nwY" title="How tall the line's swings look"><button data-y="fit">Zoom in</button><button data-y="zero">From $0</button></div></div>
         <div class="chartbox"><canvas id="cNet"></canvas></div></div>
     </div>
-    <div class="two">
-      <div class="card"><h2>Insights</h2><div id="insights"></div></div>
-      <div class="card"><h2>Coming up <span class="hint" id="payHint"></span></h2><div class="week" id="week"></div><div id="upList" style="margin-top:10px"></div></div>
+    <div class="card upcard" id="upCard">
+      <div class="seg uptabs" id="upTabs" role="tablist"><button data-u="up" class="on" role="tab">Coming up</button><button data-u="mer" role="tab">Top merchants</button></div>
+      <div class="upanes">
+        <div class="upane on" id="paneUp"><h2>Coming up <span class="hint" id="payHint"></span></h2><div class="upsum" id="upSum"></div><div class="week" id="week"></div><div id="upList"></div></div>
+        <div class="upane" id="paneMer"><h2>Top merchants</h2><div class="upsum" id="merSum"></div><div id="merchants"></div></div>
+      </div>
     </div>
-    <div class="card fccard" id="fcCard" hidden><h2>Cash forecast <span class="hint">&mdash; next 30 days</span></h2><div class="fchead" id="fcHead"></div><div class="fcbox"><canvas id="cFc"></canvas></div><div class="fcfoot" id="fcFoot"></div></div>
+    <div class="two fcrow">
+      <div class="card fccard" id="fcCard" hidden><h2>Cash forecast <span class="hint">&mdash; next 30 days</span></h2><div class="fchead" id="fcHead"></div><div class="fcbox"><canvas id="cFc"></canvas></div><div class="fcfoot" id="fcFoot"></div></div>
+      <div class="card"><h2>Recurring charges</h2><div id="recurring"></div></div>
+    </div>
     <div class="two">
       <div class="card"><h2>Spending by category <span class="hint">&mdash; vs. the same point last period</span></h2>
         <div class="donutwrap"><div class="chartbox donut"><canvas id="cDonut"></canvas></div><div id="catBreak"></div></div></div>
       <div class="card"><h2>Income vs. spending</h2><div class="hero mobonly" id="trendHero"></div><div class="chartbox"><canvas id="cTrend"></canvas></div><div class="tsel" id="trendSel"></div></div>
-    </div>
-    <div class="two">
-      <div class="card"><h2>Top merchants</h2><div id="merchants"></div></div>
-      <div class="card"><h2>Recurring charges</h2><div id="recurring"></div></div>
     </div>
   </div>
 
@@ -1283,7 +1315,7 @@ $("forgot").onclick = async () => {
   $("err").textContent = error ? error.message : "Check your email for a reset link.";
 };
 /** Sign out and leave nothing of this person's behind on the device (the next person may share the phone). */
-const PERSONAL_KEYS = ["hr_chat", "plaid_link_token", "plaid_link_item", "hr_lock", "hr_pk_offered", "hr_slide", "hr_hist_hide", "hr_recap_seen", "hr_invhist", "hr_inv_range", "hr_gi_hide"];
+const PERSONAL_KEYS = ["hr_chat", "plaid_link_token", "plaid_link_item", "hr_lock", "hr_pk_offered", "hr_slide", "hr_hist_hide", "hr_recap_seen", "hr_invhist", "hr_inv_range", "hr_gi_hide", "hr_uptab"];
 function forgetLocal() { PERSONAL_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} }); }
 const signOut = async () => {
   try { const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); const sub = reg && reg.pushManager && await reg.pushManager.getSubscription();
@@ -2311,6 +2343,8 @@ function renderOverview() {
   // each row: who, how often, how much, and what share of all spending in these dates that is
   $("merchants").innerHTML = top.length ? top.map(([k, v]) => { const n = visits[k] || 1, pc = spent > 0 ? Math.round(v / spent * 100) : 0;
     return `<div class="rowline tap" data-m="${esc(k)}"><span>${esc(k)} <span class="mute">· ${n} visit${n === 1 ? "" : "s"}${n > 1 ? `, avg ${money(v / n)}` : ""}</span></span><span class="mamt"><b>${money(v)}</b>${spent > 0 ? `<span class="mute">${pc < 1 ? "<1" : pc}% of spending</span>` : ""}</span></div>`; }).join("") : `<div class="empty">Nothing in these dates.</div>`;
+  const topSum = top.reduce((x, [, v]) => x + v, 0);
+  $("merSum").innerHTML = top.length && spent > 0 ? `Top ${top.length} are <b>${money(topSum)}</b>, ${Math.round(topSum / spent * 100)}% of spending · ${esc(rangeSub())}` : "";
   clampList($("merchants"), 5, "merchants");
   $("merchants").querySelectorAll("[data-m]").forEach(el => el.onclick = () =>
     drillTx(el.dataset.m, rangeSub(), () => rangeTx().filter(t => isSpendish(t) && tname(t) === el.dataset.m)));
@@ -2996,13 +3030,22 @@ function renderComingUp() {
     const tot = bills.reduce((s, e) => s + e.amt, 0);
     return `<div class="day ${i === 0 ? "today" : ""}">${dt.toLocaleString("en-US", { weekday: "short" })}<b>${dt.getDate()}</b>${tot ? `<div class="amt">${money(tot)}</div>` : ""}${p ? `<div class="pay">Payday</div>` : ""}</div>`;
   }).join("");
-  const list = ev.slice(0, 8);
+  const list = ev.slice(0, 8), bills7 = ev.filter(e => e.kind === "bill" && dnum(e.d) - dnum(today) < 7).reduce((s, e) => s + e.amt, 0);
+  $("upSum").innerHTML = [bills7 ? `<b>${money(bills7)}</b> in bills this week` : "", pay ? `payday ${inDays(pay.d)}` : ""].filter(Boolean).join(" · ").replace(/^p/, m => bills7 ? m : "P");
   $("upList").innerHTML = list.length ? list.map(e => `<div class="rowline"><span>${e.kind === "pay" ? "💰" : "📅"} ${esc(e.name)} <span class="mute">· ${esc(shortDate(e.d))}, ${inDays(e.d)}</span></span>
       <span class="${e.kind === "pay" ? "pos" : ""}" style="font-weight:600">${e.kind === "pay" ? "+" : ""}${money2(e.amt)}</span></div>`).join("")
     : `<div class="mute">No bills or paydays in the next two weeks.</div>`;
-  const bills7 = ev.filter(e => e.kind === "bill" && dnum(e.d) - dnum(today) < 7).reduce((s, e) => s + e.amt, 0);
-  if (bills7) $("upList").insertAdjacentHTML("afterbegin", `<div class="mute" style="margin-bottom:4px">${money(bills7)} in bills due this week</div>`);
+  clampList($("upList"), 3, "bills and paydays");
 }
+/** Phone: Coming up and Top merchants share a card; the tab you last opened stays open on this device. */
+function setUpTab(k) {
+  if (k !== "mer") k = "up";
+  document.querySelectorAll("#upTabs [data-u]").forEach(b => { b.classList.toggle("on", b.dataset.u === k); b.setAttribute("aria-selected", b.dataset.u === k); });
+  $("paneUp").classList.toggle("on", k === "up"); $("paneMer").classList.toggle("on", k === "mer");
+  store.set("hr_uptab", k);
+}
+document.querySelectorAll("#upTabs [data-u]").forEach(b => b.onclick = () => setUpTab(b.dataset.u));
+setUpTab(store.get("hr_uptab"));
 // ---------- split a transaction into parts ----------
 /** The original charge is kept (and left out of totals); each part becomes its own row with its own category. */
 function openSplit(parentId) {
@@ -3571,10 +3614,30 @@ function openIncome() {
 
     <div class="btns"><button id="incBills">See upcoming bills</button></div>`);
   $("mBody").querySelectorAll("[data-tx]").forEach(r => r.onclick = () => editTx(r.dataset.tx));
-  $("incBills").onclick = () => { closeModal(); setTimeout(() => $("week").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" }), 220); };
+  $("incBills").onclick = () => { closeModal(); setUpTab("up"); setTimeout(() => $("week").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" }), 220); };
 }
 
 function renderInsights() {
+  const { items, acts } = insightItems(), box = $("insights"), n = items.length;
+  // a row of small cards you swipe through; "See all" opens the full list with the same buttons
+  box.className = "insrow" + (n === 0 ? " clear one" : n === 1 ? " one" : "");
+  box.innerHTML = n ? items.map(x => `<div class="isc ${x.cls}"><div class="ist"><div class="ii ${x.cls}">${x.ic}</div><div class="t1">${esc(x.t1)}</div></div>${x.t2 ? `<div class="t2">${esc(x.t2)}</div>` : ""}${x.a ? `<div class="acts">${x.a}</div>` : ""}</div>`).join("")
+    : `<div class="isc ok"><div class="ii ok">✓</div><div style="min-width:0"><div class="t1">All clear</div><div class="t2">Nothing unusual in your recent spending.</div></div></div>`;
+  box.querySelectorAll("[data-a]").forEach(b => b.onclick = () => acts[b.dataset.a]());
+  box.scrollLeft = 0;
+  $("insCount").textContent = n > 1 ? n : "";
+  $("insAll").hidden = n < 2; $("insAll").textContent = `See all ${n}`;
+}
+$("insAll").onclick = openInsights;
+/** Every insight in one list, with its buttons. */
+function openInsights() {
+  const { items, acts } = insightItems();
+  openModal("Insights", items.length ? `${items.length} things worth a look` : "", items.length ? items.map(x => `<div class="ins"><div class="ii ${x.cls}">${x.ic}</div><div class="it"><div class="t1">${esc(x.t1)}</div><div class="t2">${esc(x.t2 || "")}</div>${x.a ? `<div class="acts">${x.a}</div>` : ""}</div></div>`).join("")
+    : `<div class="mute">Nothing unusual in your recent spending.</div>`);
+  $("mBody").querySelectorAll("[data-a]").forEach(b => b.onclick = () => acts[b.dataset.a]());
+}
+/** What's worth a look right now: spending pace, budgets running hot, unusual charges, price increases, budget suggestions. */
+function insightItems() {
   const items = [], acts = [], act = (label, fn) => { acts.push(fn); return `<button class="mini" data-a="${acts.length - 1}">${esc(label)}</button>`; };
   const today = todayISO(), cur = today.slice(0, 7), day = Number(today.slice(8)), dim = Number(endOfMonth(cur).slice(8));
   // 1. this month vs the same point last month
@@ -3605,11 +3668,8 @@ function renderInsights() {
   priceChanges().slice(0, 3).forEach(p => items.push({ cls: "warn", ic: "💸", t1: `${p.name} went up ${money2(p.to - p.from)}`, t2: `From ${money2(p.from)} to ${money2(p.to)} on ${shortDate(p.date)}`, a: act("See charge", () => editTx(p.id)) }));
   // 5. budget suggestions waiting
   const ns = budgetSuggestions().length;
-  if (ns) items.push({ cls: "info", ic: "💡", t1: `${ns} budget suggestion${ns === 1 ? "" : "s"}`, t2: "Based on how your spending has actually gone", a: act("Review", () => go("budget")) });
-  $("insights").innerHTML = items.length ? items.map(x => `<div class="ins"><div class="ii ${x.cls}">${x.ic}</div><div class="it"><div class="t1">${esc(x.t1)}</div><div class="t2">${esc(x.t2 || "")}</div>${x.a ? `<div class="acts">${x.a}</div>` : ""}</div></div>`).join("")
-    : `<div class="ins"><div class="ii ok">✓</div><div class="it"><div class="t1">All clear</div><div class="t2">Nothing unusual in your recent spending.</div></div></div>`;
-  $("insights").querySelectorAll("[data-a]").forEach(b => b.onclick = () => acts[b.dataset.a]());
-  clampList($("insights"), 3, "insights");
+  if (ns) items.push({ cls: "info", ic: "💡", t1: `${ns} budget suggestion${ns === 1 ? "" : "s"}`, t2: "Based on how your spending has actually gone", a: act("Review", () => { closeModal(); go("budget"); }) });
+  return { items, acts };
 }
 /** Look at full months since each budget was set and suggest changes; also spot big categories with no budget. */
 function budgetSuggestions() {
